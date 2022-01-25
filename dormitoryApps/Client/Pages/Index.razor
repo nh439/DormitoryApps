@@ -1,0 +1,39 @@
+﻿@page "/"
+@using System;
+@using System.Timers;
+@using System.Threading ;
+<PageTitle>Index</PageTitle>
+
+<h1>Nithi Residences</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+<h1 id="h1">
+    @now
+</h1>
+
+@code{
+    DateTime now = new DateTime();
+    private static System.Timers.Timer aTimer=new System.Timers.Timer(1);
+    public void StartTimer()
+    {
+        aTimer = new System.Timers.Timer(1);
+        aTimer.Elapsed += Refreshdate;
+        aTimer.Enabled = true;
+    }
+    public void Refreshdate(Object source, ElapsedEventArgs e)
+    {
+        now = DateTime.Now;
+        InvokeAsync(StateHasChanged);
+    }
+     public void Dispose()
+    {
+        aTimer?.Dispose();
+    }
+    protected override void OnInitialized()
+    {
+        StartTimer();
+    }
+
+}
