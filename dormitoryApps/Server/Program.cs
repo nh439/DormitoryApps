@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using dormitoryApps.Server.Databases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<Databases>();
 
 var app = builder.Build();
 
