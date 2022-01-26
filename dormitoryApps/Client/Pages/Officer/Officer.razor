@@ -1,12 +1,18 @@
 ﻿@page "/Ofiicer"
 @using dormitoryApps.Client.Services;
 @inject OfficerServices officerServices;
+@inject SweetAlertService Swal;
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" /> 
+@inject IJSRuntime js
+
+
 <center>
     <h1>ระบบเจ้าหน้าที่</h1>
 </center>
-
+<br />
+<br />
 <center>
 <form style="" >
     <div style="width:60%">
@@ -45,13 +51,36 @@
   </div>
 </form>
 </center>
+
+<dormitoryApps.Client.Pages.Officer.Modal.Incomplete @ref="modal">
+
+</dormitoryApps.Client.Pages.Officer.Modal.Incomplete>
+
+
 @code {
+    ElementReference Logging;
+    private dormitoryApps.Client.Pages.Officer.Modal.Incomplete modal{ get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
+    string Logclass = "display:none";
     private async void Usersubmit()
     {
+        Logclass = "display:block";
         var res = await officerServices.GetLogin(username: Username, password: Password);
         Console.WriteLine(res);
+        if(!res)
+        {
+            modal.Open();
+            // await js.InvokeAsync<bool>("alert", "Username or Password Incorrect");
+            
+           // PassInc();
+           
+        }      
+    }
+    private async void PassInc()
+    {
+         Console.WriteLine(Swal);
+            await Swal.FireAsync("Hello world!");
     }
 }
 
