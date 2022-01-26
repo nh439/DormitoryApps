@@ -1,5 +1,130 @@
-﻿<h3>Registerd</h3>
+﻿
+
 @page "/Officer/Registerd";
+@using dormitoryApps.Shared.Model.Entity;
 @code {
+    dormitoryApps.Shared.Model.Entity.Officer item = new dormitoryApps.Shared.Model.Entity.Officer()
+    {Brithday=DateTime.Now.AddYears(-24)};
+    int gender;
+
+    string pass = "";
 
 }
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<center>
+    <h1>ลงทะเบียนเจ้าหน้าที่</h1>
+</center>
+<br />
+<br />
+<div class="form-group row">
+    <label for="text" class="col-4 col-form-label">ชื่อผู้ใช้</label> 
+    <div class="col-8">
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <div class="input-group-text">
+            <i class="fa fa-address-card"></i>
+          </div>
+        </div> 
+        <input id="text" @bind-value="item.Username" type="text" class="form-control">
+      </div>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text1" class="col-4 col-form-label">รหัสผ่าน</label> 
+    <div class="col-8">
+      <input id="text1" @bind-value="item.Password" type="password" class="form-control">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text2" class="col-4 col-form-label">ยืนยันรหัสผ่าน</label> 
+    <div class="col-8">
+      <input id="text2" @bind-value="pass" type="password" class="form-control">
+      <br />
+      <small style="display:@dis;color:red;">ยืนยันรหัสไม่ผ่าน</small>
+    </div> 
+  </div>
+  <div class="form-group row">
+    <label class="col-4"></label> 
+    <div class="col-8">
+      <select id="select"  class="custom-select" @bind="item.Prefix" >
+        <option value="นาย">นาย</option>
+        <option value="นางสาว">นางสาว</option>
+        <option value="นาง">นาง</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text3" class="col-4 col-form-label">ชื่อ</label> 
+    <div class="col-8">
+      <input id="text3" @bind-value="item.Firstname" type="text" class="form-control">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text4" class="col-4 col-form-label">สกุล</label> 
+    <div class="col-8">
+      <input id="text4" @bind-value="item.Surname"  type="text" class="form-control">
+    </div>
+  </div>
+   <div class="form-group row">
+    <label for="text41" class="col-4 col-form-label">Email</label> 
+    <div class="col-8">
+      <input id="text41" @bind-value="item.Email"  type="email" class="form-control">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text5" class="col-4 col-form-label">วันเกิด</label> 
+    <div class="col-8">
+      <input id="text5" @bind-value="item.Brithday"  type="date" class="form-control">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="sex" class="col-4 col-form-label">เพศ</label> 
+    <div class="col-8">
+      <select id="sex" class="custom-select" @bind="gender">
+        <option value="1">ชาย</option>
+        <option value="0">หญิง</option>
+        <option value="-1">อื่นๆ</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="select1" class="col-4 col-form-label">ตำแหน่ง</label> 
+    <div class="col-8">
+      <select id="select1"  class="custom-select" @bind="item.Postition" >
+        <option value="0">Rabbit</option>
+        <option value="1">Duck</option>
+        <option value="2">Fish</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="text6" class="col-4 col-form-label">เงินเดือน</label> 
+    <div class="col-8">
+      <input id="text6" name="text6" type="number" @bind-value="item.Salary" class="form-control">
+    </div>
+  </div> 
+  <div class="form-group row">
+    <div class="offset-4 col-8">
+      <button name="submit" type="submit" @onclick="Submit" class="btn btn-primary">ลงทะเบียน</button>
+    </div>
+  </div>
+  @code{
+    string dis = "none";
+    private void Submit()
+    {
+        switch(gender)
+        {
+            case 1 : item.Gender = true;break;
+            case 0 : item.Gender = false;break;
+            case -1 : item.Gender = null;break;
+        }
+        if(item.Password != pass)
+        {
+            dis = "block";
+            return;
+        }
+        dis = "none";
+        
+    }
+  }

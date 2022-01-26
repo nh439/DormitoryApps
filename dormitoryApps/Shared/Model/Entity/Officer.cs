@@ -18,7 +18,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string Surname { get; set; }
 		public DateTime Brithday { get; set; }
 		public string Address { get; set; }
-		public bool Gender { get; set; }
+		public bool? Gender { get; set; }
 		public int Postition { get; set; }
 		public decimal Salary { get; set; }
 		public DateTime Registerd { get; set; }

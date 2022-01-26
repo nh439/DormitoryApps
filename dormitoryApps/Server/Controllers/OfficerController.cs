@@ -1,4 +1,5 @@
 ﻿using dormitoryApps.Server.Services;
+using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,12 @@ namespace dormitoryApps.Server.Controllers
             string username = login.Username;
             string password = login.Password;
             var result = await _officerServices.LoginCheck(username, password);
+            return Ok(result);
+        }
+        [HttpPost($"{ControllerName}/Create")]
+        public async Task<IActionResult> Create([FromBody]Officer officer)
+        {
+            var result = await _officerServices.Create(officer);
             return Ok(result);
         }
 
