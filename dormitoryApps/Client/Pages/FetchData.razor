@@ -1,6 +1,9 @@
 ﻿@page "/fetchdata"
 @using dormitoryApps.Shared
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
 @inject HttpClient Http
+@inject DepartmentServices departmentServices;
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -8,7 +11,7 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (departments == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -17,31 +20,44 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Id</th>
+                <th>Name</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var department in departments)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@department.Id</td>
+                    <td>@department.Name</td>
                 </tr>
             }
         </tbody>
     </table>
 }
-
+<input type="number" @bind="Nums" />
+<button @onclick="Onclick1" >S1</button>
+@if (string.IsNullOrEmpty(Names))
+{
+    @("No ID")
+}
+else
+{
+    @Names
+}
 @code {
-    private WeatherForecast[]? forecasts;
+    private List<Department>? departments;
+    private string Names;
+    int Nums;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        departments = await departmentServices.Getdepartments();
+
+    }
+    private async Task Onclick1()
+    {
+        var dep = await departmentServices.GetById(Nums);
+        Names = dep.Name;
     }
 }

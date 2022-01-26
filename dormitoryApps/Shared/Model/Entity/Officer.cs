@@ -23,5 +23,6 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Salary { get; set; }
 		public DateTime Registerd { get; set; }
 		public bool Expired { get; set; } = false;
+		public byte[] Img { get; set; }
 	}
 }

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using dormitoryApps.Server.Databases;
+using dormitoryApps.Server.Repository;
+using dormitoryApps.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddSingleton<Databases>();
+builder.Services.AddSingleton<DBConnection>();
+
+#region Repository
+builder.Services.AddScoped<DepartmentRepository>();
+builder.Services.AddScoped<OfficerRepository>();
+#endregion
+
+#region Services
+builder.Services.AddScoped<IDepartmentServices, DepartmentService>();
+builder.Services.AddScoped<IOfficerServices,OfficerServices>();
+#endregion
 
 var app = builder.Build();
 
