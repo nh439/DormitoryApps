@@ -8,30 +8,57 @@ namespace dormitoryApps.Server.Controllers
     public class OfficerController : Controller
     {
         private readonly IOfficerServices _officerServices;
-        private const string ControllerName = "/officer";
-        public OfficerController(IOfficerServices officerServices)
+        private const string ControllerName = "/api/officer";
+        private readonly ILogger<OfficerController> _logger;
+        public OfficerController(IOfficerServices officerServices, ILogger<OfficerController> logger)
         {
             _officerServices = officerServices;
+            _logger = logger;
         }
         [HttpGet(ControllerName)]
         public async Task<IActionResult> Index()
         {
-            var officerlist = await _officerServices.Getall();
-            return Ok(officerlist);
+            try
+            {
+                var officerlist = await _officerServices.Getall();
+                return Ok(officerlist);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, "Insert Incomplete");
+            }
         }
         [HttpPost($"{ControllerName}/Login")]
         public async Task<IActionResult> Login([FromBody]LoginParameter login)
         {
-            string username = login.Username;
-            string password = login.Password;
-            var result = await _officerServices.LoginCheck(username, password);
-            return Ok(result);
+            try
+            {
+                string username = login.Username;
+                string password = login.Password;
+                var result = await _officerServices.LoginCheck(username, password);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, "Insert Incomplete");
+            }
         }
         [HttpPost($"{ControllerName}/Create")]
         public async Task<IActionResult> Create([FromBody]Officer officer)
         {
-            var result = await _officerServices.Create(officer);
-            return Ok(result);
+            try
+            {
+                var result = await _officerServices.Create(officer);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, "Insert Incomplete");
+            }
+
         }
 
     }

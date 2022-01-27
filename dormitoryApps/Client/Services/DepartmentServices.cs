@@ -8,7 +8,7 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<DepartmentServices> _logger;
-        public const string ControllerName = "Department";
+        public const string ControllerName = "api/department";
         public DepartmentServices(HttpClient httpClient,ILogger<DepartmentServices> logger)
         {
             _httpClient = httpClient;
@@ -20,11 +20,11 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<Department?> GetById(int Id)
         {         
-            return await _httpClient.GetFromJsonAsync<Department>($"/{ControllerName}/{Id}");           
+            return await _httpClient.GetFromJsonAsync<Department>($"{ControllerName}/{Id}");           
         }
         public async Task<bool> Create(Department item)
         {       
-            var res = await _httpClient.PostAsJsonAsync<Department>($"/{ControllerName}/Create", item);
+            var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Create", item);
             return res.IsSuccessStatusCode;
         }
     }

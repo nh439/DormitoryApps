@@ -4,18 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace dormitoryApps.Server.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
     public class DepartmentController : Controller
     {
         private readonly IDepartmentServices _departmentServices;
         private readonly ILogger<DepartmentController> _logger;
+        private const string BaseUrl = "/api/department";
         public DepartmentController(IDepartmentServices departmentServices, ILogger<DepartmentController> logger = null)
         {
             _departmentServices = departmentServices;
             _logger = logger;
         }
-        [HttpGet]
+        [HttpGet(BaseUrl)]
         public async Task< IActionResult> Index()
         {
             try
@@ -29,7 +28,7 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500,"Something Went Wrong");
             }
         }
-        [HttpGet("/department/{Id}")]
+        [HttpGet(BaseUrl+"/{Id}")]
         public async Task<IActionResult> GetById(int Id)
         {
             try
@@ -43,7 +42,7 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, "Something Went Wrong");
             }
         }
-        [HttpPost("/department/Create")]
+        [HttpPost($"{BaseUrl}/Create")]
         public async Task<IActionResult> Create(Department department)
         {
             try

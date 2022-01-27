@@ -1,4 +1,4 @@
-﻿@page "/Ofiicer"
+﻿@page "/Officer"
 @using dormitoryApps.Client.Services;
 @inject OfficerServices officerServices;
 @inject SweetAlertService Swal;
@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" /> 
 @inject IJSRuntime js
-
+@inject NavigationManager navigationManager;
 
 <center>
     <h1>ระบบเจ้าหน้าที่</h1>

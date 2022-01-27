@@ -14,26 +14,26 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<bool> Create(Department item)
         {
-            var res = await _databases.mysql.InsertEntitiesAsync<Department>(item);
+            var res = await _databases.Dorm.InsertEntitiesAsync<Department>(item);
             return res;
         }
         public async Task< bool> Update(Department item)
         {
             ConditionSet set = new ConditionSet();
             set.Add("Id",item.Id,SqlOperator.Equal);
-            var res = await _databases.mysql.UpdateEntityAsync<Department>(item,set);
+            var res = await _databases.Dorm.UpdateEntityAsync<Department>(item,set);
             return res == 1;
         }
         public async Task<List<Department>> Getall()
         {
-            IEnumerable<Department> departments = await _databases.mysql.SelectEntitiesAsync<Department>();
+            IEnumerable<Department> departments = await _databases.Dorm.SelectEntitiesAsync<Department>();
             return departments.ToList();
         }
         public async Task<Department> GetById(int departmantId)
         {
             ConditionSet set = new ConditionSet();
             set.Add("Id", departmantId);
-            IEnumerable<Department> department = await _databases.mysql.SelectEntitiesAsync<Department>(TableName,set);
+            IEnumerable<Department> department = await _databases.Dorm.SelectEntitiesAsync<Department>(TableName,set);
             return department.FirstOrDefault();
         }      
     }

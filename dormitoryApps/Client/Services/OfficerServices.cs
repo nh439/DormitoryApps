@@ -6,7 +6,7 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<OfficerServices> _logger;
-        public const string ControllerName = "/officer";
+        public const string ControllerName = "api/officer";
         public OfficerServices(HttpClient httpClient, ILogger<OfficerServices> logger)
         {
             _httpClient = httpClient;

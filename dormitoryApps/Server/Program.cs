@@ -14,11 +14,15 @@ builder.Services.AddSingleton<DBConnection>();
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();
 builder.Services.AddScoped<OfficerRepository>();
+builder.Services.AddScoped<AddressRepository>();
+builder.Services.AddScoped<DistrictsRepository>();
 #endregion
 
 #region Services
 builder.Services.AddScoped<IDepartmentServices, DepartmentService>();
 builder.Services.AddScoped<IOfficerServices,OfficerServices>();
+builder.Services.AddScoped<IAddressServices,AddressServices>();
+builder.Services.AddScoped<IDistrictsServices, DistrictsServices>();
 #endregion
 
 var app = builder.Build();

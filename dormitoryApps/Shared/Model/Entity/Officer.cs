@@ -17,7 +17,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string Firstname { get; set; }
 		public string Surname { get; set; }
 		public DateTime Brithday { get; set; }
-		public string Address { get; set; }
+		public string Address { get; set; }=Guid.NewGuid().ToString();
 		public bool? Gender { get; set; }
 		public int Postition { get; set; }
 		public decimal Salary { get; set; }

@@ -1,13 +1,16 @@
 ﻿using RocketSQL;
 using RocketSQL.MySql;
+using RocketSQL.SQLite;
 namespace dormitoryApps.Server.Databases
 {
     public class DBConnection
     {
-        public Mysql mysql = new Mysql();
+        public Mysql Dorm = new Mysql();
+        public Sqlite Location = new Sqlite();
         public DBConnection(IConfiguration configuration)
         {
-            mysql.ConnectionString = configuration.GetConnectionString("Def");
+            Dorm.ConnectionString = configuration.GetConnectionString("Def");
+            Location.ConnectionString = configuration.GetConnectionString("loc");
         }
     }
 }
