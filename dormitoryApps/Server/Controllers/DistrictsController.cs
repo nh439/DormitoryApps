@@ -27,6 +27,20 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, "Insert Incomplete");
             }
         }
+        [HttpGet(BaseUrl+"/{province}")]
+        public async Task<IActionResult> GetByprovince(string province)
+        {
+            try
+            {
+                var res = await _districtsServices.GetByProvince(province);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, "Insert Incomplete");
+            }
+        }
         [HttpGet($"{BaseUrl}/Get")]
         public async Task<IActionResult> Getlist(string? province,string? district,string? subdistrict)
         {
@@ -57,5 +71,6 @@ namespace dormitoryApps.Server.Controllers
             }
 
         }
+
     }
 }

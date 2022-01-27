@@ -18,6 +18,11 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Location.SelectEntitiesAsync<Districts>();
             return res.ToList();
         }
+        public async Task<List<Districts>> GetByProvince(string province)
+        {
+            var res = await _databases.Location.SelectEntitiesAsync<Districts>(TableName,$"province='{province}'");
+            return res.ToList();
+        }
         public async Task< IEnumerable<string>> GetProvince()
         {
             var res = await _databases.Location.SelectDistinctAsync(TableName, "province");

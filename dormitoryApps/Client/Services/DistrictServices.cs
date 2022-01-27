@@ -19,6 +19,11 @@ namespace dormitoryApps.Client.Services
             var districts = await _httpClient.GetFromJsonAsync<List<Districts>>(ControllerName);
             return districts;
         }
+        public async Task<List<Districts>?> GetByProvince(string province)
+        {
+            var districts = await _httpClient.GetFromJsonAsync<List<Districts>>($"{ControllerName}/{province}");
+            return districts;
+        }
         public async Task<string[]?> Getprovince()
         {
             var provinces = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get");

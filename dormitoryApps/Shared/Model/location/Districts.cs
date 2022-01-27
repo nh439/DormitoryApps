@@ -8,7 +8,7 @@ namespace dormitoryApps.Shared.Model.location
 {
     public class Districts
     {
-		public int id { get; set; }
+		public long id { get; set; }
 		public string district { get; set; }
 		public string amphoe { get; set; }
 		public string province { get; set; }

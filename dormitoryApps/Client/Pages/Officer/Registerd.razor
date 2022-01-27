@@ -3,6 +3,8 @@
 @using dormitoryApps.Client.Services;
 @inject NavigationManager navigationManager;
 @inject DistrictServices districtServices;
+@inject AddressServices addressServices;
+@inject OfficerServices officerServices;
 @code {
     dormitoryApps.Shared.Model.Entity.Officer item = new dormitoryApps.Shared.Model.Entity.Officer()
         { Brithday = DateTime.Now.AddYears(-24) };
@@ -15,7 +17,7 @@
     Address addr = new Address();
     int? postalCode { get; set; }
     bool btndisabled = true;
-
+    string Isprocessing = "none";
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -208,12 +210,23 @@
     <div class="offset-4 col-8">
         <button name="submit" type="submit" @onclick="Submit" class="btn btn-primary" disabled="@btndisabled">ลงทะเบียน</button>
         <button name="submit" type="submit" @onclick="Back" class="btn btn-secondary">ย้อนกลับ</button>
+        <small style="display:@Isprocessing">กำลังสมัครสมาชิก...</small>
     </div>
 </div>
+
+<dormitoryApps.Client.Pages.Officer.Modal.RegisterdCompleted @ref="CompletedModal">
+</dormitoryApps.Client.Pages.Officer.Modal.RegisterdCompleted>
+
+<dormitoryApps.Client.Pages.Officer.Modal.RegisterdFailed @ref="FailedModal">
+</dormitoryApps.Client.Pages.Officer.Modal.RegisterdFailed>
+
 @code {
+    dormitoryApps.Client.Pages.Officer.Modal.RegisterdCompleted CompletedModal;
+    dormitoryApps.Client.Pages.Officer.Modal.RegisterdFailed FailedModal;
     string dis = "none";
-    private void Submit()
+    private async void Submit()
     {
+        Isprocessing = "block";
         switch (gender)
         {
             case 1: item.Gender = true; break;
@@ -226,6 +239,25 @@
             return;
         }
         dis = "none";
+        var Isregisterd = await officerServices.Create(item);
+        if(!Isregisterd)
+        {
+            FailedModal.Open();
+            Isprocessing = "none";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        var Isaddr = await addressServices.Create(addr);
+        if(!Isaddr)
+        {
+            FailedModal.Open();
+            Isprocessing = "none";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        CompletedModal.Open();
+        navigationManager.NavigateTo("/");
+
 
     }
     private void Back()
@@ -234,7 +266,7 @@
     }
     private async void ProvinceChange(ChangeEventArgs args)
     {
-        postalCode = 0;
+        /* postalCode = 0;
         addr.Province = args.Value.ToString();
         districts = await districtServices.GetDistricts(addr.Province);
         addr.District = districts.FirstOrDefault();
@@ -246,8 +278,18 @@
         addr.PostalCode = postalCode.Value;
 
         btndisabled = true;
-        await InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);*/
 
+        postalCode = null;
+        addr.Province = args.Value.ToString();
+        var districtItems = await districtServices.GetByProvince(addr.Province);
+        districtItems = districtItems.Where(x => x.province.Equals(addr.Province)).ToList();
+        districts = districtItems.Select(x => x.amphoe).Distinct().ToArray();
+        addr.District = districtItems.Select(x => x.amphoe).Distinct().FirstOrDefault();
+        subdistricts = districtItems.Where(x => x.amphoe.Equals(addr.District)).Select(x=>x.district).Distinct().ToArray();
+        addr.Subdistrict = subdistricts.FirstOrDefault();
+        postalCode = districtItems.Where(x => x.amphoe.Equals(addr.District) && x.district.Equals(addr.Subdistrict)).Select(x => int.Parse( x.zipcode)).FirstOrDefault();
+        await InvokeAsync(StateHasChanged);
     }
     private async void DistrictChange(ChangeEventArgs args)
     {

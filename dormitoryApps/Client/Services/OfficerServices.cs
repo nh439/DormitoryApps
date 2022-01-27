@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Other;
+﻿using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
 namespace dormitoryApps.Client.Services
 {
@@ -22,5 +23,26 @@ namespace dormitoryApps.Client.Services
             }
             return await response.Content.ReadFromJsonAsync<bool>();
         }
+        public async Task<List<Officer>> GetEmployee()
+        {
+            List<Officer> Employee = await _httpClient.GetFromJsonAsync<List<Officer>>(ControllerName);
+            return Employee;
+        }
+        public async Task<Officer> GetById(long Id)
+        {
+            Officer officers = await _httpClient.GetFromJsonAsync<Officer>($"{ControllerName}/{Id}");
+            return officers;
+        }
+        public async Task<bool> Create(Officer officer)
+        {
+            var res = await _httpClient.PostAsJsonAsync<Officer>($"{ControllerName}/Create", officer);
+            return res.IsSuccessStatusCode;
+        }
+         public async Task<bool> Update(Officer officer)
+        {
+            var res = await _httpClient.PostAsJsonAsync<Officer>($"{ControllerName}/Update", officer);
+            return res.IsSuccessStatusCode;
+        }
+
     }
 }

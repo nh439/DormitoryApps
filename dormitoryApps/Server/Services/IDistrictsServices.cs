@@ -6,6 +6,7 @@ namespace dormitoryApps.Server.Services
     public interface IDistrictsServices
     {
         Task<List<Districts>> Getall();
+        Task<List<Districts>> GetByProvince(string province);
         Task<IEnumerable<string>> GetProvince();
         Task<IEnumerable<string>> Getdistricts(string province);
         Task<IEnumerable<string>> GetSubdistricts(string province, string district);
@@ -22,6 +23,10 @@ namespace dormitoryApps.Server.Services
         public async Task<List<Districts>> Getall()
         {
             return await _repository.Getall();
+        }
+        public async Task<List<Districts>> GetByProvince(string province)
+        {
+            return await _repository.GetByProvince(province);
         }
         public async Task<IEnumerable<string>> GetProvince()
         {
