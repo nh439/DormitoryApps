@@ -71,8 +71,8 @@ namespace dormitoryApps.Server.Repository
             var arr = Convert.FromBase64String(salt);
             password = Convert.ToBase64String(hash.CreateHash(password,arr));
             StoredProcedureContrainer callLogin = new StoredProcedureContrainer("sp_login");
-            callLogin.Addparameters("username", username);
-            callLogin.Addparameters("password", password);
+            callLogin.Addparameters("uname", username);
+            callLogin.Addparameters("pwd", password);
             spres= await _databases.Dorm.ExecuteStoredProcedureAsync(callLogin);
             if (!spres.HasCompleted || !spres.HasReturn)
             {
