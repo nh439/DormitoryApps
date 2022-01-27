@@ -43,7 +43,7 @@ namespace dormitoryApps.Server.Controllers
             }
         }
         [HttpPost($"{BaseUrl}/Create")]
-        public async Task<IActionResult> Create(Department department)
+        public async Task<IActionResult> Create([FromBody]Department department)
         {
             try
             {

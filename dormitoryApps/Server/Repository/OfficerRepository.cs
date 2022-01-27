@@ -16,10 +16,10 @@ namespace dormitoryApps.Server.Repository
         {
             _databases = databases;
         }
-        public async Task< bool> Create(Officer item)
-        {
-            var res = await _databases.Dorm.InsertEntitiesAsync<Officer>(item);
-            return res;
+        public async Task<bool> Create(Officer item)
+        {           
+                var res = await _databases.Dorm.InsertEntitiesAsync<Officer>(item);
+                return res;       
         }
         public async Task<bool> Update (Officer item)
         {

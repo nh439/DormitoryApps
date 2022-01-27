@@ -30,6 +30,8 @@ namespace dormitoryApps.Server.Services
             var salt = hash.CreateSalt();
             var phash = hash.CreateHash(password,salt);
             item.Password=Convert.ToBase64String(phash);
+            item.Idx = Convert.ToBase64String(salt);
+            item.Registerd = DateTime.Now;
             return await _repository.Create(item);
         }
         public async Task<bool> Update(Officer item)

@@ -35,8 +35,15 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> Create(Officer officer)
         {
-            var res = await _httpClient.PostAsJsonAsync<Officer>($"{ControllerName}/Create", officer);
-            return res.IsSuccessStatusCode;
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", officer);
+                return res.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
          public async Task<bool> Update(Officer officer)
         {

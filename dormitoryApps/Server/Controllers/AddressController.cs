@@ -31,11 +31,11 @@ namespace dormitoryApps.Server.Controllers
             }
         }
         [HttpPost($"{BaseUrl}/Create")]
-        public async Task<IActionResult> Create(Address item)
+        public async Task<IActionResult> Create([FromBody]Address address)
         {
             try
             {
-                await _addressServices.Create(item);
+                await _addressServices.Create(address);
                 return Ok(true);
             }
             catch (Exception x)
@@ -45,7 +45,7 @@ namespace dormitoryApps.Server.Controllers
             }
         }
          [HttpPost($"{BaseUrl}/Update")]
-        public async Task<IActionResult> Update(Address item)
+        public async Task<IActionResult> Update([FromBody]Address item)
         {
             try
             {

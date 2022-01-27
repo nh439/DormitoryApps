@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton<DBConnection>();
+builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
 
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();

@@ -21,7 +21,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> Create(Address address)
         {
-            var res = await _httpClient.PostAsJsonAsync<Address>($"{ControllerName}/Create",address);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", address);
             return res.IsSuccessStatusCode;
         }
          public async Task<bool> Update(Address address)
