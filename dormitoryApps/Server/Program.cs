@@ -11,12 +11,16 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSingleton<DBConnection>();
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
+builder.Services.AddSession();
 
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();
 builder.Services.AddScoped<OfficerRepository>();
 builder.Services.AddScoped<AddressRepository>();
 builder.Services.AddScoped<DistrictsRepository>();
+builder.Services.AddScoped<BuildingsRepository>();
+builder.Services.AddScoped<CurrentCustomerRepository>();
+builder.Services.AddScoped<SessionRepository>();
 #endregion
 
 #region Services
@@ -24,6 +28,9 @@ builder.Services.AddScoped<IDepartmentServices, DepartmentService>();
 builder.Services.AddScoped<IOfficerServices,OfficerServices>();
 builder.Services.AddScoped<IAddressServices,AddressServices>();
 builder.Services.AddScoped<IDistrictsServices, DistrictsServices>();
+builder.Services.AddScoped<IBuildingsServices, BuildingsServices>();
+builder.Services.AddScoped<ICurrentCustomerServices, CurrentCustomerServices>();
+builder.Services.AddScoped<ISessionServices, SessionServices>();
 #endregion
 
 var app = builder.Build();
@@ -46,6 +53,7 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 
 app.MapRazorPages();

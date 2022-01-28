@@ -1,7 +1,10 @@
 ﻿@page "/Officer"
 @using dormitoryApps.Client.Services;
+@using Blazored.SessionStorage;
 @inject OfficerServices officerServices;
 @inject SweetAlertService Swal;
+@inject ISessionStorageService sessionStorageService;
+@inject SessionServices sessionServices;
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" /> 
@@ -72,10 +75,16 @@
         {
             modal.Open();
             // await js.InvokeAsync<bool>("alert", "Username or Password Incorrect");
-            
-           // PassInc();
-           
+
+            // PassInc();
+            return;
         }      
+        var currentUser = await officerServices.GetByUsername(Username);
+        string sessionId = await sessionServices.CreateLogin(currentUser.Id);
+        await sessionStorageService.SetItemAsStringAsync("Id", sessionId);
+        Console.WriteLine("Login Successful");
+        navigationManager.NavigateTo("/",true);
+
     }
     private async void PassInc()
     {

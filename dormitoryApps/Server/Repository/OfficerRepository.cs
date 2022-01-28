@@ -30,21 +30,27 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<List<Officer>> Getall()
         {
-            var officersList = await _databases.Dorm.SelectEntitiesAsync<Officer>();
+            var officersLists = await _databases.Dorm.SelectEntitiesAsync<Officer>();
+            var officersList = officersLists.ToList();
+            officersList.ForEach(x => { x.Password = "PASSWORD"; x.Idx = "Index"; });
             return officersList.ToList();
         }
         public async Task<List<Officer>> GetExpired()
         {
             ConditionSet set = new ConditionSet();
             set.Add("Expired", true);
-            var officersList = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName,set);
+            var officersLists = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
+            var officersList = officersLists.ToList();
+            officersList.ForEach(x => { x.Password = "PASSWORD";x.Idx = "Index"; });
             return officersList.ToList();
         }
         public async Task<List<Officer>> GetNotExpired()
         {
             ConditionSet set = new ConditionSet();
             set.Add("Expired", false);
-            var officersList = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
+            var officersLists = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
+            var officersList = officersLists.ToList();
+            officersList.ForEach(x => { x.Password = "PASSWORD"; x.Idx = "Index"; });
             return officersList.ToList();
         }
         public async Task<Officer> GetById(long Id)
@@ -52,7 +58,21 @@ namespace dormitoryApps.Server.Repository
             ConditionSet set = new ConditionSet();
             set.Add("Id", Id);
             var officer = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
-            return officer.FirstOrDefault();
+            var res = officer.FirstOrDefault();
+            res.Password = "PASSWORD";
+            res.Idx = "INDEX";
+            return res;
+        }
+        public async Task<Officer> GetByUsername(string Username)
+        {
+            ConditionSet set = new ConditionSet();
+            set.Add("Username", Username,SqlOperator.Equal,SqlCondition.OR);
+            set.Add("Email", Username, SqlOperator.Equal);
+            var officer = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
+            var res = officer.FirstOrDefault();
+            res.Password = "PASSWORD";
+            res.Idx = "INDEX";
+            return res;
         }
 
         // Login

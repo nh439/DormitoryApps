@@ -11,13 +11,16 @@ namespace dormitoryApps.Server.Controllers
         private const string ControllerName = "/api/officer";
         private readonly ILogger<OfficerController> _logger;
         private readonly IHttpContextAccessor _accessor;
+        private readonly ISessionServices _sessionServices;
         public OfficerController(IOfficerServices officerServices,
             ILogger<OfficerController> logger,
-            IHttpContextAccessor accessor)
+            IHttpContextAccessor accessor, 
+            ISessionServices sessionServices)
         {
             _officerServices = officerServices;
             _logger = logger;
             _accessor = accessor;
+            _sessionServices = sessionServices;
         }
         [HttpGet(ControllerName)]
         public async Task<IActionResult> Index()
@@ -48,6 +51,13 @@ namespace dormitoryApps.Server.Controllers
                 _logger.LogError(x, x.Message);
                 return StatusCode(500, "Insert Incomplete");
             }
+        }
+        [HttpGet($"{ControllerName}/logout")]
+        public async Task<IActionResult> Logout()
+        {
+            _sessionServices.SetLogout(_accessor.HttpContext.Session.GetString("Id"));
+            _accessor.HttpContext.Session.Clear();
+            return Redirect("/");  
         }
         [HttpPost($"{ControllerName}/Create")]
         public async Task<IActionResult> Create([FromBody]Officer officer)
@@ -97,6 +107,21 @@ namespace dormitoryApps.Server.Controllers
                 }
             }
             return BadRequest();
+        }
+        [HttpGet(ControllerName+"/User/{id}")]
+        public async Task<IActionResult> GetByUsername(string id)
+        {
+            
+                try
+                {
+                    var result = await _officerServices.GetByUsername(id);
+                    return Ok(result);
+                }
+                catch (Exception x)
+                {
+                    _logger.LogError(x, x.Message);
+                    return StatusCode(500, x.Message);
+                }
         }
 
     }

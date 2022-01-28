@@ -13,7 +13,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Officer>> GetNotExpired();
         Task<Officer> GetById(long Id);
         Task<bool> LoginCheck(string username, string password);
-
+        Task<Officer> GetByUsername(string Username);
     }
     public class OfficerServices : IOfficerServices
     {
@@ -57,6 +57,10 @@ namespace dormitoryApps.Server.Services
         public async Task<bool> LoginCheck(string username, string password)
         {
             return await _repository.LoginCheck(username, password);
+        }
+        public async Task<Officer> GetByUsername(string Username)
+        {
+            return await _repository.GetByUsername(Username);
         }
 
     }

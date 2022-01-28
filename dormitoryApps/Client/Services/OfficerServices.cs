@@ -1,17 +1,22 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
+using Blazored.SessionStorage;
 namespace dormitoryApps.Client.Services
 {
     public class OfficerServices
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<OfficerServices> _logger;
+        private readonly ISessionStorageService _sessionStorageService;
         public const string ControllerName = "api/officer";
-        public OfficerServices(HttpClient httpClient, ILogger<OfficerServices> logger)
+        public OfficerServices(HttpClient httpClient, 
+            ILogger<OfficerServices> logger,
+            ISessionStorageService sessionStorageService)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _sessionStorageService = sessionStorageService;
         }
         public async Task<bool> GetLogin (string username, string password)
         {
@@ -22,6 +27,10 @@ namespace dormitoryApps.Client.Services
                 return false;
             }
             return await response.Content.ReadFromJsonAsync<bool>();
+        }
+        public async Task Logout()
+        {
+            await _httpClient.GetAsync($"{ ControllerName}/Logout");
         }
         public async Task<List<Officer>> GetEmployee()
         {
@@ -49,6 +58,11 @@ namespace dormitoryApps.Client.Services
         {
             var res = await _httpClient.PostAsJsonAsync<Officer>($"{ControllerName}/Update", officer);
             return res.IsSuccessStatusCode;
+        }
+        public async Task<Officer> GetByUsername(string username)
+        {
+            Officer officer = await _httpClient.GetFromJsonAsync<Officer>($"{ControllerName}/User/{username}");
+            return officer;
         }
 
     }
