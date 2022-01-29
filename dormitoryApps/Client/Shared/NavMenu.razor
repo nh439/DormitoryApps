@@ -1,8 +1,10 @@
 ﻿@using dormitoryApps.Client.Services;
 @inject SessionServices sessionServices;
 @using dormitoryApps.Shared.Model.Entity;
+@using Blazored.SessionStorage;
 @inject OfficerServices officerServices;
 @inject NavigationManager navigationManager;
+@inject ISessionStorageService sessionStorageService;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -55,6 +57,16 @@
                     My Profile
                 </NavLink>
             </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Room">
+                    Room
+                </NavLink>
+            </div>
+             <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Customer">
+                    My Customer
+                </NavLink>
+            </div>
         }
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Services">
@@ -64,9 +76,11 @@
         @if (currentlogin != null)
         {
             <div class="nav-item px-3">
-                <button class="btn btn-primary" @onclick="Logout">
-                    Logout
-                </button>
+                <center>
+                    <button class="btn btn-primary" @onclick="Logout">
+                        Logout
+                    </button>
+                </center>
             </div>
         }
     </nav>
@@ -85,8 +99,12 @@
     }
     protected override async void OnInitialized()
     {
-        currentlogin = await sessionServices.GetCurrentLogin();
-        await InvokeAsync(StateHasChanged);
+        string sessionId = await sessionStorageService.GetItemAsStringAsync("Id");
+        if (!string.IsNullOrEmpty(sessionId))
+        {
+            currentlogin = await sessionServices.GetCurrentLogin();
+            await InvokeAsync(StateHasChanged);
+        }
     }
     private async Task Logout()
     {
