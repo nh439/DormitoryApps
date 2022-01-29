@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Server.Securites;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dormitoryApps.Server.Controllers
@@ -8,12 +9,16 @@ namespace dormitoryApps.Server.Controllers
     {
         private readonly IBuildingsServices _buildingsServices;
         private readonly ILogger<BuildingsController> _logger;
+        private readonly PermissionService _permissionService;
         private const string BaseUrl = "/api/buildings";
 
-        public BuildingsController(IBuildingsServices buildingsServices, ILogger<BuildingsController> logger)
+        public BuildingsController(IBuildingsServices buildingsServices,
+            ILogger<BuildingsController> logger,
+            PermissionService permissionService)
         {
             _buildingsServices = buildingsServices;
             _logger = logger;
+            _permissionService = permissionService;
         }
         [HttpGet(BaseUrl)]
         public async  Task<IActionResult> Index()

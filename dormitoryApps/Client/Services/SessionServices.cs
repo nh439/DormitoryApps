@@ -1,5 +1,6 @@
 ﻿using Blazored.SessionStorage;
 using dormitoryApps.Shared.Model.Entity;
+using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -9,13 +10,21 @@ namespace dormitoryApps.Client.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<SessionServices> _logger;
         private readonly ISessionStorageService _sessionStorageService;
+        private readonly NavigationManager _navigationManager;
+        private readonly OfficerServices _officerServices;
         public const string ControllerName = "api/session";
 
-        public SessionServices(HttpClient httpClient, ILogger<SessionServices> logger, ISessionStorageService sessionStorageService)
+        public SessionServices(HttpClient httpClient,
+            ILogger<SessionServices> logger,
+            ISessionStorageService sessionStorageService,
+            NavigationManager navigationManager,
+            OfficerServices officerServices)
         {
             _httpClient = httpClient;
             _logger = logger;
             _sessionStorageService = sessionStorageService;
+            _navigationManager = navigationManager;
+            _officerServices = officerServices;
         }
         public async Task< List<Session>?> Get()
         {
@@ -42,6 +51,24 @@ namespace dormitoryApps.Client.Services
             var currentId = await _sessionStorageService.GetItemAsync<string>("Id");
             Officer officer = await _httpClient.GetFromJsonAsync<Officer?>($"{ControllerName}/Get/{currentId}");
             return officer;
+        }
+        public async Task<bool> Permissioncheck()
+        {
+            var sessionId = await _sessionStorageService.GetItemAsync<string>("Id");
+            if (string.IsNullOrEmpty(sessionId)) return false;
+            var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Permissioncheck", sessionId);
+            return result.IsSuccessStatusCode;
+        }
+        public async Task RequiredPermission()
+        {
+            var res = await Permissioncheck();
+            if(res)
+            {
+                return;
+            }
+            await _officerServices.Logout();
+            _navigationManager.NavigateTo("/", true);
+
         }
 
     }

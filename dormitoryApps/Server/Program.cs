@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using dormitoryApps.Server.Databases;
 using dormitoryApps.Server.Repository;
 using dormitoryApps.Server.Services;
+using dormitoryApps.Server.Securites;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddSingleton<DBConnection>();
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
 builder.Services.AddSession();
+builder.Services.AddScoped<PermissionService>();
 
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();
