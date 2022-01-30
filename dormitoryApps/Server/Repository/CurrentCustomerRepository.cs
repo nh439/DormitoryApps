@@ -6,7 +6,7 @@ namespace dormitoryApps.Server.Repository
 {
     public class CurrentCustomerRepository
     {
-        private readonly DBConnection _databases;
+        private readonly DBConnection _databases;       
         private const string TableName = "CurrentCustomer";
 
         public CurrentCustomerRepository(DBConnection databases)
@@ -47,7 +47,7 @@ namespace dormitoryApps.Server.Repository
         {
             ConditionSet set = new ConditionSet();
             set.Add("Id", Id);
-            var currentCustomer = await _databases.Dorm.SelectEntitiesAsync<CurrentCustomer>(TableName,set);
+            var currentCustomer = await _databases.Dorm.SelectEntitiesAsync<CurrentCustomer>(TableName,set);       
             return currentCustomer.FirstOrDefault();
         }
 

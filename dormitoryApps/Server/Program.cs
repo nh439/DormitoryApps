@@ -23,6 +23,8 @@ builder.Services.AddScoped<DistrictsRepository>();
 builder.Services.AddScoped<BuildingsRepository>();
 builder.Services.AddScoped<CurrentCustomerRepository>();
 builder.Services.AddScoped<SessionRepository>();
+builder.Services.AddScoped<CustomerImgRepository>();
+builder.Services.AddScoped<ElectricityRepository>();
 #endregion
 
 #region Services
@@ -33,6 +35,8 @@ builder.Services.AddScoped<IDistrictsServices, DistrictsServices>();
 builder.Services.AddScoped<IBuildingsServices, BuildingsServices>();
 builder.Services.AddScoped<ICurrentCustomerServices, CurrentCustomerServices>();
 builder.Services.AddScoped<ISessionServices, SessionServices>();
+builder.Services.AddScoped<ICustomerImgServices, CustomerImgServices>();
+builder.Services.AddScoped<IElectricityServices, ElectricityServices>();
 #endregion
 
 var app = builder.Build();
