@@ -54,7 +54,7 @@ namespace dormitoryApps.Server.Controllers
             var res = await _sessionService.GetByUser(Id);
             return Ok(res);
         }
-        [HttpPost($"BaseUrl/Permissioncheck" )]
+        [HttpPost($"{BaseUrl}/Permissioncheck" )]
         public IActionResult Getpermission([FromBody]string SessionId)
         {
             var res = _permissionService.PermissionCheck(SessionId);

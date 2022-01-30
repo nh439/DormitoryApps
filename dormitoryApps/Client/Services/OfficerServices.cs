@@ -2,6 +2,7 @@
 using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
 using Blazored.SessionStorage;
+using System.Text;
 namespace dormitoryApps.Client.Services
 {
     public class OfficerServices
@@ -20,7 +21,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> GetLogin (string username, string password)
         {
-            var item = new LoginParameter { Username = username, Password = password };
+            var item = new LoginParameter { Username = ASCIIEncoding.ASCII.GetBytes(username), Password = ASCIIEncoding.ASCII.GetBytes(password) };
             var response = await _httpClient.PostAsJsonAsync($"{ ControllerName}/Login", item);
             if(!response.IsSuccessStatusCode)
             {

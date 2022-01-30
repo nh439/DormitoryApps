@@ -17,6 +17,6 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string Address { get; set; }
 		public decimal Rental { get; set; }
 		public DateTime ContractDate { get; set; }
-		public List<CustomerImg> Imgs { get; set; } 
+		public virtual List<CustomerImg> Imgs { get; set; } 
 	}
 }

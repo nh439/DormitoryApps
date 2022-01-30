@@ -2,6 +2,7 @@
 using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -41,8 +42,8 @@ namespace dormitoryApps.Server.Controllers
         {
             try
             {
-                string username = login.Username;
-                string password = login.Password;
+                string username =Encoding.ASCII.GetString(login.Username);
+                string password =Encoding.ASCII.GetString(login.Password);
                 var result = await _officerServices.LoginCheck(username, password);
                 return Ok(result);
             }
@@ -55,7 +56,7 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet($"{ControllerName}/logout")]
         public async Task<IActionResult> Logout()
         {
-            _sessionServices.SetLogout(_accessor.HttpContext.Session.GetString("Id"));
+            await _sessionServices.SetLogout(_accessor.HttpContext.Session.GetString("Id"));
             _accessor.HttpContext.Session.Clear();
             return Redirect("/");  
         }

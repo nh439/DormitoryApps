@@ -8,7 +8,7 @@ namespace dormitoryApps.Shared.Model.Other
 {
     public class LoginParameter
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public byte[] Username { get; set; }
+        public byte[] Password { get; set; }
     }
 }

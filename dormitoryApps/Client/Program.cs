@@ -22,7 +22,8 @@ builder.Services.AddScoped<OfficerServices>();
 builder.Services.AddScoped<DistrictServices>();
 builder.Services.AddScoped<AddressServices>();
 builder.Services.AddScoped<SessionServices>();
-
+builder.Services.AddScoped<BuildingServices>();
+builder.Services.AddScoped<CurrentCustomerService>();
 
 
 await builder.Build().RunAsync();

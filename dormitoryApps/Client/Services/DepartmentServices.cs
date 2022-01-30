@@ -8,14 +8,19 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<DepartmentServices> _logger;
+        private readonly SessionServices _sessionServices;
         public const string ControllerName = "api/department";
-        public DepartmentServices(HttpClient httpClient,ILogger<DepartmentServices> logger)
+        public DepartmentServices(HttpClient httpClient,
+            ILogger<DepartmentServices> logger, SessionServices sessionServices)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _sessionServices = sessionServices;
         }
         public async Task< List<Department>?> Getdepartments()
         {
+            var res = await _sessionServices.Permissioncheck();
+            Console.WriteLine(res);
             return await _httpClient.GetFromJsonAsync<List<Department>>(ControllerName);      
         }
         public async Task<Department?> GetById(int Id)
