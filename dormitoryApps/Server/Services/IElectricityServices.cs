@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Repository;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Services
 {
@@ -16,6 +17,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Electricity>> GetByYear(int year);
         Task<List<Electricity>> GetByMonth(int year, int month);
         Task<Electricity> Getone(string RentalId, int month, int year);
+        Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria criteria);
     }
     public class ElectricityServices : IElectricityServices
     {
@@ -67,6 +69,31 @@ namespace dormitoryApps.Server.Services
         public async Task<Electricity> Getone(string RentalId, int month, int year)
         {
             return await _repository.Getone(RentalId, month, year); 
+        }
+        public async Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria criteria)
+        {
+            IEnumerable<Electricity> res = await _repository.GetWithAdvanceSearch(criteria);
+            if(criteria.Usage.HasValue)
+            {
+                if(criteria.Usage==Usage.Tiny)
+                {
+                    res = res.Where(x => (x.CurrentUnit - x.BeforeUnit) <= 100);
+                }
+                else if (criteria.Usage==Usage.Minimal)
+                {
+                    res = res.Where(x => (x.CurrentUnit - x.BeforeUnit) > 100 && (x.CurrentUnit - x.BeforeUnit) <= 200);
+                }
+                else if (criteria.Usage==Usage.Normal)
+                {
+                    res = res.Where(x => (x.CurrentUnit - x.BeforeUnit) > 200 && (x.CurrentUnit - x.BeforeUnit) <= 500);
+                }
+                if (criteria.Usage == Usage.Massive)
+                {
+                    res = res.Where(x => (x.CurrentUnit - x.BeforeUnit) > 500);
+                }
+
+            }
+            return res.ToList();
         }
     }
 }

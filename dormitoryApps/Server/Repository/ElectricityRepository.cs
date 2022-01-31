@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Databases;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
@@ -71,6 +72,45 @@ namespace dormitoryApps.Server.Repository
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"RentalId='{RentalId}' and year={year} and month={month}");
             return res.FirstOrDefault();
+        }
+        public async Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria  criteria)
+        {
+            ConditionSet set = new ConditionSet();
+            if(criteria.Haspaid.HasValue)
+            {
+                set.Add("Paid", criteria.Haspaid.Value, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.MinYear.HasValue)
+            {
+                set.Add("year", criteria.MinYear.Value, SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if (criteria.MaxYear.HasValue)
+            {
+                set.Add("year", criteria.MaxYear.Value, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.MinMonth.HasValue)
+            {
+                set.Add("month", criteria.MinMonth.Value, SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if (criteria.MaxMonth.HasValue)
+            {
+                set.Add("month", criteria.MaxMonth.Value, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.NotedateMin.HasValue)
+            {
+                set.Add("Notedate", criteria.NotedateMin.Value, SqlOperator.LessThanOrEqual,SqlCondition.AND);
+            }
+             if(criteria.NotedateMax.HasValue)
+            {
+                set.Add("Notedate", criteria.NotedateMax.Value.AddDays(1), SqlOperator.MoreThanOrEqual,SqlCondition.AND);
+            }
+            if(criteria.UnitPrice.HasValue)
+            {
+                set.Add("Price", criteria.UnitPrice, SqlOperator.Equal);
+            }
+            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, set);
+            return res.ToList();
+
         }
 
     }
