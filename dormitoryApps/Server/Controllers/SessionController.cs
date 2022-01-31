@@ -60,7 +60,7 @@ namespace dormitoryApps.Server.Controllers
             var res = _permissionService.PermissionCheck(SessionId);
             if(!res)
             {
-                return BadRequest();
+                return BadRequest("Authencation Failed");
             }
             return Ok(res);
         }
