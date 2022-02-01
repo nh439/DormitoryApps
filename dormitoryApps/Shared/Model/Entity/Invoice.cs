@@ -21,7 +21,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public int Year { get; set; }
 		public long InvoiceOfficer { get; set; }
 		public long? PaidOfficer { get; set; }
-		public virtual Electricity Electricity { get; set; }
+		public virtual Water Electricity { get; set; }
 		public virtual Water Water { get; set; }
 	}
 }

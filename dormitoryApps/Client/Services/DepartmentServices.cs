@@ -21,7 +21,11 @@ namespace dormitoryApps.Client.Services
         {
             var res = await _sessionServices.Permissioncheck();
             Console.WriteLine(res);
-            return await _httpClient.GetFromJsonAsync<List<Department>>(ControllerName);      
+            if (res)
+            {
+                return await _httpClient.GetFromJsonAsync<List<Department>>(ControllerName);
+            }
+            return new List<Department>();
         }
         public async Task<Department?> GetById(int Id)
         {         

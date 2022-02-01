@@ -29,6 +29,11 @@ namespace dormitoryApps.Server.Controllers
             try
             {
                 var officerlist = await _officerServices.Getall();
+                officerlist.ForEach(x =>
+                {
+                    x.Password = "PA$$WORD";
+                    x.Idx = "INEDX";
+                });
                 return Ok(officerlist);
             }
             catch (Exception x)
@@ -99,6 +104,8 @@ namespace dormitoryApps.Server.Controllers
                 try
                 {
                     var result = await _officerServices.GetById(Id);
+                    result.Password = "PA$$WORD";
+                    result.Idx = "INEDX";
                     return Ok(result);
                 }
                 catch (Exception x)
@@ -116,7 +123,9 @@ namespace dormitoryApps.Server.Controllers
                 try
                 {
                     var result = await _officerServices.GetByUsername(id);
-                    return Ok(result);
+                result.Password = "PA$$WORD";
+                result.Idx = "INEDX";
+                return Ok(result);
                 }
                 catch (Exception x)
                 {

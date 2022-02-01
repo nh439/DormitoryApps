@@ -15,6 +15,21 @@
 {
     <p><em>Loading...</em></p>
 }
+else if(departments.Count ==0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="2" style="text-align:center"> ไม่พบข้อมูล</td></tr>
+        </tbody>
+       </table>
+    
+}
 else
 {
     <table class="table">

@@ -46,6 +46,11 @@ namespace dormitoryApps.Server.Controllers
         {
 
             var res = await _sessionService.GetCurrentlogin(SessionId);
+            if (res != null)
+            {
+                res.Password = "PA$$WORD";
+                res.Idx = "INDEX";
+            }
             return Ok(res);
         }
         [HttpGet(BaseUrl + "/GetUser/{Id}")]

@@ -26,7 +26,7 @@ namespace dormitoryApps.Server.Controllers
                 {
                     if(!string.IsNullOrEmpty(RentalId))
                     {
-                        return Ok(await _electricityServices.Getone(RentalId, Month.Value,Year.GetValueOrDefault()))
+                        return Ok(await _electricityServices.Getone(RentalId, Month.Value, Year.GetValueOrDefault()));
                     }
                     return Ok(await _electricityServices.GetByMonth(month: Month.GetValueOrDefault(), year: Year.GetValueOrDefault()));
                 }

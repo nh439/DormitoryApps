@@ -31,8 +31,8 @@ namespace dormitoryApps.Shared.Model.Other
         public int? Usage { get; set; }
         public int? UnitPrice { get; set; }
         public bool? Haspaid { get; set; }
-        public DateTime? NotedateMin { get { return NotedateMin; } set { NotedateMin = NotedateMin.Date; } }
-        public DateTime? NotedateMax { get { return NotedateMax; } set { NotedateMax = NotedateMax.Date; } }
+        public DateTime? NotedateMin {get;set; }
+        public DateTime? NotedateMax { get; set; }
     }
     public static class Usage
     {

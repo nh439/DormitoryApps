@@ -50,6 +50,8 @@ namespace dormitoryApps.Client.Services
         {
             var currentId = await _sessionStorageService.GetItemAsync<string>("Id");
             Officer officer = await _httpClient.GetFromJsonAsync<Officer?>($"{ControllerName}/Get/{currentId}");
+            officer.Password = "PA$$WORD";
+            officer.Idx = "INDEX";
             return officer;
         }
         public async Task<bool> Permissioncheck()

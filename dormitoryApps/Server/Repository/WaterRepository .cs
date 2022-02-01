@@ -5,32 +5,32 @@ using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
 {
-    public class ElectricityRepository
+    public class WaterRepository
     {
         private readonly DBConnection _databases;
-        private const string TableName = "electricity";
+        private const string TableName = "water";
 
-        public ElectricityRepository(DBConnection databases)
+        public WaterRepository(DBConnection databases)
         {
             _databases = databases;
         }
-        public async Task<bool> Create(Electricity item)
+        public async Task<bool> Create(Water item)
         {
-            var res = await _databases.Dorm.InsertEntitiesAsync<Electricity>(item);
+            var res = await _databases.Dorm.InsertEntitiesAsync<Water>(item);
             return res;
         }
-        public async Task<int> Create(IEnumerable<Electricity> items)
+        public async Task<int> Create(IEnumerable<Water> items)
         {
-            var res = await _databases.Dorm.InsertEntitiesAsync<Electricity>(items);
+            var res = await _databases.Dorm.InsertEntitiesAsync<Water>(items);
             return res;
         }
-        public async Task<bool> Update (Electricity item)
+        public async Task<bool> Update (Water item)
         {
             ConditionSet set = new ConditionSet();
             set.Add("RentalId", item.RentalId, SqlOperator.Equal, SqlCondition.AND);
             set.Add("month", item.month, SqlOperator.Equal, SqlCondition.AND);
             set.Add("Year", item.Year, SqlOperator.Equal, SqlCondition.AND);
-            var res =await _databases.Dorm.UpdateEntityAsync<Electricity>(item, set);
+            var res =await _databases.Dorm.UpdateEntityAsync<Water>(item, set);
             return res == 1;
         }
         public async Task<bool> Delete(string rentalId,int month,int year)
@@ -38,42 +38,42 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.DeleteAsync(TableName, $"RentalId='{rentalId}' and month = {month} and year={year}");
             return res == 1;
         }
-        public async Task<List<Electricity>> Getall()
+        public async Task<List<Water>> Getall()
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>();
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>();
             return res.ToList();
         }
-        public async Task<List<Electricity>> GetByRentalId(string rentalId)
+        public async Task<List<Water>> GetByRentalId(string rentalId)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"rentalId='{rentalId}'");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"rentalId='{rentalId}'");
             return res.ToList();
         }
-        public async Task<List<Electricity>> GetPaid()
+        public async Task<List<Water>> GetPaid()
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"paid=1");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"paid=1");
             return res.ToList();
         }
-          public async Task<List<Electricity>> GetUnPaid()
+          public async Task<List<Water>> GetUnPaid()
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"paid=0");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"paid=0");
             return res.ToList();
         }
-        public async Task<List<Electricity>> GetByYear(int year)
+        public async Task<List<Water>> GetByYear(int year)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"year={year}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"year={year}");
             return res.ToList();
         }
-        public async Task<List<Electricity>> GetByMonth(int year,int month)
+        public async Task<List<Water>> GetByMonth(int year,int month)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"year={year} and month={month}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"year={year} and month={month}");
             return res.ToList();
         }
-        public async Task<Electricity> Getone(string RentalId,int month,int year)
+        public async Task<Water> Getone(string RentalId,int month,int year)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"RentalId='{RentalId}' and year={year} and month={month}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, $"RentalId='{RentalId}' and year={year} and month={month}");
             return res.FirstOrDefault();
         }
-        public async Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria  criteria)
+        public async Task<List<Water>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria  criteria)
         {
             ConditionSet set = new ConditionSet();
             if(criteria.Haspaid.HasValue)
@@ -108,7 +108,7 @@ namespace dormitoryApps.Server.Repository
             {
                 set.Add("Price", criteria.UnitPrice, SqlOperator.Equal);
             }
-            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, set);
+            var res = await _databases.Dorm.SelectEntitiesAsync<Water>(TableName, set);
             return res.ToList();
 
         }
