@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Repository;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Services
 {
@@ -15,6 +16,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Invoice>> GetByMonth(int Month, int year);
         Task<List<Invoice>> GetByRental(string RentalId);
         Task<Invoice> GetById(long InvoiceId);
+        Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria);
     }
     public class InvoiceServices : IInvoiceServices
     {
@@ -63,6 +65,10 @@ namespace dormitoryApps.Server.Services
         public async Task<Invoice> GetById(long InvoiceId)
         {
             return await _repository.GetById(InvoiceId);
+        }
+        public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
+        {
+            return await _repository.GetWithAdvancesearch(criteria);
         }
     }
 }

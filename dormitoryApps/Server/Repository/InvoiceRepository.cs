@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Databases;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
@@ -61,6 +62,52 @@ namespace dormitoryApps.Server.Repository
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"Id={InvoiceId}");
             return res.FirstOrDefault();
+        }
+        public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
+        {
+            ConditionSet set = new ConditionSet();
+            if(!string.IsNullOrEmpty( criteria.RentalId))
+            {
+                set.Add("RentalId", criteria.RentalId, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.InvoiceDate.Min.HasValue)
+            {
+                set.Add("InvoiceDate", criteria.InvoiceDate.Min.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.InvoiceDate.Max.HasValue)
+            {
+                set.Add("InvoiceDate", criteria.InvoiceDate.Max.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.PaidDate.Min.HasValue)
+            {
+                set.Add("PaidDate", criteria.PaidDate.Min.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.PaidDate.Max.HasValue)
+            {
+                set.Add("PaidDate", criteria.PaidDate.Max.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.Month.HasValue)
+            {
+                set.Add("month", criteria.Month, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.Year.HasValue)
+            {
+                set.Add("Year", criteria.Year, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.InvoiceOfficer.HasValue)
+            {
+                set.Add("InvoiceOfficer", criteria.InvoiceOfficer, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.PaidOfficer.HasValue)
+            {
+                set.Add("PaidOfficer", criteria.PaidOfficer, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(!string.IsNullOrEmpty(criteria.PaidWith))
+            {
+                set.Add("Paidwith", criteria.PaidWith, SqlOperator.Equal, SqlCondition.AND);
+            }
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, set);
+            return res.ToList();
         }
 
 
