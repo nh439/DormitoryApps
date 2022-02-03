@@ -27,6 +27,7 @@ builder.Services.AddScoped<CurrentCustomerService>();
 builder.Services.AddScoped<ElectricityService>();
 builder.Services.AddScoped<WaterService>();
 builder.Services.AddScoped<InvoiceServices>();
+builder.Services.AddScoped<PastCustomerServices>();
 
 
 await builder.Build().RunAsync();
