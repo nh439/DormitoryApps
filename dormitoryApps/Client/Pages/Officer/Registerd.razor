@@ -7,6 +7,7 @@
 @inject OfficerServices officerServices;
 @inject DepartmentServices departmentServices;
 @inject PostitionServices postitionServices;
+@inject PostitionLineService postitionLineService;
 @code {
     dormitoryApps.Shared.Model.Entity.Officer item = new dormitoryApps.Shared.Model.Entity.Officer()
         {
@@ -25,6 +26,8 @@
     string Isprocessing = "none";
     List<Postition> postitions = new List<Postition>();
     string department = string.Empty;
+    List<PostitionLine> lines;
+    string lineName = string.Empty;
     // Validate
     string firstnameValidate = "none";
     string surnameValidate = "none";
@@ -161,7 +164,7 @@
             <div class="form-group row">
                 <label for="text" class="col-4 col-form-label">สายงาน</label>
                 <div class="col-8">
-                    <input id="text" value="" class="form-control" readonly>
+                    <input id="text" value="@lineName" class="form-control" readonly>
                 </div>
             </div>
         </div>
@@ -398,6 +401,7 @@
         var mydepartment = await departmentServices.GetById(mypostition.Department);
         department = mydepartment.Name;
         item.Salary = mypostition.Salary;
+        lineName = lines.Where(x => x.Id == mypostition.Line).FirstOrDefault().Name;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -405,6 +409,7 @@
     {
         provinces = await districtServices.Getprovince();
         postitions = await postitionServices.GetPostitions();
+        lines = await postitionLineService.GetPostitionLines();
         await InvokeAsync(StateHasChanged);
     }
 

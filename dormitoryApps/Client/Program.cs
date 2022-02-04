@@ -29,5 +29,6 @@ builder.Services.AddScoped<WaterService>();
 builder.Services.AddScoped<InvoiceServices>();
 builder.Services.AddScoped<PastCustomerServices>();
 builder.Services.AddScoped<PostitionServices>();
+builder.Services.AddScoped<PostitionLineService>();
 
 await builder.Build().RunAsync();
