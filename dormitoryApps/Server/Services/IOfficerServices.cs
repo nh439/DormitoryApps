@@ -1,6 +1,7 @@
 ﻿using dormitoryApps.Server.Repository;
 using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Server.Securites;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Services
 {
@@ -14,6 +15,11 @@ namespace dormitoryApps.Server.Services
         Task<Officer> GetById(long Id);
         Task<bool> LoginCheck(string username, string password);
         Task<Officer> GetByUsername(string Username);
+        Task<int> PostitionDeleted(int PostitionId);
+        Task<int> PostitionUpgrade(IEnumerable<NewPostitionParameter> items);
+        Task<bool> GetExistUsername(string username);
+        Task<bool> GetExistEmail(string Email);
+
     }
     public class OfficerServices : IOfficerServices
     {
@@ -61,6 +67,22 @@ namespace dormitoryApps.Server.Services
         public async Task<Officer> GetByUsername(string Username)
         {
             return await _repository.GetByUsername(Username);
+        }
+        public async Task<int> PostitionDeleted(int PostitionId)
+        {
+            return await _repository.PostitionDeleted(PostitionId);
+        }
+        public async Task<int> PostitionUpgrade(IEnumerable<NewPostitionParameter> items)
+        {
+            return await _repository.PostitionUpgrade(items);
+        }
+        public async Task<bool> GetExistUsername(string username)
+        {
+            return await _repository.GetExistUsername(username);
+        }
+        public async Task<bool> GetExistEmail(string Email)
+        {
+            return await _repository.GetExistEmail(Email);
         }
 
     }

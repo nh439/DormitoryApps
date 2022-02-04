@@ -5,10 +5,14 @@
 @inject DistrictServices districtServices;
 @inject AddressServices addressServices;
 @inject OfficerServices officerServices;
+@inject DepartmentServices departmentServices;
+@inject PostitionServices postitionServices;
 @code {
     dormitoryApps.Shared.Model.Entity.Officer item = new dormitoryApps.Shared.Model.Entity.Officer()
-        { Brithday = DateTime.Now.AddYears(-24),
-        Prefix="นาย"};
+        {
+            Brithday = DateTime.Now.AddYears(-24),
+            Prefix = "นาย"
+        };
     int gender;
 
     string pass = "";
@@ -19,6 +23,17 @@
     int? postalCode { get; set; }
     bool btndisabled = true;
     string Isprocessing = "none";
+    List<Postition> postitions = new List<Postition>();
+    string department = string.Empty;
+    // Validate
+    string firstnameValidate = "none";
+    string surnameValidate = "none";
+    string emailValidate = "none";
+    string usernameValidate = "none";
+
+    //Exists
+    string usernameexist = "none";
+    string emailexist = "none";
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -28,7 +43,7 @@
 <br />
 <br />
 <div class="form-group row">
-    <label for="text" class="col-4 col-form-label">ชื่อผู้ใช้</label>
+    <label for="text" class="col-4 col-form-label">ชื่อผู้ใช้*</label>
     <div class="col-8">
         <div class="input-group">
             <div class="input-group-prepend">
@@ -37,17 +52,21 @@
                 </div>
             </div>
             <input id="text" @bind-value="item.Username" type="text" class="form-control">
+            <br />
+            <small style="display:@usernameValidate;color:red;">ห้ามเว้นว่าง</small>
+            <br />
+            <small style="display:@usernameexist;color:red;">มีชื่อผู้ใช้นี้แล้ว</small>
         </div>
     </div>
 </div>
 <div class="form-group row">
-    <label for="text1" class="col-4 col-form-label">รหัสผ่าน</label>
+    <label for="text1" class="col-4 col-form-label">รหัสผ่าน*</label>
     <div class="col-8">
         <input id="text1" @bind-value="item.Password" type="password" class="form-control">
     </div>
 </div>
 <div class="form-group row">
-    <label for="text2" class="col-4 col-form-label">ยืนยันรหัสผ่าน</label>
+    <label for="text2" class="col-4 col-form-label">ยืนยันรหัสผ่าน*</label>
     <div class="col-8">
         <input id="text2" @bind-value="pass" type="password" class="form-control">
         <br />
@@ -65,21 +84,28 @@
     </div>
 </div>
 <div class="form-group row">
-    <label for="text3" class="col-4 col-form-label">ชื่อ</label>
+    <label for="text3" class="col-4 col-form-label">ชื่อ*</label>
     <div class="col-8">
         <input id="text3" @bind-value="item.Firstname" type="text" class="form-control">
+        <br />
+        <small style="display:@firstnameValidate;color:red;">ห้ามเว้นว่าง</small>
     </div>
 </div>
 <div class="form-group row">
-    <label for="text4" class="col-4 col-form-label">สกุล</label>
+    <label for="text4" class="col-4 col-form-label">สกุล*</label>
     <div class="col-8">
         <input id="text4" @bind-value="item.Surname" type="text" class="form-control">
+        <br />
+        <small style="display:@surnameValidate;color:red;">ห้ามเว้นว่าง</small>
     </div>
 </div>
 <div class="form-group row">
-    <label for="text41" class="col-4 col-form-label">Email</label>
+    <label for="text41" class="col-4 col-form-label">Email*</label>
     <div class="col-8">
         <input id="text41" @bind-value="item.Email" type="email" class="form-control">
+        <br />
+        <small style="display:@emailValidate;color:red;">ห้ามเว้นว่าง</small>
+        <small style="display:@emailexist;color:red;">มี Email นี้แล้ว</small>
     </div>
 </div>
 <div class="form-group row">
@@ -98,14 +124,47 @@
         </select>
     </div>
 </div>
-<div class="form-group row">
-    <label for="select1" class="col-4 col-form-label">ตำแหน่ง</label>
-    <div class="col-8">
-        <select id="select1" class="custom-select" @bind="item.Postition">
-            <option value="0">Rabbit</option>
-            <option value="1">Duck</option>
-            <option value="2">Fish</option>
-        </select>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="select1" class="col-4 col-form-label">ตำแหน่ง</label>
+                <div class="col-8">
+                    <select id="select1" class="custom-select" @onchange="PostitionChange">
+                        <option value="1" disabled selected>โปรดเลือก</option>
+                        @if (postitions == null || postitions.Count <= 0)
+                        {
+                            <option disabled>Loading...</option>
+                        }
+                        else
+                        {
+                            foreach (var postition in postitions)
+                            {
+                                <option value="@postition.Id">@postition.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">แผนก</label>
+                <div class="col-8">
+                    <input id="text" value="@department" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">สายงาน</label>
+                <div class="col-8">
+                    <input id="text" value="" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="form-group row">
@@ -138,8 +197,8 @@
             <div class="form-group">
                 <label for="province">จังหวัด</label>
                 <div>
-                    <select id="province"  class="custom-select" @onchange="ProvinceChange">
-                    <option value="n" selected disabled>โปรดเลือก</option>
+                    <select id="province" class="custom-select" @onchange="ProvinceChange">
+                        <option value="n" selected disabled>โปรดเลือก</option>
                         @if (provinces == null)
                         {
                             <option disabled>ไม่พบจังหวัด</option>
@@ -160,7 +219,7 @@
                 <label for="district">อำเภอ/เขต</label>
                 <div>
                     <select id="district" class="custom-select" @onchange="DistrictChange">
-                      @if (districts == null)
+                        @if (districts == null)
                         {
                             <option disabled>ไม่พบอำเภอ</option>
                         }
@@ -180,7 +239,7 @@
                 <label for="subdistrict">ตำบล</label>
                 <div>
                     <select id="subdistrict" class="custom-select" @onchange="SubdistrictChanges">
-                      @if (subdistricts == null)
+                        @if (subdistricts == null)
                         {
                             <option disabled>ไม่พบตำบล</option>
                         }
@@ -201,7 +260,7 @@
         <div class="col">
             <div class="form-group">
                 <label for="p">Postal Code</label>
-                <input id="p" type="text" class="form-control" @bind="@postalCode"  readonly>
+                <input id="p" type="text" class="form-control" @bind="@postalCode" readonly>
             </div>
         </div>
     </div>
@@ -236,12 +295,31 @@
         if (item.Password != pass)
         {
             dis = "block";
+            await InvokeAsync(StateHasChanged);
             return;
         }
         dis = "none";
+        firstnameValidate = string.IsNullOrEmpty(item.Firstname) ? "block" : "none";
+        surnameValidate = string.IsNullOrEmpty(item.Surname) ? "block" : "none";
+        emailValidate = string.IsNullOrEmpty(item.Email) ? "block" : "none";
+        usernameValidate = string.IsNullOrEmpty(item.Username) ? "block" : "none";
+        if (string.IsNullOrEmpty(item.Firstname) || string.IsNullOrEmpty(item.Surname) || string.IsNullOrEmpty(item.Email) || string.IsNullOrEmpty(item.Username))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        bool emailIsvalidate = await officerServices.GetExistEmail(item.Email);
+        bool usernameIsvalidate = await officerServices.GetExistUsername(item.Username);
+        emailexist = !emailIsvalidate ? "block" : "none";
+        usernameexist = !usernameIsvalidate ? "block" : "none";
+        if(!emailIsvalidate || !usernameIsvalidate)
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
         addr.Id = item.Address;
         var Isregisterd = await officerServices.Create(item);
-        if(!Isregisterd)
+        if (!Isregisterd)
         {
             FailedModal.Open();
             Isprocessing = "none";
@@ -249,7 +327,7 @@
             return;
         }
         var Isaddr = await addressServices.Create(addr);
-        if(!Isaddr)
+        if (!Isaddr)
         {
             FailedModal.Open();
             Isprocessing = "none";
@@ -287,9 +365,9 @@
         districtItems = districtItems.Where(x => x.province.Equals(addr.Province)).ToList();
         districts = districtItems.Select(x => x.amphoe).Distinct().ToArray();
         addr.District = districtItems.Select(x => x.amphoe).Distinct().FirstOrDefault();
-        subdistricts = districtItems.Where(x => x.amphoe.Equals(addr.District)).Select(x=>x.district).Distinct().ToArray();
+        subdistricts = districtItems.Where(x => x.amphoe.Equals(addr.District)).Select(x => x.district).Distinct().ToArray();
         addr.Subdistrict = subdistricts.FirstOrDefault();
-        postalCode = districtItems.Where(x => x.amphoe.Equals(addr.District) && x.district.Equals(addr.Subdistrict)).Select(x => int.Parse( x.zipcode)).FirstOrDefault();
+        postalCode = districtItems.Where(x => x.amphoe.Equals(addr.District) && x.district.Equals(addr.Subdistrict)).Select(x => int.Parse(x.zipcode)).FirstOrDefault();
         addr.PostalCode = postalCode.Value;
         await InvokeAsync(StateHasChanged);
     }
@@ -297,8 +375,8 @@
     {
         await InvokeAsync(StateHasChanged);
         postalCode = 0;
-        addr.District= args.Value.ToString();       
-        subdistricts = await districtServices.GetSubDistricts(addr.Province,addr.District);
+        addr.District = args.Value.ToString();
+        subdistricts = await districtServices.GetSubDistricts(addr.Province, addr.District);
         addr.Subdistrict = subdistricts.FirstOrDefault();
         postalCode = await districtServices.GetPostalCode(addr.Province, addr.District, addr.Subdistrict);
         btndisabled = false;
@@ -313,17 +391,28 @@
         btndisabled = false;
         await InvokeAsync(StateHasChanged);
     }
+    private async void PostitionChange(ChangeEventArgs args)
+    {
+        item.Postition = int.Parse(args.Value.ToString());
+        var mypostition = await postitionServices.GetById(item.Postition);
+        var mydepartment = await departmentServices.GetById(mypostition.Department);
+        department = mydepartment.Name;
+        item.Salary = mypostition.Salary;
+        await InvokeAsync(StateHasChanged);
+    }
 
     protected override async void OnInitialized()
     {
         provinces = await districtServices.Getprovince();
+        postitions = await postitionServices.GetPostitions();
         await InvokeAsync(StateHasChanged);
     }
+
     private async void Saveaddr()
     {
         addr.Id = item.Address;
-        var res =  await addressServices.Create(addr);
-        if(res)
+        var res = await addressServices.Create(addr);
+        if (res)
         {
             navigationManager.NavigateTo("/");
         }

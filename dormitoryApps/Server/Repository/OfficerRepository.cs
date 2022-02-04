@@ -4,6 +4,7 @@ using dormitoryApps.Shared.Model.Entity;
 using System.Linq;
 using System.Collections.Generic;
 using RocketSQL;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Repository
 {
@@ -103,6 +104,43 @@ namespace dormitoryApps.Server.Repository
                        ).FirstOrDefault();
             return cnt == 1;
         }
+        public async Task<int> PostitionDeleted(int PostitionId)
+        {
+            DBDataContrainer contrainer = new DBDataContrainer();
+            contrainer.ColumnName = "Postition";
+            contrainer.Value = null;
+            var res = await _databases.Dorm.UpdateAsync(TableName,contrainer, $"Postition={PostitionId}");
+            return res;
+        }
+        public async Task<int> PostitionUpgrade(IEnumerable<NewPostitionParameter> items)
+        {
+            List<StoredProcedureResult> results = new List<StoredProcedureResult>();
+            foreach(var item in items)
+            {
+                StoredProcedureContrainer storedProcedure = new StoredProcedureContrainer("sp_upgradepostition");
+                storedProcedure.Addparameters("empId", item.OfficerId);
+                storedProcedure.Addparameters("newpost", item.PositionId);
+                storedProcedure.Addparameters("newsalary", item.Salary);
+                var result = await _databases.Dorm.ExecuteStoredProcedureAsync(storedProcedure);
+                results.Add(result);               
+            }
+            return results.Where(x=>x.HasCompleted).Count();
+        }
+        public async Task<bool> GetExistUsername(string username)
+        {
+            var office = await Getall();
+            var usernamelist = office.Select(x => x.Username);
+            var res = usernamelist.Where(x => x == username);
+            return res.Count() <= 0;
+        }
+        public async Task<bool> GetExistEmail(string Email)
+        {
+            var office = await Getall();
+            var emaillist = office.Select(x => x.Email);
+            var res = emaillist.Where(x => x == Email);
+            return res.Count() <=0  ;
+        }
+
     }
 
 }

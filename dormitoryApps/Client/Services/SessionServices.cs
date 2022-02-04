@@ -72,6 +72,15 @@ namespace dormitoryApps.Client.Services
             _navigationManager.NavigateTo("/", true);
 
         }
+        public async Task<bool> IsAdmin()
+        {
+            var currentOfficer = await GetCurrentLogin();
+            if(currentOfficer == null)
+            {
+                return false;
+            }
+            return currentOfficer.Issuper;
+        }
 
     }
 }

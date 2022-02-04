@@ -28,6 +28,7 @@ builder.Services.AddScoped<ElectricityRepository>();
 builder.Services.AddScoped<WaterRepository>();
 builder.Services.AddScoped<InvoiceRepository>();
 builder.Services.AddScoped<PastCustomerRepository>();
+builder.Services.AddScoped<PostitionRepository>();
 #endregion
 
 #region Services
@@ -43,6 +44,7 @@ builder.Services.AddScoped<IElectricityServices, ElectricityServices>();
 builder.Services.AddScoped<IWaterServices, WaterServices>();
 builder.Services.AddScoped<IInvoiceServices, InvoiceServices>();   
 builder.Services.AddScoped<IPastCustomerServices, PastCustomerServices>();
+builder.Services.AddScoped<IPostitionServices, PostitionServices>();
 #endregion
 
 var app = builder.Build();

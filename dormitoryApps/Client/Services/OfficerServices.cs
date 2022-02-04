@@ -64,6 +64,21 @@ namespace dormitoryApps.Client.Services
         {
             Officer officer = await _httpClient.GetFromJsonAsync<Officer>($"{ControllerName}/User/{username}");
             return officer;
+        }     
+        public async Task<int?> PostitionUpgrade(IEnumerable<NewPostitionParameter> items)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Upgrade", items);
+            return await res.Content.ReadFromJsonAsync<int>();
+        }
+        public async Task<bool> GetExistUsername(string username)
+        {
+            var res = await _httpClient.GetFromJsonAsync<bool>($"{ControllerName}/ExistUsername/{username}");
+            return res;
+        }
+         public async Task<bool> GetExistEmail(string Email)
+        {
+            var res = await _httpClient.GetFromJsonAsync<bool>($"{ControllerName}/ExistEmail/{Email}");
+            return res;
         }
 
     }

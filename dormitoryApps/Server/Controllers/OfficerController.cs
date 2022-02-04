@@ -133,6 +133,48 @@ namespace dormitoryApps.Server.Controllers
                     return StatusCode(500, x.Message);
                 }
         }
+        [HttpPost(ControllerName+"/Upgrade")]
+        public async Task<IActionResult> PostitionUpgrade([FromBody]IEnumerable<NewPostitionParameter> items)
+        {
+            try
+            {
+                var result = await _officerServices.PostitionUpgrade(items);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
+        [HttpGet(ControllerName+ "/ExistUsername/{username}")]
+        public async Task<IActionResult> GetExistUsername(string username)
+        {
+            try
+            {
+                var result = await _officerServices.GetExistUsername(username);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
+         [HttpGet(ControllerName+ "/ExistEmail/{email}")]
+        public async Task<IActionResult> GetExistEmail(string email)
+        {
+            try
+            {
+                var result = await _officerServices.GetExistEmail(email);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
 
     }
 }
