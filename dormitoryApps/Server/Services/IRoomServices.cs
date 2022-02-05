@@ -62,7 +62,10 @@ namespace dormitoryApps.Server.Services
         public async Task<Room> GetById(int id)
         {
             var res = await _repository.GetById(id);
-            res.FurnitureList = await _roomFurnRepository.GetByRoom(id);
+            if (res != null)
+            {
+                res.FurnitureList = await _roomFurnRepository.GetByRoom(id);
+            }
             return res;
         }
     }
