@@ -17,13 +17,21 @@ namespace dormitoryApps.Server.Services
     public class RoomServices:IRoomServices
     {
         private readonly RoomRepository _repository;
+        private readonly RoomFurnRepository _roomFurnRepository;
 
-        public RoomServices(RoomRepository repository)
+        public RoomServices(RoomRepository repository,
+            RoomFurnRepository roomFurnRepository)
         {
+            _roomFurnRepository = roomFurnRepository;
             _repository = repository;
         }
         public async Task<bool> Create(Room item)
         {
+            if(item.FurnitureList != null)
+            {
+                item.FurnitureList.ForEach(x=>x.RoomId=item.Id);
+                await _roomFurnRepository.Create(item.FurnitureList);
+            }
             return await _repository.Create(item);
         }
         public async Task<bool> Update(Room item)
@@ -32,6 +40,7 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<bool> Delete(int roomId)
         {
+            await _roomFurnRepository.DeleteRoom(roomId);
             return await _repository.Delete(roomId);
         }
         public async Task<List<Room>> Getall()
@@ -52,7 +61,9 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<Room> GetById(int id)
         {
-            return await _repository.GetById(id);             
+            var res = await _repository.GetById(id);
+            res.FurnitureList = await _roomFurnRepository.GetByRoom(id);
+            return res;
         }
     }
 }

@@ -31,6 +31,7 @@ builder.Services.AddScoped<PastCustomerRepository>();
 builder.Services.AddScoped<PostitionRepository>();
 builder.Services.AddScoped<PostitionLineRepository>();
 builder.Services.AddScoped<RoomRepository>();
+builder.Services.AddScoped<RoomFurnRepository>();
 #endregion
 
 #region Services
@@ -49,6 +50,7 @@ builder.Services.AddScoped<IPastCustomerServices, PastCustomerServices>();
 builder.Services.AddScoped<IPostitionServices, PostitionServices>();
 builder.Services.AddScoped<IPostitionLineServices, PostitionLineServices>();
 builder.Services.AddScoped<IRoomServices, RoomServices>();
+builder.Services.AddScoped<IRoomFurnServices,RoomFurnService>();
 #endregion
 
 var app = builder.Build();
