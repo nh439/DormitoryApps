@@ -30,5 +30,6 @@ builder.Services.AddScoped<InvoiceServices>();
 builder.Services.AddScoped<PastCustomerServices>();
 builder.Services.AddScoped<PostitionServices>();
 builder.Services.AddScoped<PostitionLineService>();
+builder.Services.AddScoped<RoomServices>();
 
 await builder.Build().RunAsync();

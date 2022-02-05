@@ -27,7 +27,7 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<Department>> Getall()
         {
             IEnumerable<Department> departments = await _databases.Dorm.SelectEntitiesAsync<Department>();
-            return departments.ToList();
+            return departments.OrderBy(x=>x.Id).ToList();
         }
         public async Task<Department> GetById(int departmantId)
         {
@@ -36,5 +36,6 @@ namespace dormitoryApps.Server.Repository
             IEnumerable<Department> department = await _databases.Dorm.SelectEntitiesAsync<Department>(TableName,set);
             return department.FirstOrDefault();
         }      
+        
     }
 }

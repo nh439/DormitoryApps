@@ -30,6 +30,7 @@ builder.Services.AddScoped<InvoiceRepository>();
 builder.Services.AddScoped<PastCustomerRepository>();
 builder.Services.AddScoped<PostitionRepository>();
 builder.Services.AddScoped<PostitionLineRepository>();
+builder.Services.AddScoped<RoomRepository>();
 #endregion
 
 #region Services
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IInvoiceServices, InvoiceServices>();
 builder.Services.AddScoped<IPastCustomerServices, PastCustomerServices>();
 builder.Services.AddScoped<IPostitionServices, PostitionServices>();
 builder.Services.AddScoped<IPostitionLineServices, PostitionLineServices>();
+builder.Services.AddScoped<IRoomServices, RoomServices>();
 #endregion
 
 var app = builder.Build();

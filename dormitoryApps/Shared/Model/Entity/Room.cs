@@ -20,6 +20,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Rental { get; set; }
 		public bool Furniture { get; set; }
 		public bool Fridge { get; set; }
+		public bool Enabled { get; set; }
 		public virtual List<RoomImg> Imgs { get; set; }
 		public virtual List<RoomFurn> FurnitureList { get; set; }
 		

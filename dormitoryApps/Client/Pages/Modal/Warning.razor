@@ -1,0 +1,68 @@
+﻿
+@inject NavigationManager navigationManager;
+@code {
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+    public string NextLink { get; set; } = "/";
+    public string Header { get; set; } = "Congratulations";
+    public string Details { get; set; } = "Processing Success";
+    public string Title { get; set; }
+    public bool ForceLoad { get; set; }=false;
+    public string YesButtonLabel { get; set; } = "Yes";
+    public string NoButtonLabel { get; set; } = "No";
+    public bool Result{ get; private set; }
+    public bool Isclosed{ get; private set; }
+    public void Open()
+    {
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close(bool result)
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        Isclosed = true;
+        SetResult(result);
+        StateHasChanged();
+
+    }
+    private void SetResult(bool result)
+    {
+        Result = result;
+    }
+
+}
+
+
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <center>
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    <img src="/Img/warning.png" style="width:200px;height:200px;" />
+                    <h1>@Header</h1>
+                    <h2>@Details</h2>
+                </center>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="() => Close(true)">@YesButtonLabel</button>
+                &nbsp;
+                <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="() => Close(false)">@NoButtonLabel</button>
+            </div>
+        </div>
+    </div>
+</div>
