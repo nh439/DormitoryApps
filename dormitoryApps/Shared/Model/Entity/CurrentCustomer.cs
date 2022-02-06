@@ -16,6 +16,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public byte IsMain { get; set; }
 		public string Address { get; set; }
 		public decimal Rental { get; set; }
+		public DateTime? StayUntil { get; set; }
 		public DateTime ContractDate { get; set; }
 		public virtual List<CustomerImg> Imgs { get; set; } 
 	}

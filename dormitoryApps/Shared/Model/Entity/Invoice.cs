@@ -23,7 +23,11 @@ namespace dormitoryApps.Shared.Model.Entity
 		public long? PaidOfficer { get; set; }
 		public string? TransactionId { get; set; }
 		public decimal? Discount { get; set; }
+		public bool IsService { get; set; }
+		public int Service { get; set; }
+		public decimal ServicePrice { get; set; }
 		public virtual Electricity Electricity { get; set; }
 		public virtual Water Water { get; set; }
+		public virtual List<InvoiceService> Services { get; set; }
 	}
 }
