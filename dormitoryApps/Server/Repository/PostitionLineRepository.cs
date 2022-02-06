@@ -19,8 +19,8 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<bool> Update(PostitionLine item)
         {
-            var res = await _databases.Dorm.UpdateEntityAsync<PostitionLine>(item);
-            return res;
+            var res = await _databases.Dorm.UpdateEntityAsync<PostitionLine>(item,$"Id={item.Id}");
+            return res==1;
         }
         public async Task<bool> Delete(int Id)
         {

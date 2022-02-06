@@ -38,8 +38,8 @@
     string usernameexist = "none";
     string emailexist = "none";
 }
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"-->
 <center>
     <h1>ลงทะเบียนเจ้าหน้าที่</h1>
 </center>
@@ -339,12 +339,10 @@
         }
         CompletedModal.Open();
         navigationManager.NavigateTo("/");
-
-
     }
     private void Back()
     {
-        navigationManager.NavigateTo("/Officer");
+        navigationManager.NavigateTo("/Officer",true);
     }
     private async void ProvinceChange(ChangeEventArgs args)
     {

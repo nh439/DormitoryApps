@@ -32,5 +32,6 @@ builder.Services.AddScoped<PostitionServices>();
 builder.Services.AddScoped<PostitionLineService>();
 builder.Services.AddScoped<RoomServices>();
 builder.Services.AddScoped<RoomFurnServices>();
+builder.Services.AddScoped<RoomImgServices>();
 
 await builder.Build().RunAsync();

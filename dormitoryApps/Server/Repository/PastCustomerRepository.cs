@@ -24,8 +24,8 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<bool> Update(PastCustomer item)
         {
-            var res = await _databases.Dorm.UpdateEntityAsync<PastCustomer>(item);
-            return res;
+            var res = await _databases.Dorm.UpdateEntityAsync<PastCustomer>(item,$"Id='{item.Id}'");
+            return res==1;
         }
         public async Task<bool>Delete (long Id)
         {
