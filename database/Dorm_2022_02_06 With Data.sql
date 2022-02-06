@@ -86,6 +86,7 @@ CREATE TABLE `currentcustomer` (
   `Address` varchar(90) DEFAULT NULL,
   `Rental` decimal(10,0) NOT NULL,
   `ContractDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `StayUntil` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `Cust_room_idx` (`RoomId`),
   CONSTRAINT `Cust_room` FOREIGN KEY (`RoomId`) REFERENCES `room` (`Id`)
@@ -206,6 +207,9 @@ CREATE TABLE `invoice` (
   `InvoiceOfficer` bigint NOT NULL,
   `PaidOfficer` bigint DEFAULT NULL,
   `TransactionId` varchar(255) DEFAULT NULL,
+  `IsService` tinyint(1) NOT NULL DEFAULT '0',
+  `Service` bigint DEFAULT NULL,
+  `ServicePrice` decimal(10,0) NOT NULL DEFAULT '0',
   PRIMARY KEY (`Id`),
   KEY `Invoice_officer_idx` (`InvoiceOfficer`),
   CONSTRAINT `Invoice_officer` FOREIGN KEY (`InvoiceOfficer`) REFERENCES `officer` (`Id`)
@@ -219,6 +223,59 @@ CREATE TABLE `invoice` (
 LOCK TABLES `invoice` WRITE;
 /*!40000 ALTER TABLE `invoice` DISABLE KEYS */;
 /*!40000 ALTER TABLE `invoice` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `invoiceservice`
+--
+
+DROP TABLE IF EXISTS `invoiceservice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoiceservice` (
+  `InvoiceId` varchar(90) NOT NULL,
+  `ServiceId` bigint NOT NULL,
+  `Price` decimal(10,0) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`InvoiceId`,`ServiceId`),
+  KEY `InvoiceService_Service_idx` (`ServiceId`),
+  CONSTRAINT `InvoiceService_Invoice` FOREIGN KEY (`InvoiceId`) REFERENCES `invoice` (`Id`),
+  CONSTRAINT `InvoiceService_Service` FOREIGN KEY (`ServiceId`) REFERENCES `myservices` (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `invoiceservice`
+--
+
+LOCK TABLES `invoiceservice` WRITE;
+/*!40000 ALTER TABLE `invoiceservice` DISABLE KEYS */;
+/*!40000 ALTER TABLE `invoiceservice` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `myservices`
+--
+
+DROP TABLE IF EXISTS `myservices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `myservices` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Description` varchar(255) NOT NULL,
+  `Price` decimal(10,0) NOT NULL DEFAULT '0',
+  `Enabled` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `myservices`
+--
+
+LOCK TABLES `myservices` WRITE;
+/*!40000 ALTER TABLE `myservices` DISABLE KEYS */;
+/*!40000 ALTER TABLE `myservices` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -478,7 +535,7 @@ CREATE TABLE `session` (
 
 LOCK TABLES `session` WRITE;
 /*!40000 ALTER TABLE `session` DISABLE KEYS */;
-INSERT INTO `session` VALUES ('147af944-8649-11ec-8df6-7085c20e5ea5',3,'2022-02-05 13:01:37','2022-02-05 13:03:43',1),('2cb6d13e-868d-11ec-8df6-7085c20e5ea5',1,'2022-02-05 21:09:04','2022-02-05 21:10:01',1),('2e5cfdfb-8040-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:42:48',NULL,0),('34c3891b-8674-11ec-8df6-7085c20e5ea5',1,'2022-02-05 18:10:20','2022-02-05 18:10:31',1),('39a4d592-8350-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:15:12','2022-02-01 18:15:19',1),('3c6cb612-803f-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:36:02','2022-01-28 20:36:39',1),('43937261-8674-11ec-8df6-7085c20e5ea5',3,'2022-02-05 18:10:44',NULL,0),('538353a5-8040-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:43:50','2022-01-28 20:46:14',1),('53af9c37-8350-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:15:56','2022-02-01 18:16:04',1),('5525e355-80c4-11ec-8df6-7085c20e5ea5',1,'2022-01-29 12:28:47','2022-01-29 12:28:54',1),('5635dde8-81b8-11ec-8df6-7085c20e5ea5',1,'2022-01-30 17:35:26','2022-01-30 17:36:29',1),('6344c041-81da-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:39:10',NULL,0),('64ecf061-81d9-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:32:04',NULL,0),('740f911d-8040-11ec-8df6-7085c20e5ea5',2,'2022-01-28 20:44:45','2022-01-28 20:46:03',1),('797dc3c4-8649-11ec-8df6-7085c20e5ea5',3,'2022-02-05 13:04:27','2022-02-05 13:04:31',1),('8149846c-800d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 14:40:03',NULL,0),('8fb2a785-85ca-11ec-8df6-7085c20e5ea5',3,'2022-02-04 21:55:58',NULL,0),('9429a1cc-834f-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:10:35',NULL,0),('a8fa9757-803e-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:31:55',NULL,0),('b9db214c-834e-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:04:29',NULL,0),('d846c892-803d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:26:05',NULL,0),('e3ee2c01-81d9-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:35:37',NULL,0),('ed655b02-802d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 18:32:08',NULL,0),('efa7f016-803f-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:41:03','2022-01-28 20:41:30',1),('f24ce395-834f-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:13:13','2022-02-01 18:14:02',1),('f34d97a1-803e-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:33:59','2022-01-28 20:34:29',1),('fe557bf5-8408-11ec-8df6-7085c20e5ea5',1,'2022-02-02 16:17:50',NULL,0);
+INSERT INTO `session` VALUES ('147af944-8649-11ec-8df6-7085c20e5ea5',3,'2022-02-05 13:01:37','2022-02-05 13:03:43',1),('2cb6d13e-868d-11ec-8df6-7085c20e5ea5',1,'2022-02-05 21:09:04','2022-02-05 21:10:01',1),('2e5cfdfb-8040-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:42:48',NULL,0),('34c3891b-8674-11ec-8df6-7085c20e5ea5',1,'2022-02-05 18:10:20','2022-02-05 18:10:31',1),('39a4d592-8350-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:15:12','2022-02-01 18:15:19',1),('3c6cb612-803f-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:36:02','2022-01-28 20:36:39',1),('43937261-8674-11ec-8df6-7085c20e5ea5',3,'2022-02-05 18:10:44',NULL,0),('538353a5-8040-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:43:50','2022-01-28 20:46:14',1),('53af9c37-8350-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:15:56','2022-02-01 18:16:04',1),('5525e355-80c4-11ec-8df6-7085c20e5ea5',1,'2022-01-29 12:28:47','2022-01-29 12:28:54',1),('5635dde8-81b8-11ec-8df6-7085c20e5ea5',1,'2022-01-30 17:35:26','2022-01-30 17:36:29',1),('6344c041-81da-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:39:10',NULL,0),('64ecf061-81d9-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:32:04',NULL,0),('740f911d-8040-11ec-8df6-7085c20e5ea5',2,'2022-01-28 20:44:45','2022-01-28 20:46:03',1),('797dc3c4-8649-11ec-8df6-7085c20e5ea5',3,'2022-02-05 13:04:27','2022-02-05 13:04:31',1),('8149846c-800d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 14:40:03',NULL,0),('82b8327e-8733-11ec-8df6-7085c20e5ea5',1,'2022-02-06 16:59:44',NULL,0),('8fb2a785-85ca-11ec-8df6-7085c20e5ea5',3,'2022-02-04 21:55:58',NULL,0),('9429a1cc-834f-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:10:35',NULL,0),('a8fa9757-803e-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:31:55',NULL,0),('b9db214c-834e-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:04:29',NULL,0),('d846c892-803d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:26:05',NULL,0),('e3ee2c01-81d9-11ec-8df6-7085c20e5ea5',1,'2022-01-30 21:35:37',NULL,0),('ed655b02-802d-11ec-8df6-7085c20e5ea5',1,'2022-01-28 18:32:08',NULL,0),('efa7f016-803f-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:41:03','2022-01-28 20:41:30',1),('f24ce395-834f-11ec-8df6-7085c20e5ea5',1,'2022-02-01 18:13:13','2022-02-01 18:14:02',1),('f34d97a1-803e-11ec-8df6-7085c20e5ea5',1,'2022-01-28 20:33:59','2022-01-28 20:34:29',1),('fe557bf5-8408-11ec-8df6-7085c20e5ea5',1,'2022-02-02 16:17:50',NULL,0);
 /*!40000 ALTER TABLE `session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -521,4 +578,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-02-06 12:41:05
+-- Dump completed on 2022-02-06 18:27:57

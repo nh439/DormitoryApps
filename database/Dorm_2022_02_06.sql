@@ -67,6 +67,7 @@ CREATE TABLE `currentcustomer` (
   `Address` varchar(90) DEFAULT NULL,
   `Rental` decimal(10,0) NOT NULL,
   `ContractDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `StayUntil` datetime DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `Cust_room_idx` (`RoomId`),
   CONSTRAINT `Cust_room` FOREIGN KEY (`RoomId`) REFERENCES `room` (`Id`)
@@ -150,9 +151,47 @@ CREATE TABLE `invoice` (
   `InvoiceOfficer` bigint NOT NULL,
   `PaidOfficer` bigint DEFAULT NULL,
   `TransactionId` varchar(255) DEFAULT NULL,
+  `IsService` tinyint(1) NOT NULL DEFAULT '0',
+  `Service` bigint DEFAULT NULL,
+  `ServicePrice` decimal(10,0) NOT NULL DEFAULT '0',
   PRIMARY KEY (`Id`),
   KEY `Invoice_officer_idx` (`InvoiceOfficer`),
   CONSTRAINT `Invoice_officer` FOREIGN KEY (`InvoiceOfficer`) REFERENCES `officer` (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `invoiceservice`
+--
+
+DROP TABLE IF EXISTS `invoiceservice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoiceservice` (
+  `InvoiceId` varchar(90) NOT NULL,
+  `ServiceId` bigint NOT NULL,
+  `Price` decimal(10,0) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`InvoiceId`,`ServiceId`),
+  KEY `InvoiceService_Service_idx` (`ServiceId`),
+  CONSTRAINT `InvoiceService_Invoice` FOREIGN KEY (`InvoiceId`) REFERENCES `invoice` (`Id`),
+  CONSTRAINT `InvoiceService_Service` FOREIGN KEY (`ServiceId`) REFERENCES `myservices` (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `myservices`
+--
+
+DROP TABLE IF EXISTS `myservices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `myservices` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Description` varchar(255) NOT NULL,
+  `Price` decimal(10,0) NOT NULL DEFAULT '0',
+  `Enabled` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -371,4 +410,4 @@ CREATE TABLE `water` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-02-06 12:40:39
+-- Dump completed on 2022-02-06 18:27:43

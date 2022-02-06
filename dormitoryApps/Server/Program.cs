@@ -33,6 +33,7 @@ builder.Services.AddScoped<PostitionLineRepository>();
 builder.Services.AddScoped<RoomRepository>();
 builder.Services.AddScoped<RoomFurnRepository>();
 builder.Services.AddScoped<RoomImgRepository>();
+builder.Services.AddScoped<MyServiceRepository>();
 #endregion
 
 #region Services
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IPostitionLineServices, PostitionLineServices>();
 builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IRoomFurnServices,RoomFurnService>();
 builder.Services.AddScoped<IRoomImgServices, RoomImgServices>();
+builder.Services.AddScoped<IMyServicesServices, MyServicesServices>();
 #endregion
 
 var app = builder.Build();

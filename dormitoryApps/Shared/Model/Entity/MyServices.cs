@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace dormitoryApps.Shared.Model.Entity
 {
-    internal class Services
+    public class MyServices
     {
         public long Id { get; set; }
         public string Name { get; set; }
