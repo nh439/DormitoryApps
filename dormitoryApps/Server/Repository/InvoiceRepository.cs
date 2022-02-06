@@ -23,9 +23,12 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.UpdateEntityAsync<Invoice>(item,$"Id={item.Id}");
             return res==1;
         }
-        public async Task<bool> Delete(long InvoiceId)
+        public async Task<bool> Delete(string InvoiceId)
         {
-            var res = await _databases.Dorm.DeleteAsync(TableName, $"Id={InvoiceId}");
+            DBDataContrainer data = new DBDataContrainer();
+            data.ColumnName = "Iscancel";
+            data.Value = true;
+            var res = await _databases.Dorm.UpdateAsync(TableName, data, $"Id='{InvoiceId}'");
             return res == 1;
         }
         public async Task<List<Invoice>> GetAll()
@@ -58,9 +61,9 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"RentalId='{RentalId}'");
             return res.ToList();
         }
-        public async Task<Invoice> GetById(long InvoiceId)
+        public async Task<Invoice> GetById(string InvoiceId)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"Id={InvoiceId}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"Id='{InvoiceId}'");
             return res.FirstOrDefault();
         }
         public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)

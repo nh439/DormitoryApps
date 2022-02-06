@@ -8,67 +8,99 @@ namespace dormitoryApps.Server.Services
     {
         Task<bool> Create(Invoice item);
         Task<bool> Update(Invoice item);
-        Task<bool> Delete(long InvoiceId);
+        Task<bool> Delete(string InvoiceId);
         Task<List<Invoice>> GetAll();
         Task<List<Invoice>> GetPaid();
         Task<List<Invoice>> GetUnPaid();
         Task<List<Invoice>> GetByYear(int year);
         Task<List<Invoice>> GetByMonth(int Month, int year);
         Task<List<Invoice>> GetByRental(string RentalId);
-        Task<Invoice> GetById(long InvoiceId);
+        Task<Invoice> GetById(string InvoiceId);
         Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria);
     }
     public class InvoiceServices : IInvoiceServices
     {
         private readonly InvoiceRepository _repository;
-
-        public InvoiceServices(InvoiceRepository repository)
+        private readonly InvoiceServiceRepository _invoiceserviceRepository;
+        public InvoiceServices(InvoiceRepository repository, InvoiceServiceRepository invoiceserviceRepository)
         {
             _repository = repository;
+            _invoiceserviceRepository = invoiceserviceRepository;
         }
         public async Task<bool> Create(Invoice item)
         {
-            return await _repository.Create(item);
+            
+            var res =  await _repository.Create(item);
+            if (item.Services != null)
+            {
+                await _invoiceserviceRepository.Create(item.Services);
+            }
+            return res;
         }
         public async Task<bool> Update(Invoice item)
         {
             return await _repository.Update(item);
         }
-        public async Task<bool> Delete(long InvoiceId)
+        public async Task<bool> Delete(string InvoiceId)
         {
             return await _repository.Delete(InvoiceId);
         }
         public async Task<List<Invoice>> GetAll()
         {
-            return await _repository.GetAll();
+            var res = await _repository.GetAll();
+            res.ForEach(async x =>
+            {
+                x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
+            });
+            return res;
         }
         public async Task<List<Invoice>> GetPaid()
         {
-            return await _repository.GetPaid();
+            var res= await _repository.GetPaid();
+            res.ForEach(async x =>
+            {
+                x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
+            });
+            return res;
         }
         public async Task<List<Invoice>> GetUnPaid()
         {
-            return await _repository.GetUnPaid();
+            var res = await _repository.GetUnPaid();
+            res.ForEach(async x => { x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);  });
+            return res;
         }
         public async Task<List<Invoice>> GetByYear(int year)
         {
-            return await _repository.GetByYear(year);
+            var res = await _repository.GetByYear(year);
+            res.ForEach(async x => { x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id); });
+            return res;
         }
         public async Task<List<Invoice>> GetByMonth(int Month, int year)
         {
-            return await _repository.GetByMonth(Month, year);
-        }
+            var res = await _repository.GetByMonth(Month, year);
+            res.ForEach(async x => { x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id); });
+            return res;
+         }
         public async Task<List<Invoice>> GetByRental(string RentalId)
         {
-            return await _repository.GetByRental(RentalId);
+            var res = await _repository.GetByRental(RentalId);
+            res.ForEach(async x => { x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id); });
+            return res;
         }
-        public async Task<Invoice> GetById(long InvoiceId)
+        public async Task<Invoice> GetById(string InvoiceId)
         {
-            return await _repository.GetById(InvoiceId);
+            var res =  await _repository.GetById(InvoiceId);
+            if(res != null)
+            {
+                res.Services = await _invoiceserviceRepository.GetByInvoice(InvoiceId);
+            }
+            return res;
         }
         public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
         {
-            return await _repository.GetWithAdvancesearch(criteria);
+            var res = await _repository.GetWithAdvancesearch(criteria);
+            res.ForEach(async x => { x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id); });
+            return res;
         }
     }
 }
