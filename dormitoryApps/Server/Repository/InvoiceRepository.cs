@@ -38,12 +38,12 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<List<Invoice>> GetPaid()
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, "paid=1");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, "Ispaid=1");
             return res.ToList();
         }
         public async Task<List<Invoice>> GetUnPaid()
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, "paid=0");
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, "Ispaid=0");
             return res.ToList();
         }
         public async Task<List<Invoice>> GetByYear(int year)

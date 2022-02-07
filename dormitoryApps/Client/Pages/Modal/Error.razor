@@ -13,6 +13,8 @@
     public string Title { get; set; }
     public bool NextRequired { get; set; } = false;
     public bool ForceLoad { get; set; }=false;
+    public bool IsClosed { get; private set; } = false;
+    
     public void Open()
     {
         ModalDisplay = "block;";
@@ -26,6 +28,7 @@
         ModalDisplay = "none";
         ModalClass = "";
         ShowBackdrop = false;
+        IsClosed = true;
          if(NextRequired)
         {
             navigationManager.NavigateTo(NextLink,forceLoad:ForceLoad);

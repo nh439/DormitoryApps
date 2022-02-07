@@ -2,37 +2,105 @@
 @using System;
 @using System.Timers;
 @using System.Threading ;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject SessionServices _sessionServices;
+@inject InvoiceServices _invoiceServices;
+@inject MyServicesServices _myServicesServices;
 <PageTitle>Index</PageTitle>
-
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <h1>Nithi Residences</h1>
-
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
 <h1 id="h1">
-    @now
+    @now.ToString("dd MMMM yyyy HH:mm:ss")
 </h1>
+@if (IsloggedIn)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col ">
+                <div class="card bg-primary">
+                    <h2>&nbsp;ห้องพักที่ว่าง</h2>
+                    <br/>
+                    <br/>
+                    <h1 style="text-align:right">0  &nbsp;</h1>
+                </div>
+                
+            </div>
+            <div class="col">
+                <div class="card bg-warning">
+                    <h2>&nbsp;ใบเสร็จที่ยังไม่จ่าย</h2>
+                    <br/>
+                    <br/>
+                    @if(!unpaidInvoices.HasValue)
+                    {
+                        <h2 style="text-align:right">Fetching... &nbsp; </h2>
+                    }
+                    else
+                    {
+                        <h1 style="text-align:right">@unpaidInvoices  &nbsp;</h1>
+                    }
+                    
+                </div>
+            </div>
+            <div class="col ">
+                <div class="card bg-success">
+                     <h2>&nbsp;บริการทั้งหมด</h2>
+                    <br/>
+                    <br/>
+                     @if(!allService.HasValue)
+                    {
+
+                        <h2 style="text-align:right">Fetching... &nbsp;</h2>
+                    }
+                    else
+                    {
+                        <h1 style="text-align:right">@allService &nbsp;</h1>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code{
+    bool IsloggedIn =false;
     DateTime now = new DateTime();
     private static System.Timers.Timer aTimer=new System.Timers.Timer(1);
+    private static System.Timers.Timer bTimer=new System.Timers.Timer(2000);
+    int? availableRoom, unpaidInvoices, allService;
     public void StartTimer()
     {
         aTimer = new System.Timers.Timer(1);
         aTimer.Elapsed += Refreshdate;
         aTimer.Enabled = true;
+
+        bTimer=new System.Timers.Timer(2000);
+        bTimer.Elapsed += FetchData;
+        bTimer.Enabled = true;
+
     }
     public void Refreshdate(Object source, ElapsedEventArgs e)
     {
         now = DateTime.Now;
         InvokeAsync(StateHasChanged);
     }
-     public void Dispose()
+    public void Dispose()
     {
         aTimer?.Dispose();
     }
-    protected override void OnInitialized()
+    public async void FetchData(Object source, ElapsedEventArgs e)
     {
+        if (IsloggedIn)
+        {
+            var unpaidInvoice = await _invoiceServices.GetByMonth(DateTime.Now.Month, DateTime.Now.Year);
+            unpaidInvoices = (unpaidInvoice != null ? unpaidInvoice.Where(x => !x.Ispaid && !x.Iscancel).Count() : 0);
+            var serv = await _myServicesServices.GetMyServices();
+            allService = (serv != null ? serv.Count() : 0);
+        }
+    }
+    protected override async void OnInitialized()
+    {
+        IsloggedIn = await _sessionServices.Permissioncheck();
         StartTimer();
     }
 

@@ -26,6 +26,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public bool IsService { get; set; }
 		public int Service { get; set; }
 		public bool Iscancel { get; set; } = false;
+		public bool Ispaid { get; set; }
 		public decimal ServicePrice { get; set; }
 		public virtual Electricity Electricity { get; set; }
 		public virtual Water Water { get; set; }

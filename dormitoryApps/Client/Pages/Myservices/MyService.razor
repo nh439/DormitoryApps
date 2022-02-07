@@ -1,0 +1,106 @@
+﻿
+@page "/Services"
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject SessionServices _sessionServices;
+@inject MyServicesServices _myServicesServices;
+@code {
+    List<dormitoryApps.Shared.Model.Entity.MyServices> items;
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>บริการของเรา</h1>
+</center>
+<br />
+<br />
+@if(isLoggedIn)
+{
+  <button class="btn btn-primary" @onclick="OnCreate" ><i class="plus icon"></i> &nbsp; เพิ่มบริการ</button>  
+}
+<button class="btn btn-info" @onclick="OnInitialized"><i class="sync icon"></i></button>&nbsp;&nbsp;อัพเดทล่าสุดเมื่อ @lastUpdate.ToLongTimeString()
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัส</th>
+            <th>ชื่อ</th>
+            <th>ราคาเบื้องต้น</th>
+            <th>ยังให้บริการ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(items == null)
+        {
+            <tr>
+                <td colspan="5">Fetching...</td>
+            </tr>
+        }
+        else
+        {
+            if(items.Count==0)
+            {
+                <tr>
+                <td colspan="5">ไม่พบบริการ</td>
+                </tr>
+            }
+            else
+            {
+                @foreach(var item in items)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Name</td>
+                        <td>@item.Price</td>
+                        <td>
+                            @if(item.Enabled)
+                            {
+                                <i class="check icon"></i>
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-primary"><i class="edit icon"></i></button>
+                            @if(item.Enabled)
+                            {
+                                <button class="btn btn-danger"><i class="x icon"></i></button>
+                            }
+                            else
+                            {
+                                 <button class="btn btn-success"><i class="check icon"></i></button>
+                            }
+
+                        </td>
+                    </tr>
+
+                }
+            }
+        }
+    </tbody>
+
+</table>
+<dormitoryApps.Client.Pages.Myservices.Create @ref="create" />
+@code {
+    private dormitoryApps.Client.Pages.Myservices.Create create;
+    DateTime lastUpdate = new DateTime();
+    bool isLoggedIn = false;
+    protected override async void OnInitialized()
+    {
+        items = null;
+        items = await _myServicesServices.GetMyServices();
+        if(items == null)
+        {
+            items = new List<MyServices>();
+        }
+        isLoggedIn = await _sessionServices.Permissioncheck();
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
+    }
+    public void OnCreate()
+    {
+        create.Open();
+    }
+}

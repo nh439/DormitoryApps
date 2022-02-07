@@ -7,11 +7,11 @@ namespace dormitoryApps.Server.Controllers
 {
     public class InvoiceController : Controller
     {
-        private readonly InvoiceServices _invoiceServices;
+        private readonly IInvoiceServices _invoiceServices;
         private readonly ILogger<InvoiceController> _logger;
         private const string BaseUrl = "/api/Invoice";
 
-        public InvoiceController(InvoiceServices invoiceServices, ILogger<InvoiceController> logger)
+        public InvoiceController(IInvoiceServices invoiceServices, ILogger<InvoiceController> logger)
         {
             _invoiceServices = invoiceServices;
             _logger = logger;
@@ -40,7 +40,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpGet(BaseUrl+"/Id/{Id}")]
-        public async Task<IActionResult> GetById(long Id)
+        public async Task<IActionResult> GetById(string Id)
         {
             var res = await _invoiceServices.GetById(Id);
             return Ok(res);
@@ -70,7 +70,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpPost($"{BaseUrl}/Delete")]
-        public async Task<IActionResult> Delete([FromBody]long InvoiceId)
+        public async Task<IActionResult> Delete([FromBody]string InvoiceId)
         {
             var res = await _invoiceServices.Delete(InvoiceId);
             return Ok(res);

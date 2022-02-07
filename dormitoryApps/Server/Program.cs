@@ -34,6 +34,7 @@ builder.Services.AddScoped<RoomRepository>();
 builder.Services.AddScoped<RoomFurnRepository>();
 builder.Services.AddScoped<RoomImgRepository>();
 builder.Services.AddScoped<MyServiceRepository>();
+builder.Services.AddScoped<InvoiceServiceRepository>();
 #endregion
 
 #region Services
@@ -55,6 +56,8 @@ builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IRoomFurnServices,RoomFurnService>();
 builder.Services.AddScoped<IRoomImgServices, RoomImgServices>();
 builder.Services.AddScoped<IMyServicesServices, MyServicesServices>();
+builder.Services.AddScoped<IIServices, iIService>();
+builder.Services.AddScoped<JwTServices>();
 #endregion
 
 var app = builder.Build();
@@ -83,5 +86,5 @@ app.UseSession();
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-
+app.UseAuthentication();
 app.Run();

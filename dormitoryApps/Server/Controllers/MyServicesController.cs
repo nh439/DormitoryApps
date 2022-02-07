@@ -28,19 +28,19 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpPost(BaseUrl+"/Create")]
-        public async Task<IActionResult> Create(MyServices item)
+        public async Task<IActionResult> Create([FromBody]MyServices item)
         {
             var res = await _myServicesServices.Create(item);
             return Ok(res);
         }
         [HttpPost(BaseUrl+"/Update")]
-        public async Task<IActionResult> Update(MyServices item)
+        public async Task<IActionResult> Update([FromBody] MyServices item)
         {
             var res = await _myServicesServices.Update(item);
             return Ok(res);
         }
         [HttpPost(BaseUrl+"/Delete")]
-        public async Task<IActionResult> Delete(long itemId)
+        public async Task<IActionResult> Delete([FromBody] long itemId)
         {
             var res = await _myServicesServices.Delete(itemId);
             return Ok(res);

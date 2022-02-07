@@ -10,6 +10,7 @@ namespace dormitoryApps.Client.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<OfficerServices> _logger;
         private readonly ISessionStorageService _sessionStorageService;
+
         public const string ControllerName = "api/officer";
         public OfficerServices(HttpClient httpClient, 
             ILogger<OfficerServices> logger,

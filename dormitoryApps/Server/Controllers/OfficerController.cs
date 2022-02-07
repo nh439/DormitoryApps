@@ -1,8 +1,14 @@
-﻿using dormitoryApps.Server.Services;
+﻿using dormitoryApps.Server.Securites;
+using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -13,15 +19,18 @@ namespace dormitoryApps.Server.Controllers
         private readonly ILogger<OfficerController> _logger;
         private readonly IHttpContextAccessor _accessor;
         private readonly ISessionServices _sessionServices;
+        private readonly JwTServices _jwTServices;
         public OfficerController(IOfficerServices officerServices,
             ILogger<OfficerController> logger,
             IHttpContextAccessor accessor, 
-            ISessionServices sessionServices)
+            ISessionServices sessionServices,
+            JwTServices jwTServices)
         {
             _officerServices = officerServices;
             _logger = logger;
             _accessor = accessor;
             _sessionServices = sessionServices;
+            _jwTServices = jwTServices;
         }
         [HttpGet(ControllerName)]
         public async Task<IActionResult> Index()

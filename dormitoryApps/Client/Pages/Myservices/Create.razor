@@ -1,0 +1,136 @@
+﻿@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject SessionServices _sessionServices;
+@inject MyServicesServices _myServicesServices;
+
+@code {
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+    public string Title { get; set; }
+    MyServices item = new MyServices();
+    public void Open()
+    {
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+
+    }
+    public async void SaveChange()
+    {
+        var res = await _myServicesServices.Create(item);
+        if(res)
+        {
+            success.Title="Insert Completed";
+            success.Header = "ยินดีด้วย";
+            success.Details = "คุณเพิ่มบริการสำเร็จ";
+            success.NextRequired = true;
+            success.NextLink="/Services";
+            success.ForceLoad = false;
+            success.Open();
+            item = new MyServices();
+            Close();
+            await InvokeAsync(StateHasChanged);
+           
+        }
+        else
+        {
+            error.Title = "!Oops";
+            error.Details = "คุณเพิ่มไม่สำเร็จ";
+            error.NextRequired = false;
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    private void HandleOnChange(ChangeEventArgs args)
+    {
+        item.Description = args.Value.ToString();
+
+    }
+    private void EnabledChanges(ChangeEventArgs args)
+    {
+        item.Enabled = (args.Value.ToString() == true.ToString() ? true : false);
+    }
+
+
+}
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+    <label for="name">ชื่อบริการ</label> 
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          <i class="fa fa-address-card"></i>
+        </div>
+      </div> 
+      <input id="name" @bind-value="item.Name" type="text" class="form-control">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="s">ค่าบริการเบื้องต้น</label> 
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <div class="input-group-text">
+          <i class="fa fa-money"></i>
+        </div>
+      </div> 
+      <input id="s" @bind-value="item.Price" type="number"min="0" class="form-control">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="textarea">รายละเอียด</label> 
+    <textarea id="textarea" cols="40" rows="5" @oninput="HandleOnChange" class="form-control">@item.Description</textarea>
+  </div>
+  <div class="form-group">
+    <label></label> 
+    <div>
+      <div class="custom-controls-stacked">
+        <div class="custom-control custom-checkbox">
+          <input  @onchange="EnabledChanges" id="checkbox_0" type="checkbox" class="custom-control-input" value="true" checked="@item.Enabled"> 
+          <label for="checkbox_0" class="custom-control-label">เปิดใช้งาน</label>
+        </div>
+      </div>
+    </div>
+  </div> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="() => SaveChange()">เพิ่มบริการ</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<dormitoryApps.Client.Pages.Modal.Success @ref="success"/>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
+@code{
+    private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+}
