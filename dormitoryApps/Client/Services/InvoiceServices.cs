@@ -9,7 +9,7 @@ namespace dormitoryApps.Client.Services
         private readonly HttpClient _httpClient;
         private readonly SessionServices _sessionServices;
         private readonly ILogger<InvoiceServices> _logger;
-        public const string ControllerName = "api/Electricity";
+        public const string ControllerName = "api/invoice";
 
         public InvoiceServices(HttpClient httpClient, SessionServices sessionServices, ILogger<InvoiceServices> logger)
         {

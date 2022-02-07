@@ -34,5 +34,5 @@ builder.Services.AddScoped<RoomServices>();
 builder.Services.AddScoped<RoomFurnServices>();
 builder.Services.AddScoped<RoomImgServices>();
 builder.Services.AddScoped<MyServicesServices>();
-
+builder.Services.AddScoped<InvoiceServices>();
 await builder.Build().RunAsync();
