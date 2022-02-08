@@ -26,7 +26,7 @@ namespace dormitoryApps.Server.Controllers
             }
             catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
+                _logger.LogError(500, x, x.Message);
                 return StatusCode(500, "Something Went Wrong");
             }
         }
@@ -40,7 +40,7 @@ namespace dormitoryApps.Server.Controllers
             }
             catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
+                _logger.LogError(500, x, x.Message);
                 return StatusCode(500, "Something Went Wrong");
             }
         }
@@ -54,7 +54,7 @@ namespace dormitoryApps.Server.Controllers
             }
             catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
+                _logger.LogError(500, x, x.Message);
                 return StatusCode(500, "Something Went Wrong");
             }
         }

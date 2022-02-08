@@ -2,9 +2,11 @@
 @inject SessionServices sessionServices;
 @using dormitoryApps.Shared.Model.Entity;
 @using Blazored.SessionStorage;
+@using Blazored.LocalStorage;
 @inject OfficerServices officerServices;
 @inject NavigationManager navigationManager;
 @inject ISessionStorageService sessionStorageService;
+@inject ILocalStorageService localStorageService;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -138,8 +140,8 @@
     }
     protected override async void OnInitialized()
     {
-        
-        string sessionId = await sessionStorageService.GetItemAsStringAsync("Id");
+
+        string sessionId = await localStorageService.GetItemAsStringAsync("Id");
         if (!string.IsNullOrEmpty(sessionId))
         {
             currentlogin = await sessionServices.GetCurrentLogin();
@@ -149,7 +151,7 @@
     }
     private async Task Logout()
     {
-        await officerServices.Logout();
+        await officerServices.Logout();  
         navigationManager.NavigateTo("/", true);
     }
 

@@ -1,4 +1,5 @@
 ﻿using Blazored.SessionStorage;
+using Blazored.LocalStorage;
 using dormitoryApps.Shared.Model.Entity;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
@@ -9,20 +10,20 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<SessionServices> _logger;
-        private readonly ISessionStorageService _sessionStorageService;
+        private readonly ILocalStorageService _localStorageService;
         private readonly NavigationManager _navigationManager;
         private readonly OfficerServices _officerServices;
         public const string ControllerName = "api/session";
 
         public SessionServices(HttpClient httpClient,
             ILogger<SessionServices> logger,
-            ISessionStorageService sessionStorageService,
+            ILocalStorageService localStorageService,
             NavigationManager navigationManager,
             OfficerServices officerServices)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _sessionStorageService = sessionStorageService;
+            _localStorageService = localStorageService;
             _navigationManager = navigationManager;
             _officerServices = officerServices;
         }
@@ -48,7 +49,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<Officer?> GetCurrentLogin()
         {
-            var currentId = await _sessionStorageService.GetItemAsync<string>("Id");
+            var currentId = await _localStorageService.GetItemAsync<string>("Id");
             Officer officer = await _httpClient.GetFromJsonAsync<Officer?>($"{ControllerName}/Get/{currentId}");
             officer.Password = "PA$$WORD";
             officer.Idx = "INDEX";
@@ -56,7 +57,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> Permissioncheck()
         {
-            var sessionId = await _sessionStorageService.GetItemAsync<string>("Id");
+            var sessionId = await _localStorageService.GetItemAsync<string>("Id");
             if (string.IsNullOrEmpty(sessionId)) return false;
             var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Permissioncheck", sessionId);
             return result.IsSuccessStatusCode;

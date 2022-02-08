@@ -30,8 +30,8 @@ namespace dormitoryApps.Server.Controllers
             }
             catch(Exception x)
             {
-                _logger.LogError(x, x.Message);
-                return StatusCode(500,x);
+                _logger.LogError(500,x, x.Message);
+                return StatusCode(500, "Something Went Wrong");
             }
         }
         [HttpGet(BaseUrl+"/{id}")]
@@ -44,8 +44,8 @@ namespace dormitoryApps.Server.Controllers
             }
              catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
-                return StatusCode(500, x);
+                _logger.LogError(500,x, x.Message);
+                return StatusCode(500, "Something Went Wrong");
             }
         }
         [HttpPost(BaseUrl)]
@@ -58,8 +58,8 @@ namespace dormitoryApps.Server.Controllers
             }
              catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
-                return StatusCode(500, x);
+                _logger.LogError(500,x, x.Message);
+                return StatusCode(500, "Something Went Wrong");
             }
         }
         [HttpPost(BaseUrl+"/Update")]
@@ -72,8 +72,8 @@ namespace dormitoryApps.Server.Controllers
             }
              catch (Exception x)
             {
-                _logger.LogError(x, x.Message);
-                return StatusCode(500, x);
+                _logger.LogError(500,x, x.Message);
+                return StatusCode(500, "Something Went Wrong");
             }
         }
     }

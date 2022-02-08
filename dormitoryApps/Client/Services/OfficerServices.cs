@@ -1,7 +1,7 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
-using Blazored.SessionStorage;
+using Blazored.LocalStorage;
 using System.Text;
 namespace dormitoryApps.Client.Services
 {
@@ -9,16 +9,15 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<OfficerServices> _logger;
-        private readonly ISessionStorageService _sessionStorageService;
-
+        private readonly ILocalStorageService _localStorageService;
         public const string ControllerName = "api/officer";
         public OfficerServices(HttpClient httpClient, 
             ILogger<OfficerServices> logger,
-            ISessionStorageService sessionStorageService)
+            ILocalStorageService sessionStorageService)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _sessionStorageService = sessionStorageService;
+            _localStorageService = sessionStorageService;
         }
         public async Task<bool> GetLogin (string username, string password)
         {
@@ -32,6 +31,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task Logout()
         {
+            await _localStorageService.ClearAsync();
             await _httpClient.GetAsync($"{ ControllerName}/Logout");
         }
         public async Task<List<Officer>> GetEmployee()

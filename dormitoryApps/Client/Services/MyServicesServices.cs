@@ -20,31 +20,71 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<MyServices>> GetMyServices()
         {
-            var res = await _httpClient.GetFromJsonAsync<List<MyServices>>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<MyServices>>(ControllerName);
+                return res;
+            }
+            catch(Exception x)
+            {
+                _logger.LogError("GetMyservices",x);               
+            }
+            return new List<MyServices>();
         }
         public async Task<MyServices> GetById(long Id)
         {
-            var res = await _httpClient.GetFromJsonAsync<MyServices>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<MyServices>(ControllerName);
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError("GetMyservices", x);
+            }
+            return new MyServices();
         }
         public async Task<bool> Create(MyServices entity)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", entity);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", entity);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError("GetMyservices", x);
+                return false;
+            }
         }
         public async Task<bool> Update(MyServices entity)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", entity);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", entity);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError("GetMyservices", x);
+                return false;
+            }
         }
         public async Task<bool> Delete(long itemId)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError("GetMyservices", x);
+                return false;
+            }
         }
 
     }
