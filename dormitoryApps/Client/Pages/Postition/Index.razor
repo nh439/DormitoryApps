@@ -1,0 +1,64 @@
+﻿@page "/Postitions"
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;  
+@inject SessionServices _sessionServices;
+@inject PostitionLineService _postitionLineServices;
+@inject NavigationManager _navigationManager;
+@code {
+    List<PostitionLine> items;
+}
+<center>
+    <h1>ตำแหน่ง และ สายงาน</h1>
+</center>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัส</th>
+            <th>ชื่อสายงาน</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-info">
+        @if(items==null)
+        {
+            <tr>
+                <td colspan="3">Fetching...</td>
+            </tr>
+        }
+        else
+        {
+            @if(items.Count==0)
+            {
+                <tr>
+                <td colspan="3">ไม่พบสายงานที่ต้องการ</td>
+                </tr>
+            }
+            else
+            {
+                foreach(var item in items)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Name</td>
+                        <td></td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+@code{
+    protected override async void OnInitialized()
+    {
+        items = null;
+        items = await _postitionLineServices.GetPostitionLines();
+        await InvokeAsync(StateHasChanged);
+    }
+}

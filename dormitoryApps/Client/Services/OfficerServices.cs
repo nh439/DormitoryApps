@@ -30,9 +30,9 @@ namespace dormitoryApps.Client.Services
             return await response.Content.ReadFromJsonAsync<bool>();
         }
         public async Task Logout()
-        {
-            await _localStorageService.ClearAsync();
+        {           
             await _httpClient.GetAsync($"{ ControllerName}/Logout");
+            await _localStorageService.ClearAsync();
         }
         public async Task<List<Officer>> GetEmployee()
         {

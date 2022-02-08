@@ -162,7 +162,7 @@
     public async void OnSearch()
     {
         var baseUrl = "/Services";
-        _navigationManager.NavigateTo(baseUrl + (!string.IsNullOrEmpty(baseUrl) ? $"?query={query}" : string.Empty));
+        _navigationManager.NavigateTo(baseUrl + (!string.IsNullOrEmpty(query) ? $"?query={query}" : string.Empty));
          items = null;
         items = await _myServicesServices.GetMyServices();
         if(!string.IsNullOrEmpty(query))

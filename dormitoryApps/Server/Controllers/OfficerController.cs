@@ -132,8 +132,11 @@ namespace dormitoryApps.Server.Controllers
                 try
                 {
                     var result = await _officerServices.GetByUsername(id);
-                result.Password = "PA$$WORD";
-                result.Idx = "INEDX";
+                if (result != null)
+                {
+                    result.Password = "PA$$WORD";
+                    result.Idx = "INEDX";
+                }
                 return Ok(result);
                 }
                 catch (Exception x)
