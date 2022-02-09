@@ -30,7 +30,7 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<PostitionLine>> Getall()
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<PostitionLine>();
-            return res.ToList();
+            return res.OrderBy(x=>x.Id).ToList();
         }
         public async Task<PostitionLine> GetById(int id)
         {

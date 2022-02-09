@@ -68,9 +68,20 @@ namespace dormitoryApps.Server.Controllers
             }
         }
         [HttpGet($"{ControllerName}/logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout(string? sid)
         {
-            await _sessionServices.SetLogout(_accessor.HttpContext.Session.GetString("Id"));
+            string sessionId = _accessor.HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                if (!string.IsNullOrEmpty(sid))
+                {
+                    await _sessionServices.SetLogout(sid);
+                }
+            }
+            else
+            {
+                await _sessionServices.SetLogout(sessionId);
+            }
             _accessor.HttpContext.Session.Clear();
             return Redirect("/");  
         }

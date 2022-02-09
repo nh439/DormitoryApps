@@ -144,6 +144,11 @@
         string sessionId = await localStorageService.GetItemAsStringAsync("Id");
         if (!string.IsNullOrEmpty(sessionId))
         {
+            var IsNotExpired = await sessionServices.Permissioncheck();
+            if(!IsNotExpired)
+            {
+                await Logout();
+            }
             currentlogin = await sessionServices.GetCurrentLogin();
             IsAdmin = await sessionServices.IsAdmin();
             await InvokeAsync(StateHasChanged);

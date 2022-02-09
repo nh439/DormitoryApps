@@ -20,44 +20,97 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Postition>> GetPostitions()
         {
-            var res = await _httpClient.GetFromJsonAsync<List<Postition>>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Postition>>(ControllerName);
+                return res;
+            }
+            catch(Exception x)
+            {
+                _logger.LogError(x.Message,x);
+            }
+            return new List<Postition>();
         }
         public async Task<List<Postition>> GetByPostitionLine(int LineId)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<Postition>>($"{ ControllerName}/Line/{LineId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Postition>>($"{ ControllerName}/Line/{LineId}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return new List<Postition>();
         }
         public async Task<List<Postition>> GetByDepartments(int DepartmentId)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<Postition>>($"{ ControllerName}/Department/{DepartmentId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Postition>>($"{ ControllerName}/Department/{DepartmentId}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return new List<Postition>();
         }
         public async Task<Postition> GetById(int PostitionId)
         {
-            var res = await _httpClient.GetFromJsonAsync<Postition>($"{ ControllerName}?id={PostitionId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<Postition>($"{ ControllerName}?id={PostitionId}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return new Postition();
         }
         public async Task<bool> Create(Postition postition)
         {
-
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", postition);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", postition);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return false ;
         }
          public async Task<bool> Update(Postition postition)
         {
-
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", postition);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", postition);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return false;
         }
          public async Task<bool> Deleted(int postitionId)
         {
-
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", postitionId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", postitionId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return false;
         }
 
     }

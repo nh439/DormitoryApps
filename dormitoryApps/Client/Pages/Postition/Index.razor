@@ -9,19 +9,37 @@
 @inject SessionServices _sessionServices;
 @inject PostitionLineService _postitionLineServices;
 @inject NavigationManager _navigationManager;
+@inject OfficerServices _officerServices;
+@inject PostitionServices _postitionServices;
+
 @code {
     List<PostitionLine> items;
+    List<Postition> postitions;
+    DateTime lastUpdate = new DateTime();
+    string query;
+    private dormitoryApps.Client.Pages.Postition.IndexModal.Create create;
 }
 <center>
     <h1>ตำแหน่ง และ สายงาน</h1>
 </center>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <br />
+<br />
+<div class="ui action input">
+  <input type="text" @bind-value="query" placeholder="Search...">
+  <button class="ui button btn-success" @onclick="OnSearch"><i class="search icon"></i>Search</button>
+  <button class="ui button btn-info" @onclick="OnInitialized"><i class="sync icon"></i></button> &nbsp; Last Updated @lastUpdate.ToLongTimeString()
+</div>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="OnCreate"><i class="plus icon"></i> เพิ่มสายงาน</button>
 <br />
 <table class="table" style="text-align:center">
     <thead class="table-dark">
         <tr>
             <th>รหัส</th>
             <th>ชื่อสายงาน</th>
+            <th>จำนวนตำแน่ง</th>
             <th></th>
         </tr>
     </thead>
@@ -29,7 +47,7 @@
         @if(items==null)
         {
             <tr>
-                <td colspan="3">Fetching...</td>
+                <td colspan="4">Fetching...</td>
             </tr>
         }
         else
@@ -37,7 +55,7 @@
             @if(items.Count==0)
             {
                 <tr>
-                <td colspan="3">ไม่พบสายงานที่ต้องการ</td>
+                <td colspan="4">ไม่พบสายงานที่ต้องการ</td>
                 </tr>
             }
             else
@@ -47,18 +65,87 @@
                     <tr>
                         <td>@item.Id</td>
                         <td>@item.Name</td>
-                        <td></td>
+                        <td>@(item.Postitions != null ? item.Postitions.Count():0)</td>
+                        <td>
+                            <button class="btn btn-primary"><i class="edit outline icon"></i> Edit</button>
+                            <button class="btn btn-info"><i class="newspaper icon"></i> Postitions</button>
+
+                        </td>
                     </tr>
                 }
             }
         }
     </tbody>
 </table>
+<dormitoryApps.Client.Pages.Postition.IndexModal.Create @ref="create"/>
 @code{
     protected override async void OnInitialized()
     {
+        await _sessionServices.RequiredPermission();
+        postitions = await _postitionServices.GetPostitions();
+        bool isAdmin = await _sessionServices.IsAdmin();
+        if(!isAdmin)
+        {
+            await _officerServices.Logout();
+        }
+        StringValues queryres;
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("query", out queryres))  
+        {  
+            query = queryres;  
+        }  
         items = null;
         items = await _postitionLineServices.GetPostitionLines();
+        if(!string.IsNullOrEmpty(query))
+        {
+            items = items.Where(x => x.Name.ToLower().Contains(query.ToLower()) ).ToList();          
+        }
+        if(!string.IsNullOrEmpty(query))
+        {
+            items = items.Where(x => x.Name.ToLower().Contains(query.ToLower()) ).ToList();
+        }
+        if (items == null)
+        {
+            items = new List<PostitionLine>();
+        }
+        else
+        {
+            items.ForEach(x =>
+           {
+               x.Postitions = postitions.Where(y => y.Line == x.Id).ToList();
+           });
+        }
+        lastUpdate = DateTime.Now;
         await InvokeAsync(StateHasChanged);
+    }
+    public async void OnSearch()
+    {
+        var baseUrl = "/Postitions";
+        _navigationManager.NavigateTo(baseUrl + (!string.IsNullOrEmpty(query) ? $"?query={query}" : string.Empty));
+        postitions = await _postitionServices.GetPostitions();
+        items = null;
+        items = await _postitionLineServices.GetPostitionLines();
+        if(!string.IsNullOrEmpty(query))
+        {
+            items = items.Where(x => x.Name.ToLower().Contains(query.ToLower()) ).ToList();         
+        }
+        if (items == null)
+        {
+            items = new List<PostitionLine>();
+        }
+        else
+        {
+            items.ForEach( x =>
+         {
+             x.Postitions = postitions.Where(y => y.Line == x.Id).ToList();
+         });
+        }
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void OnCreate()
+    {
+        await _sessionServices.RequiredPermission();
+        create.Open();
     }
 }

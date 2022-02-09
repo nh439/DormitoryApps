@@ -14,5 +14,6 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Salary { get; set; }
 		public int Department { get; set; }
 		public int Line { get; set; }
+		public int? Next { get; set; }
 	}
 }
