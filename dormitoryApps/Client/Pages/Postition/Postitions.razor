@@ -1,0 +1,126 @@
+﻿@page "/Postitions/{LineId:int}"
+<h3>Postitions</h3>
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@using Blazorise;
+@using Blazorise.Components;
+@inject SessionServices _sessionServices;
+@inject PostitionLineService _postitionLineServices;
+@inject NavigationManager _navigationManager;
+@inject OfficerServices _officerServices;
+@inject PostitionServices _postitionServices;
+@inject DepartmentServices _departmentServices;
+@code {
+
+    [Parameter]
+    public int LineId { get; set; }
+    public string query { get; set; }
+    PostitionLine myLine;
+    List<Postition> postitions;
+    DateTime lastUpdate = new DateTime();
+    List<Department> departments;
+    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create Create;
+    List<dormitoryApps.Shared.Model.Entity.Postition> allpositions;
+    protected override async void OnInitialized()
+    {
+        myLine = await _postitionLineServices.GetById(LineId);
+        postitions = await _postitionServices.GetByPostitionLine(LineId);
+        departments = await _departmentServices.Getdepartments();
+        if (postitions == null)
+        {
+            postitions = new List<Postition>();
+        }
+        allpositions = await _postitionServices.GetPostitions();
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void OnSearch()
+    {
+
+    }
+    private  void OnCreate()
+    {
+        try 
+        { 
+           Create.Open(LineId); 
+        }
+        catch(Exception x)
+        {
+            Console.WriteLine(x.Message);
+        }    }
+
+}
+<center>
+    <h1>ตำแหน่งงานของ @(myLine != null ? myLine.Name :"Unknown Lines")</h1>
+</center>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<br />
+<br />
+<div class="ui action input">
+    <input type="text" @bind-value="query" placeholder="Search...">
+    <button class="ui button btn-success" @onclick="OnSearch"><i class="search icon"></i>Search</button>
+    <button class="ui button btn-info" @onclick="OnInitialized"><i class="sync icon"></i></button> &nbsp; Last Updated @lastUpdate.ToLongTimeString()
+</div>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="OnCreate"><i class="plus icon"></i> เพิ่มสายงาน</button>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>ชื่อตำแหน่ง</th>
+            <th>ระดับ</th>
+            <th>เงินเดือนเริ่มต้น</th>
+            <th>แผนก</th>
+            <th>ตำแหน่งถัดไป</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-primary">
+        @if (postitions == null)
+        {
+            <tr>
+                <td colspan="7">Fetching...</td>
+            </tr>
+        }
+        else if (postitions == new List<Postition>() || postitions.Count ==0)
+        {
+            <tr>
+                <td colspan="7">ไม่พบตำแหน่งในสายงานนี้</td>
+            </tr>
+        }
+        else
+        {
+            int r = 1;
+            @foreach (var postition in postitions.OrderBy(x => x.Level))
+            {
+                <tr>
+                    <td>@r</td>
+                    <td>@postition.Name</td>
+                    <td>@postition.Level</td>
+                    <td>@postition.Salary</td>
+                    <td>@departments.Where(x=>x.Id==postition.Department).FirstOrDefault().Name</td>
+                    <td>@if(postition.Next.HasValue)
+                        {
+                            @(allpositions.Where(x=>x.Id==postition.Next).FirstOrDefault() != null ? allpositions.Where(x=>x.Id==postition.Next).FirstOrDefault().Name : postition.Next );                            
+                        }
+
+                        </td>
+                    <td>
+                        <Button Class="btn btn-info"><i class="edit outline icon"></i></Button>
+                    </td>
+                </tr>
+                r++;
+            }
+        }
+    </tbody>
+</table>
+
+<dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create @ref="Create"/>

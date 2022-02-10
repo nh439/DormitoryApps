@@ -1,0 +1,103 @@
+﻿@inject NavigationManager navigationManager;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject PostitionLineService _postitionLineService;
+@code {
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+    public string NextLink { get; set; } = "/";
+    public string Header { get; set; } = "Congratulations";
+    public string Details { get; set; } = "Processing Success";
+    public string Title { get; set; }
+    public bool NextRequired { get; set; } = false;
+    public bool ForceLoad { get; set; } = false;
+    public bool IsClosed { get; private set; } = false;
+    private dormitoryApps.Client.Pages.Modal.Success Success;
+    private dormitoryApps.Client.Pages.Modal.Error Error;
+    PostitionLine line = new PostitionLine();
+    public async void Open(int lineId)
+    {
+        line = await _postitionLineService.GetById(lineId);
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        IsClosed = true;
+        if (NextRequired)
+        {
+            navigationManager.NavigateTo(NextLink, forceLoad: ForceLoad);
+        }
+        StateHasChanged();
+
+    }
+    public async void SaveChanges()
+    {
+       
+        try
+        {
+            var res = await _postitionLineService.Update(line);
+            if(res)
+            {
+                Success.NextRequired = false;
+                Success.Details = "แก้ไขสำเร็จ";
+                Success.Header = "ยินดีด้วย";
+                Success.Open();
+                Close();
+            }
+            else
+            {
+                Error.NextRequired = false;
+                Error.Header = "!Oops";
+                Error.Details = "Something Went Wrong";
+                Error.Open();
+            }
+        }
+        catch(Exception x)
+        {
+                Error.NextRequired = false;
+                Error.Header = "!Oops";
+                Error.Details = x.Message;
+                Error.Open();
+        }
+
+    }
+
+}
+
+
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">เพิ่มสายงาน</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row">
+                    <label for="text" class="col-4 col-form-label">ชื่อสายงาน</label>
+                    <div class="col-8">
+                        <input id="text" @bind-value="line.Name" type="text" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="() => SaveChanges()">Submit</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<dormitoryApps.Client.Pages.Modal.Error @ref="Error"/>
+<dormitoryApps.Client.Pages.Modal.Success @ref="Success"/>

@@ -18,6 +18,7 @@
     DateTime lastUpdate = new DateTime();
     string query;
     private dormitoryApps.Client.Pages.Postition.IndexModal.Create create;
+    private dormitoryApps.Client.Pages.Postition.IndexModal.Edit  edit;
 }
 <center>
     <h1>ตำแหน่ง และ สายงาน</h1>
@@ -33,6 +34,7 @@
 <br />
 <br />
 <button class="btn btn-primary" @onclick="OnCreate"><i class="plus icon"></i> เพิ่มสายงาน</button>
+<br />
 <br />
 <table class="table" style="text-align:center">
     <thead class="table-dark">
@@ -67,8 +69,8 @@
                         <td>@item.Name</td>
                         <td>@(item.Postitions != null ? item.Postitions.Count():0)</td>
                         <td>
-                            <button class="btn btn-primary"><i class="edit outline icon"></i> Edit</button>
-                            <button class="btn btn-info"><i class="newspaper icon"></i> Postitions</button>
+                            <button class="btn btn-primary" @onclick="async ()=>OnUpdate(item.Id)"><i class="edit outline icon"></i> Edit</button>
+                            <button class="btn btn-info" @onclick="()=> OnView(item.Id)" ><i class="newspaper icon"></i> Postitions</button>
 
                         </td>
                     </tr>
@@ -78,6 +80,7 @@
     </tbody>
 </table>
 <dormitoryApps.Client.Pages.Postition.IndexModal.Create @ref="create"/>
+<dormitoryApps.Client.Pages.Postition.IndexModal.Edit @ref="edit"/>
 @code{
     protected override async void OnInitialized()
     {
@@ -136,9 +139,9 @@
         else
         {
             items.ForEach( x =>
-         {
-             x.Postitions = postitions.Where(y => y.Line == x.Id).ToList();
-         });
+    {
+        x.Postitions = postitions.Where(y => y.Line == x.Id).ToList();
+    });
         }
         lastUpdate = DateTime.Now;
         await InvokeAsync(StateHasChanged);
@@ -147,5 +150,21 @@
     {
         await _sessionServices.RequiredPermission();
         create.Open();
+    }
+    public async void OnUpdate(int Id)
+    {
+        await _sessionServices.RequiredPermission();
+        edit.Open(Id);
+    }
+    private void OnView(int lineId)
+    {
+        try
+        {
+            _navigationManager.NavigateTo($"/Postitions/{lineId}");
+        }
+        catch(Exception x)
+        {
+            Console.WriteLine(x.Message);
+        }
     }
 }
