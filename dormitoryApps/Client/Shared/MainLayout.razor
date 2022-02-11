@@ -36,11 +36,16 @@
 
     protected override void OnInitialized()
     {
+        colorChange();
         skyTimer=new System.Timers.Timer(2000);
         skyTimer.Elapsed += Skychange;
         skyTimer.Enabled = true;
     }
     public void Skychange(Object source, ElapsedEventArgs e)
+    {
+        colorChange();
+    }
+    void colorChange()
     {
         int hours = DateTime.Now.Hour;
         if(hours >=1 && hours < 4)
