@@ -21,58 +21,39 @@
     List<PostitionLine> lines;
     int _lineId { get; set; }
     Postition item;
+    bool nameValidate = false;
     private dormitoryApps.Client.Pages.Modal.Success success;
     private dormitoryApps.Client.Pages.Modal.Error error;
     Random random = new Random();
-    bool nameValidate = false;
-    public async void Open(int lineId)
+    public async void Open(int postitionId)
     {
-        _lineId = lineId;
+        item = await _postitionServices.GetById(postitionId);
+        _lineId = item.Line;
         postitions = await _postitionServices.GetPostitions();
-        lines = await _postitionLineServices.GetPostitionLines();
-        item = new Postition()
-            {
-                Line = lineId,
-                Level = (postitions.Where(x => x.Line == lineId).FirstOrDefault() != null ? postitions.Where(x => x.Line == lineId).OrderByDescending(x => x.Level).Select(x => x.Level).FirstOrDefault() + 1 : 1)
-            };
+        lines = await _postitionLineServices.GetPostitionLines();       
         e.Show();
-        departments = await _departmentServices.Getdepartments();
+        departments = await _departmentServices.Getdepartments();               
         await InvokeAsync(StateHasChanged);
     }
     public void Close()
     {
         e.Hide();
-    }
+    }   
     public async void SaveChanges()
     {
         try
         {
-            if(string.IsNullOrEmpty(item.Name))
+              if(string.IsNullOrEmpty(item.Name))
             {
                 nameValidate = true;
                 await InvokeAsync(StateHasChanged);
                 return;
             }
             nameValidate = false;
-            postitions = await _postitionServices.GetPostitions();
-            bool Isduplicate = true;
-            while (Isduplicate)
+            var res = await _postitionServices.Update(item);
+            if(res)
             {
-                var postitionId = postitions.Select(x => x.Id).ToArray();
-                int ra = random.Next(0, int.MaxValue);
-                Isduplicate = postitionId.Contains(ra);
-                if (!Isduplicate)
-                {
-                    item.Id = ra;
-                    break;
-                }
-            }
-
-
-            var res = await _postitionServices.Create(item);
-            if (res)
-            {
-                success.Details = "เพิ่มตำแหน่งสำเร็จ";
+                success.Details = "แก้ไขตำแหน่งสำเร็จ";
                 success.Header = "ยินดีด้วย";
                 success.NextRequired = false;
                 success.Open();
@@ -80,11 +61,11 @@
             }
             else
             {
-                error.Details = "เพิ่มไม่สำเร็จ";
+                error.Details = "แก้ไขไม่สำเร็จ";
                 error.Open();
             }
         }
-        catch (Exception x)
+        catch(Exception x)
         {
             error.Details = x.Message;
             error.Open();
@@ -96,7 +77,7 @@
 <Modal @ref="e">
     <ModalContent Centered="true">
         <ModalHeader>
-            <ModalTitle>เพิ่มตำแหน่งงาน</ModalTitle>
+            <ModalTitle>แก้ไขตำแหน่งงาน</ModalTitle>
             <CloseButton />
         </ModalHeader>
         <ModalBody>
@@ -108,7 +89,7 @@
                             <i class="fa fa-address-card"></i>
                         </div>
                     </div>
-                    <input id="postition" @bind-value="item.Name" type="text" class="form-control">               
+                    <input id="postition" @bind-value="item.Name" type="text" class="form-control">
                 </div>
                 <small style="display:@(nameValidate ? "block":"none")">โปรดกรอกชื่อตำแหน่ง</small>
             </div>
@@ -123,7 +104,7 @@
                     <input id="salary" @bind-value="item.Salary" type="number" class="form-control">
                 </div>
             </div>
-            <div class="form-group">
+             <div class="form-group">
                 <label for="salary">ระดับตำแหน่ง</label>
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -153,7 +134,7 @@
                                 <option value="@department.Id">@department.Name</option>
                             }
                         }
-                    </select>                   
+                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -161,7 +142,7 @@
                 <div>
                     <select id="Next" @bind="item.Next" class="custom-select">
                         <option value="null" selected>ไม่ระบุ</option>
-                        @if (postitions == null)
+                         @if (postitions == null)
                         {
                             <option disabled>Fetching...</option>
                         }
@@ -171,7 +152,7 @@
                         }
                         else
                         {
-                            @foreach (var postition in postitions)
+                            @foreach(var postition in postitions)
                             {
                                 bool isDisable = postition.Line == item.Line && postition.Level <= item.Level;
                                 <option value="@postition.Id" disabled="@(isDisable ? isDisable:null)">@(postition.Name+"-"+lines.Where(x=>x.Id==postition.Line).FirstOrDefault().Name)</option>
@@ -189,5 +170,5 @@
     </ModalContent>
 
 </Modal>
-<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
-<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success"/>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>

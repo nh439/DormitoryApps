@@ -25,9 +25,16 @@
     DateTime lastUpdate = new DateTime();
     List<Department> departments;
     private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create Create;
+    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Edit Edit;
     List<dormitoryApps.Shared.Model.Entity.Postition> allpositions;
     protected override async void OnInitialized()
     {
+        StringValues queryres;
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("query", out queryres))  
+        {  
+            query = queryres;  
+        }  
         myLine = await _postitionLineServices.GetById(LineId);
         postitions = await _postitionServices.GetByPostitionLine(LineId);
         departments = await _departmentServices.Getdepartments();
@@ -35,24 +42,49 @@
         {
             postitions = new List<Postition>();
         }
+        if(!string.IsNullOrEmpty(query))
+        {
+            postitions = postitions.Where(x => x.Name.Contains(query)).ToList();
+        }
         allpositions = await _postitionServices.GetPostitions();
         lastUpdate = DateTime.Now;
         await InvokeAsync(StateHasChanged);
     }
     public async void OnSearch()
     {
+         var baseUrl = $"/Postitions/{LineId}";
+        _navigationManager.NavigateTo(baseUrl + (!string.IsNullOrEmpty(query) ? $"?query={query}" : string.Empty));
+        postitions = await _postitionServices.GetPostitions();
+         myLine = await _postitionLineServices.GetById(LineId);
+        postitions = await _postitionServices.GetByPostitionLine(LineId);
+        departments = await _departmentServices.Getdepartments();
+        if (postitions == null)
+        {
+            postitions = new List<Postition>();
+        }
+        if(!string.IsNullOrEmpty(query))
+        {
+            postitions = postitions.Where(x => x.Name.Contains(query)).ToList();
+        }
+        allpositions = await _postitionServices.GetPostitions();
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
 
     }
     private  void OnCreate()
     {
         try 
         { 
-           Create.Open(LineId); 
+            Create.Open(LineId); 
         }
         catch(Exception x)
         {
             Console.WriteLine(x.Message);
         }    }
+    private void OnEdit(int postitionId)
+    {
+        Edit.Open(postitionId);
+    }
 
 }
 <center>
@@ -114,7 +146,7 @@
 
                         </td>
                     <td>
-                        <Button Class="btn btn-info"><i class="edit outline icon"></i></Button>
+                        <Button Class="btn btn-info" @onclick="()=>OnEdit(postition.Id)"><i class="edit outline icon"></i></Button>
                     </td>
                 </tr>
                 r++;
@@ -124,3 +156,4 @@
 </table>
 
 <dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create @ref="Create"/>
+<dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Edit @ref="Edit"/>

@@ -1,10 +1,13 @@
 ﻿@inherits LayoutComponentBase
+@using System;
+@using System.Timers;
+@using System.Threading;
 <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
 
-    <main>
+    <main style="@timestyle">
         <div class="top-row px-4">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
@@ -14,3 +17,76 @@
         </article>
     </main>
 </div>
+@code
+{
+    string timestyle;
+    string postMidnightColor = "background-color : #000099;color:white"; //01:00-04:00hrs
+    string premorningColor = "background-color : #009999"; //04:01-06:00hrs
+    string morningColor = "background-color : #66FF99"; // 6:01-8:00hrs
+    string lateColor = "background-color : #66FFFF"; // 8:01-10:00hrs
+    string afternoonColor = "background-color : #CCFF99"; //14:01-15:00hrs
+    string beforeeveningColor = "background-color : #CCFF33"; //15:01-17:00hrs
+    string eveningColor = "background-color : #CC6633"; //17:01-19:00hrs 
+    string posteveningColor = "background-color : #6666CC"; // 19:01-21:00hrs
+    string preMidnightColor = "background-color : #000066;color:white"; //21:01-23:00hrs
+    string MidnightColor = "background-color : #000033;color:white"; //23:01-01:00hrs
+
+
+    private static System.Timers.Timer skyTimer;
+
+    protected override void OnInitialized()
+    {
+        skyTimer=new System.Timers.Timer(2000);
+        skyTimer.Elapsed += Skychange;
+        skyTimer.Enabled = true;
+    }
+    public void Skychange(Object source, ElapsedEventArgs e)
+    {
+        int hours = DateTime.Now.Hour;
+        if(hours >=1 && hours < 4)
+        {
+            timestyle = postMidnightColor;
+        }
+        else if (hours < 6)
+        {
+            timestyle = premorningColor;
+        }
+        else if(hours < 8)
+        {
+            timestyle = morningColor;            
+        }
+        else if(hours < 10)
+        {
+            timestyle = lateColor;
+        }
+        else if(hours <14)
+        {
+            timestyle = string.Empty;
+        }
+        else if(hours <15)
+        {
+            timestyle = afternoonColor;
+        }
+        else if(hours <17)
+        {
+            timestyle = beforeeveningColor;
+        }
+        else if(hours <19)
+        {
+            timestyle = eveningColor;
+        }
+        else if(hours <21)
+        {
+            timestyle = posteveningColor;
+        }
+        else if(hours <23)
+        {
+            timestyle = preMidnightColor;
+        }
+        else if(hours >23 || hours <1)
+        {
+            timestyle = MidnightColor;
+        }
+        StateHasChanged();
+    }
+}
