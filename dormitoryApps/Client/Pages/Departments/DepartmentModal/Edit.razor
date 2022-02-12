@@ -1,0 +1,90 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using Blazorise;
+@inject DepartmentServices _departmentServices;
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+@code {
+    private Modal e;
+    private bool ISReadonly = false;
+    private Department item = new Department();
+    dormitoryApps.Client.Pages.Modal.Error Error;
+    dormitoryApps.Client.Pages.Modal.Success Success;
+    bool nameValidate = false;
+    public async void Open(int departmentId, bool isReadonly)
+    {
+        item = await _departmentServices.GetById(departmentId);
+        ISReadonly = isReadonly;
+        e.Show();
+        await InvokeAsync(StateHasChanged); 
+    }
+    public void Close()
+    {
+        e.Hide();
+    }
+    public async void Savechanges()
+    {
+        try
+        {
+            nameValidate = string.IsNullOrEmpty(item.Name);
+            if(nameValidate)
+            {
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            var res = await _departmentServices.Update(item);
+            if(res)
+            {
+                Success.Details = "แก้ไขแผนกสำเร็จ";
+                Success.NextRequired = false;
+                Success.Header = "ยินดีด้วย";
+                Success.Open();
+                Close();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            Error.Details="แก้ไขไม่สำเร็จ";
+            Error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception x)
+        {
+            Error.Details=x.Message;
+            Error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
+<Modal @ref="e" style="color:black">
+    <ModalContent Centered="true">
+        <ModalHeader>
+            <ModalTitle>
+                แก้ไขแผนก
+            </ModalTitle>
+            <Blazorise.Bootstrap.CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <div class="form-group">
+                <label for="text">ชื่อแผนก</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">
+                            <i class="fa fa-bank"></i>
+                        </div>
+                    </div>
+                    <input @bind-value="item.Name" type="text" class="form-control" readonly="@ISReadonly">
+                </div>
+                <Small Style="@(nameValidate ? "display:block":"display:none")">ห้ามเว้นว้าง</Small>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            @if (!ISReadonly)
+            {
+                <Button class="btn btn-primary" @onclick="Savechanges">Save Changes</Button>
+            }
+            <Button class="btn btn-secondary" @onclick="Close">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="Error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="Success" />

@@ -1,0 +1,136 @@
+﻿@page "/Departments"
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@using Blazorise;
+@using Blazorise.Components;
+@inject SessionServices _sessionServices;
+@inject PostitionLineService _postitionLineServices;
+@inject NavigationManager _navigationManager;
+@inject OfficerServices _officerServices;
+@inject PostitionServices _postitionServices;
+@inject DepartmentServices _departmentServices;
+@code {
+    private dormitoryApps.Client.Pages.Departments.DepartmentModal.Create Create;
+    private dormitoryApps.Client.Pages.Departments.DepartmentModal.Edit Edit;
+    DateTime lastUpdate = new DateTime();
+    bool isAdmin = false;
+    string query;
+    List<Department> departments;
+    List<Postition> postitions;
+    private void OnCreate()
+    {
+        Create.Open();
+    }
+    private void OnEdit(int departmentId,bool isViewMode)
+    {
+        Edit.Open(departmentId,isViewMode); 
+    }
+    protected override async void OnInitialized()
+    {
+        departments = null;
+        await _sessionServices.RequiredPermission();
+        isAdmin = await _sessionServices.IsAdmin();
+        departments = await _departmentServices.Getdepartments();
+        postitions = await _postitionServices.GetPostitions();
+        if(departments==null)
+        {
+            departments = new List<Department>();
+        }
+        if(postitions == null)
+        {
+            postitions = new List<Postition>();
+        }
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void OnSearch()
+    {
+        departments = null;
+        await _sessionServices.RequiredPermission();
+        isAdmin = await _sessionServices.IsAdmin();
+        departments = await _departmentServices.Getdepartments();
+        postitions = await _postitionServices.GetPostitions();
+        departments = departments.Where(x => x.Name.Contains(query)).OrderBy(x => x.Id).ToList();
+        if(departments==null)
+        {
+            departments = new List<Department>();
+        }
+        if(postitions == null)
+        {
+            postitions = new List<Postition>();
+        }
+        lastUpdate = DateTime.Now;
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<center>
+    <h1>แผนก และ หน่วยงาน</h1>
+</center>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<br />
+<br />
+<div class="ui action input">
+    <input type="text" placeholder="Search..." @bind-value="query">
+    <button class="ui button btn-success" @onclick="OnSearch"><i class="search icon"></i>Search</button>
+    <button class="ui button btn-info" @onclick="OnSearch"><i class="sync icon"></i></button> &nbsp; Last Updated @lastUpdate.ToLongTimeString()
+</div>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="OnCreate" disabled="@(!isAdmin)"><i class="plus icon"></i> เพิ่มสายงาน</button>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>Id</th>
+            <th>ชื่อแผนก</th>
+            <th>จำนวนตำแหน่งาน</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="">
+        @if(departments==null)
+        {
+            <tr class="table-warning">
+                <td colspan="4">Fetching....</td>
+            </tr>
+        }
+        else if(departments.Count==0)
+        {
+            <tr class="table-danger">
+                <td colspan="4">ไม่พบแผนก</td>
+            </tr>
+        }
+        else
+        {
+            bool rowSwitch = false;
+            @foreach(var department in departments)
+            {
+                rowSwitch = !rowSwitch; 
+                <tr class="@(rowSwitch ? "table-primary":"table-success")">
+                    <td>@department.Id</td>
+                    <td>@department.Name</td>
+                    <td>@postitions.Where(x=>x.Department==department.Id).Count()</td>
+                    <td>
+                        @if(isAdmin)
+                        {
+                            <Button Class="btn-primary" @onclick="()=> OnEdit(department.Id,false)"><i class="edit outline icon"></i></Button>
+                        }
+                        else
+                        {
+                            <Button Class="btn-info"  @onclick="()=> OnEdit(department.Id,true)"><i class="eye icon"></i></Button>
+                        }        
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<dormitoryApps.Client.Pages.Departments.DepartmentModal.Create @ref="Create"/>
+<dormitoryApps.Client.Pages.Departments.DepartmentModal.Edit @ref="Edit"/>

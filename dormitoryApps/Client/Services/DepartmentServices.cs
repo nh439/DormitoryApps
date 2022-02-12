@@ -36,5 +36,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Create", item);
             return res.IsSuccessStatusCode;
         }
+         public async Task<bool> Update(Department item)
+        {       
+            var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Update", item);
+            return res.IsSuccessStatusCode;
+        }
+
     }
 }

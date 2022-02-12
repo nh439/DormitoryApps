@@ -56,5 +56,20 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, "Insert Incomplete");
             }
         }
+        [HttpPost($"{BaseUrl}/Update")]
+        public async Task<IActionResult> Update([FromBody] Department department)
+        {
+            try
+            {
+                var res = await _departmentServices.Update(department);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, "Update Incomplete");
+            }
+        }
+
     }
 }

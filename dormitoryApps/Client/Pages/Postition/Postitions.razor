@@ -1,5 +1,4 @@
 ﻿@page "/Postitions/{LineId:int}"
-<h3>Postitions</h3>
 @using System;
 @using System.Timers;
 @using System.Threading;
@@ -29,27 +28,29 @@
     List<dormitoryApps.Shared.Model.Entity.Postition> allpositions;
     protected override async void OnInitialized()
     {
-        StringValues queryres;
-        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("query", out queryres))  
-        {  
-            query = queryres;  
-        }  
-        myLine = await _postitionLineServices.GetById(LineId);
-        postitions = await _postitionServices.GetByPostitionLine(LineId);
-        departments = await _departmentServices.Getdepartments();
-        if (postitions == null)
-        {
-            postitions = new List<Postition>();
-        }
-        if(!string.IsNullOrEmpty(query))
-        {
-            postitions = postitions.Where(x => x.Name.Contains(query)).ToList();
-        }
-        allpositions = await _postitionServices.GetPostitions();
-        lastUpdate = DateTime.Now;
-        await InvokeAsync(StateHasChanged);
+            StringValues queryres;
+            var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("query", out queryres))  
+            {  
+                query = queryres;  
+            }  
+            myLine = await _postitionLineServices.GetById(LineId);
+            postitions = await _postitionServices.GetByPostitionLine(LineId);
+            departments = await _departmentServices.Getdepartments();
+            if (postitions == null)
+            {
+                postitions = new List<Postition>();
+            }
+            if(!string.IsNullOrEmpty(query))
+            {
+                postitions = postitions.Where(x => x.Name.Contains(query)).ToList();
+            }
+            allpositions = await _postitionServices.GetPostitions();
+            lastUpdate = DateTime.Now;
+            await InvokeAsync(StateHasChanged);
+
     }
+
     public async void OnSearch()
     {
          var baseUrl = $"/Postitions/{LineId}";

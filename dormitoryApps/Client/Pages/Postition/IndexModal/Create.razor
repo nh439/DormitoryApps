@@ -14,8 +14,8 @@
     public bool NextRequired { get; set; } = false;
     public bool ForceLoad { get; set; } = false;
     public bool IsClosed { get; private set; } = false;
-    private dormitoryApps.Client.Pages.Modal.Success Success;
-    private dormitoryApps.Client.Pages.Modal.Error Error;
+    private dormitoryApps.Client.Pages.Modal.Success createSuccess;
+    private dormitoryApps.Client.Pages.Modal.Error createError;
     public void Open()
     {
         ModalDisplay = "block;";
@@ -48,26 +48,26 @@
             var res = await _postitionLineService.Create(line);
             if(res)
             {
-                Success.NextRequired = false;
-                Success.Details = "เพิ่มสายงานสำเร็จ";
-                Success.Header = "ยินดีด้วย";
-                Success.Open();
+                createSuccess.NextRequired = false;
+                createSuccess.Details = "เพิ่มสายงานสำเร็จ";
+                createSuccess.Header = "ยินดีด้วย";
+                createSuccess.Open();
                 Close();
             }
             else
             {
-                Error.NextRequired = false;
-                Error.Header = "!Oops";
-                Error.Details = "Something Went Wrong";
-                Error.Open();
+                createError.NextRequired = false;
+                createError.Header = "!Oops";
+                createError.Details = "Something Went Wrong";
+                createError.Open();
             }
         }
         catch(Exception x)
         {
-                Error.NextRequired = false;
-                Error.Header = "!Oops";
-                Error.Details = x.Message;
-                Error.Open();
+                createError.NextRequired = false;
+                createError.Header = "!Oops";
+                createError.Details = x.Message;
+                createError.Open();
         }
 
     }
@@ -101,5 +101,5 @@
         </div>
     </div>
 </div>
-<dormitoryApps.Client.Pages.Modal.Error @ref="Error"/>
-<dormitoryApps.Client.Pages.Modal.Success @ref="Success"/>
+<dormitoryApps.Client.Pages.Modal.Error @ref="createError"/>
+<dormitoryApps.Client.Pages.Modal.Success @ref="createSuccess"/>

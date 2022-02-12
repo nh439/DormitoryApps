@@ -14,6 +14,8 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<bool> Create(PostitionLine item)
         {
+            int Id = (int)_databases.Dorm.GenerateId(TableName, "Id");
+            item.Id = Id;
             var res = await _databases.Dorm.InsertEntitiesAsync<PostitionLine>(item);
             return res;
         }
