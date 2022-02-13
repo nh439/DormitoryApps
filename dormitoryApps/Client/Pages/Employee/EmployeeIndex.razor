@@ -1,0 +1,19 @@
+﻿@page "/Employees"
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@using Blazorise;
+@using Blazorise.Components;
+@inject SessionServices _sessionServices;
+@inject PostitionLineService _postitionLineServices;
+@inject NavigationManager _navigationManager;
+@inject OfficerServices _officerServices;
+@inject PostitionServices _postitionServices;
+@inject DepartmentServices _departmentServices;
+@code {
+    List<Officer> officers;
+}

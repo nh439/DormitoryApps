@@ -33,6 +33,7 @@
     }
     protected override async void OnInitialized()
     {
+        await _sessionServices.RequiredPermission();
         departments = null;
         await _sessionServices.RequiredPermission();
         isAdmin = await _sessionServices.IsAdmin();
