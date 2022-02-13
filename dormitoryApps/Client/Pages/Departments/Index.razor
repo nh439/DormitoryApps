@@ -17,11 +17,12 @@
 @code {
     private dormitoryApps.Client.Pages.Departments.DepartmentModal.Create Create;
     private dormitoryApps.Client.Pages.Departments.DepartmentModal.Edit Edit;
+    private dormitoryApps.Client.Pages.Departments.DepartmentModal.Postition Post;
     DateTime lastUpdate = new DateTime();
     bool isAdmin = false;
     string query;
     List<Department> departments;
-    List<Postition> postitions;
+    List<dormitoryApps.Shared.Model.Entity.Postition> postitions;
     private void OnCreate()
     {
         Create.Open();
@@ -55,7 +56,10 @@
         isAdmin = await _sessionServices.IsAdmin();
         departments = await _departmentServices.Getdepartments();
         postitions = await _postitionServices.GetPostitions();
-        departments = departments.Where(x => x.Name.Contains(query)).OrderBy(x => x.Id).ToList();
+        if (!string.IsNullOrEmpty(query))
+        {
+            departments = departments.Where(x => x.Name.Contains(query)).OrderBy(x => x.Id).ToList();
+        }
         if(departments==null)
         {
             departments = new List<Department>();
@@ -82,7 +86,7 @@
 </div>
 <br />
 <br />
-<button class="btn btn-primary" @onclick="OnCreate" disabled="@(!isAdmin)"><i class="plus icon"></i> เพิ่มสายงาน</button>
+<button class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="เพิ่มหน่วยงาน (เฉพาะ Admin เท่านั้น)" @onclick="OnCreate" disabled="@(!isAdmin)"><i class="plus icon"></i> เพิ่มสายงาน</button>
 <br />
 <br />
 <table class="table" style="text-align:center">
@@ -120,12 +124,13 @@
                     <td>
                         @if(isAdmin)
                         {
-                            <Button Class="btn-primary" @onclick="()=> OnEdit(department.Id,false)"><i class="edit outline icon"></i></Button>
+                            <Button Class="btn-primary mx-1"data-toggle="tooltip" data-placement="bottom" title="Edit Mode" @onclick="()=> OnEdit(department.Id,false)"><i class="edit outline icon"></i></Button>
                         }
                         else
                         {
-                            <Button Class="btn-info"  @onclick="()=> OnEdit(department.Id,true)"><i class="eye icon"></i></Button>
+                            <Button Class="btn-info mx-1" data-toggle="tooltip" data-placement="bottom" title="View Mode"  @onclick="()=> OnEdit(department.Id,true)"><i class="eye icon"></i></Button>
                         }        
+                        <Button Class="btn-success mx-1" data-toggle="tooltip" data-placement="bottom" title="ดูตำแหน่งงานที่เกี่ยวข้อง" @onclick="()=>Post.Open(department.Id)"><i class="newspaper outline icon"></i></Button>
                     </td>
                 </tr>
             }
@@ -134,3 +139,4 @@
 </table>
 <dormitoryApps.Client.Pages.Departments.DepartmentModal.Create @ref="Create"/>
 <dormitoryApps.Client.Pages.Departments.DepartmentModal.Edit @ref="Edit"/>
+<dormitoryApps.Client.Pages.Departments.DepartmentModal.Postition @ref="Post"/>

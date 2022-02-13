@@ -18,13 +18,13 @@
 
     [Parameter]
     public int LineId { get; set; }
-    public string query { get; set; }
+    public string query { get; set; } =string.Empty;
     PostitionLine myLine;
     List<Postition> postitions;
     DateTime lastUpdate = new DateTime();
     List<Department> departments;
-    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create Create;
-    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Edit Edit;
+    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Create Create = new PostitionIndexModal.Create();
+    private dormitoryApps.Client.Pages.Postition.PostitionIndexModal.Edit Edit =new PostitionIndexModal.Edit();
     List<dormitoryApps.Shared.Model.Entity.Postition> allpositions;
     protected override async void OnInitialized()
     {
@@ -81,7 +81,8 @@
         catch(Exception x)
         {
             Console.WriteLine(x.Message);
-        }    }
+        }
+    }
     private void OnEdit(int postitionId)
     {
         Edit.Open(postitionId);

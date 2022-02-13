@@ -20,7 +20,7 @@
     List<Postition> postitions;
     List<PostitionLine> lines;
     int _lineId { get; set; }
-    Postition item;
+    Postition item = new Postition();
     private dormitoryApps.Client.Pages.Modal.Success success;
     private dormitoryApps.Client.Pages.Modal.Error error;
     Random random = new Random();
@@ -76,6 +76,7 @@
                 success.Header = "ยินดีด้วย";
                 success.NextRequired = false;
                 success.Open();
+                item = new Postition();
                 Close();
             }
             else

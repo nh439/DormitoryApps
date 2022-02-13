@@ -1,0 +1,83 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using Blazorise;
+@inject DepartmentServices _departmentServices;
+@inject PostitionServices _postitionServices;
+@inject PostitionLineService _postitionLineService;
+@code {
+    private Modal e;
+    List<dormitoryApps.Shared.Model.Entity.Postition> postitions;
+    Department department;
+    List<PostitionLine> postitionLines;
+    public async void Open(int departmentId)
+    {
+        department = await _departmentServices.GetById(departmentId);
+        postitions = await _postitionServices.GetByDepartments(departmentId);
+        postitionLines = await _postitionLineService.GetPostitionLines();
+        if (postitions == null)
+        {
+            postitions = new List<dormitoryApps.Shared.Model.Entity.Postition>();
+        }
+        e.Show();
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent Centered="true">
+        <ModalHeader>
+            <ModalTitle>
+                @department.Name
+            </ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>ตำแหน่งของแผนก @department.Name</h1>
+            </center>
+            <br />
+            <table Class="ui inverted green table" style="text-align:center">
+                <thead>
+                    <tr>
+                        <td>Id</td>
+                        <td>ชื่อ</td>
+                        <td>ระดับ</td>
+                        <td>เงินเดือนขั้นต้น</td>
+                        <td>สายงาน</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (postitions == null)
+                    {
+                        <tr>
+                            <td colspan="5">Fetching...</td>
+                        </tr>
+                    }
+                    else if (postitions.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5">ไม่พบตำแหน่ง</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach(var postition in postitions.OrderBy(x=>x.Level).OrderBy(x=>x.Line))
+                        {
+                            <tr>
+                                <td>@postition.Id</td>
+                                <td>@postition.Name</td>
+                                <td>@postition.Level</td>
+                                <td>@postition.Salary.ToString("C")</td>
+                                <td>@postitionLines.Where(x=>x.Id==postition.Line).FirstOrDefault().Name</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
