@@ -6,10 +6,10 @@ namespace dormitoryApps.Client.Services
     public class AddressServices
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<DepartmentServices> _logger;
+        private readonly ILogger<AddressServices> _logger;
         public const string ControllerName = "api/address";
 
-        public AddressServices(HttpClient httpClient, ILogger<DepartmentServices> logger)
+        public AddressServices(HttpClient httpClient, ILogger<AddressServices> logger)
         {
             _httpClient = httpClient;
             _logger = logger;

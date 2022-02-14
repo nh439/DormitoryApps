@@ -58,6 +58,7 @@ builder.Services.AddScoped<IRoomFurnServices,RoomFurnService>();
 builder.Services.AddScoped<IRoomImgServices, RoomImgServices>();
 builder.Services.AddScoped<IMyServicesServices, MyServicesServices>();
 builder.Services.AddScoped<IIServices, iIService>();
+builder.Services.AddScoped<IPostitionChangedService, PostitionChangedService>();
 builder.Services.AddScoped<JwTServices>();
 #endregion
 
