@@ -1,5 +1,6 @@
 ﻿@page "/Employees"
 @using System;
+@using System.IO;
 @using System.Timers;
 @using System.Threading;
 @using dormitoryApps.Client.Services;
@@ -13,7 +14,134 @@
 @inject NavigationManager _navigationManager;
 @inject OfficerServices _officerServices;
 @inject PostitionServices _postitionServices;
-@inject DepartmentServices _departmentServices;
+
 @code {
     List<Officer> officers;
+    List<Postition> postitions;
+    private dormitoryApps.Client.Pages.Employee.IndexModal.ImgModal imgModal;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    bool isAdmin = false ;
+    System.Timers.Timer t1 = new System.Timers.Timer();
+    protected override async void OnInitialized()
+    {
+        officers = await _officerServices.GetEmployee();
+        postitions = await _postitionServices.GetPostitions();
+        isAdmin = await _sessionServices.IsAdmin();
+        await InvokeAsync(StateHasChanged);
+        t1 = new System.Timers.Timer(1000);
+        t1.Elapsed += TimerTick;
+        t1.Enabled = true;
+    }
+    private async void LoadFiles(InputFileChangeEventArgs e,long EmployeeId)
+    {
+        var file = e.File;
+        if(file.ContentType.Contains("image"))
+        {
+            var stream = file.OpenReadStream();
+            MemoryStream memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            byte[] content = memoryStream.ToArray();
+            memoryStream.Close();
+            stream.Close();
+            imgModal.Open(EmployeeId, content);
+        }
+        else
+        {
+            error.Header = "File Not Allow";
+            error.Details = "Image File Only";
+            error.Open();
+        }
+
+    }
+    private async void TimerTick(Object source, ElapsedEventArgs e)
+    {
+        officers = await _officerServices.GetEmployee();
+        postitions = await _postitionServices.GetPostitions();
+        isAdmin = await _sessionServices.IsAdmin();
+        await InvokeAsync(StateHasChanged);
+    }
+    private void Dispose()
+    {
+        t1.Enabled = false ;
+    }
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>ทำเนียบพนักงาน</h1>
+</center>
+<br />
+<br />
+@if(officers==null)
+{
+    <center>
+        <br>
+        <br>
+        <br>
+        <Div Class="loader"></Div>
+        <br>
+        fetching...
+    </center>
+}
+else
+{
+    <div class="ui three column grid">
+        @foreach(var officer in officers)
+        {
+            <div class="column">
+                <div class="ui segment">
+                    @if (officer.Img != null)
+                    {
+                        <img src=" data:image/png;base64,@Convert.ToBase64String(officer.Img)" width="200" height="300">
+                    }
+                    else
+                    {
+                        <img />
+                    }
+                </div>
+                 @if (isAdmin)
+                    {
+                        <br>
+                        <InputFile OnChange="e=>LoadFiles(e,officer.Id)"   />
+                        <br />
+                    }
+    ชื่อ : @(officer.Firstname+" "+officer.Surname)
+    <br>
+    Email : @officer.Email
+    <br>
+    ตำแหน่ง : @(postitions.Where(x=>x.Id==officer.Postition).FirstOrDefault() != null ? postitions.Where(x=>x.Id==officer.Postition).FirstOrDefault().Name : "ไม่มีตำแหน่ง")
+    <br>
+    <Button Class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูข้อมูล"><i class="eye icon"></i></Button>
+    @if(isAdmin)
+                {
+                    <Button Class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="ปรับตำแหน่งและเงินเดือน"><i class="arrow up icon"></i></Button>
+                    <Button Class="btn btn-danger" data-toggle="tooltip" data-placement="bottom" title="ปรับสถานะพ้นสภาพ"><i class="x icon"></i></Button>
+                }
+            </div>
+        }
+    </div>
+}
+<dormitoryApps.Client.Pages.Employee.IndexModal.ImgModal @ref="imgModal"/>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
+<style>
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+

@@ -26,6 +26,9 @@ namespace dormitoryApps.Server.Repository
         {
             ConditionSet set = new ConditionSet();
             set.Add("Id", item.Id);
+            var myid = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, $"Id={item.Id}");
+            item.Password = myid.FirstOrDefault().Password;
+            item.Idx = myid.FirstOrDefault().Idx;
             var res = await _databases.Dorm.UpdateEntityAsync<Officer>(item, set);
             return res == 1;
         }

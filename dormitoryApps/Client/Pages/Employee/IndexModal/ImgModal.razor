@@ -1,0 +1,97 @@
+﻿@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Blazorise;
+@inject OfficerServices _officerServices
+
+@code {
+    private Modal e;
+    private Officer thisItem;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    public async void Open(long officerId,byte[] Img)
+    {
+        thisItem = await _officerServices.GetById(officerId);
+        thisItem.Img = Img;
+        e.Show();
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void SaveChanges()
+    {
+        try{
+            var saveResult = await _officerServices.Update(thisItem);
+            if(saveResult)
+            {
+                success.Details = "อัพรูปภาพสำเร็จ";
+                success.NextRequired = false;
+                success.Open();
+                e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Details = "อัพโหลดรูปภาพไม่สำเร็จ";
+            error.Open();
+        }
+        catch(Exception x)
+        {
+            error.Details = x.Message;
+            error.NextRequired = false;
+            error.Open();
+        }
+
+    }
+}
+<Modal Style="color:black" @ref="e">
+    <ModalContent Centered="true">
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                @if(thisItem == null)
+                {
+                    <br />
+                    <Div Class="loader"></Div>
+                    <br />
+                    <h1>Fetching...</h1>
+                }
+                else
+                {
+                <img src="data:image/png;base64,@Convert.ToBase64String(thisItem.Img)" width="300" height="500" />
+                <br />
+               <b> รหัส : @thisItem.Id</b>
+                <br />
+                <b>ชื่อ : @(thisItem.Firstname + " " + thisItem.Surname)</b>
+                }
+            </center>
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary" @onclick="SaveChanges">Save Changes</Button>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Discard Changes</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<style>
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />

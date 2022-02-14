@@ -7,6 +7,7 @@
 @inject SessionServices _sessionServices;
 @inject InvoiceServices _invoiceServices;
 @inject MyServicesServices _myServicesServices;
+@implements IDisposable
 <PageTitle>Index</PageTitle>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <h1>Nithi Residences</h1>
@@ -84,9 +85,15 @@
         now = DateTime.Now;
         InvokeAsync(StateHasChanged);
     }
-    public void Dispose()
+    private void Disposed(LocationChangedEventArgs e)
     {
-        aTimer?.Dispose();
+        aTimer.Enabled = false ;
+        bTimer.Enabled= false;
+    }
+     void IDisposable.Dispose()
+    {
+         aTimer.Enabled = false ;
+        bTimer.Enabled= false;
     }
     public async void FetchData(Object source, ElapsedEventArgs e)
     {
