@@ -56,7 +56,12 @@ namespace dormitoryApps.Server.Controllers
             var res = await _postitionServices.Deleted(postitionId);
             return Ok(res);
         }
-
+        [HttpGet(BaseUrl+"/Next/{id}")]
+        public async Task<IActionResult> Next(int id)
+        {
+            var res = await _postitionServices.GetNextPostition(id);
+            return Ok(res);
+        }
 
 
     }

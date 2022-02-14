@@ -52,5 +52,17 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Postition>(TableName,$"Id={Id}");
             return res.FirstOrDefault();
         }
+        public async Task<Postition?> GetNextPostition(int Id)
+        {
+            IEnumerable<Postition> result;
+            var thisPostition = _databases.Dorm.SelectEntities<Postition>(TableName, $"Id={Id}").FirstOrDefault();
+            if(thisPostition.Next.HasValue)
+            {
+                result = await _databases.Dorm.SelectEntitiesAsync<Postition>(TableName, $"Id={thisPostition.Next}");
+                return result.FirstOrDefault();
+            }
+            result = await _databases.Dorm.SelectEntitiesAsync<Postition>(TableName, $"Line = {thisPostition.Line} and Level={(thisPostition.Level + 1)}");
+            return result.OrderBy(x => Guid.NewGuid().ToString()).FirstOrDefault();
+        }
     }
 }

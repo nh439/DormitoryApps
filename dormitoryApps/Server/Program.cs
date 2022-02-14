@@ -35,6 +35,7 @@ builder.Services.AddScoped<RoomFurnRepository>();
 builder.Services.AddScoped<RoomImgRepository>();
 builder.Services.AddScoped<MyServiceRepository>();
 builder.Services.AddScoped<InvoiceServiceRepository>();
+builder.Services.AddScoped<PostitionChangedRepository>();
 #endregion
 
 #region Services

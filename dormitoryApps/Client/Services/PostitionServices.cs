@@ -112,6 +112,19 @@ namespace dormitoryApps.Client.Services
             }
             return false;
         }
+        public async Task<Postition> GetNextPostition(int postitionId)
+        {
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<Postition>($"{ ControllerName}/Next/{postitionId}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return new Postition();
+        }
 
     }
 }

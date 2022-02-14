@@ -13,6 +13,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Postition>> GetByPostitionLine(int lineId);
         Task<List<Postition>> GetByDepartment(int DepartmentId);
         Task<Postition> GetById(int Id);
+        Task<Postition?> GetNextPostition(int Id);
     }
     public class PostitionServices : IPostitionServices
     {
@@ -56,6 +57,10 @@ namespace dormitoryApps.Server.Services
         public async Task<Postition> GetById(int Id)
         {
             return await _repository.GetById(Id);
+        }
+        public async Task<Postition?> GetNextPostition(int Id)
+        {
+            return await _repository.GetNextPostition(Id);
         }
     }
 }
