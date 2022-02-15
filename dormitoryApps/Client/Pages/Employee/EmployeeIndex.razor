@@ -20,6 +20,8 @@
     List<Postition> postitions;
     private dormitoryApps.Client.Pages.Employee.IndexModal.ImgModal imgModal;
     private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Employee.IndexModal.PostitionChange positionChange;
+    private dormitoryApps.Client.Pages.Employee.IndexModal.OfficerCard card;
     bool isAdmin = false ;
     System.Timers.Timer t1 = new System.Timers.Timer();
     protected override async void OnInitialized()
@@ -63,6 +65,10 @@
     private void Dispose()
     {
         t1.Enabled = false ;
+    }
+    private async void OnPositionChange(long officeId)
+    {
+       await positionChange.Show(officeId);
     }
 }
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
@@ -110,10 +116,10 @@ else
     <br>
     ตำแหน่ง : @(postitions.Where(x=>x.Id==officer.Postition).FirstOrDefault() != null ? postitions.Where(x=>x.Id==officer.Postition).FirstOrDefault().Name : "ไม่มีตำแหน่ง")
     <br>
-    <Button Class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูข้อมูล"><i class="eye icon"></i></Button>
+    <Button Class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูข้อมูล" @onclick="async ()=> card.Show(officer.Id)"><i class="eye icon"></i></Button>
     @if(isAdmin)
                 {
-                    <Button Class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="ปรับตำแหน่งและเงินเดือน"><i class="arrow up icon"></i></Button>
+                    <Button Class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" @onclick="e=>OnPositionChange(officer.Id)" title="ปรับตำแหน่งและเงินเดือน"><i class="arrow up icon"></i></Button>
                     <Button Class="btn btn-danger" data-toggle="tooltip" data-placement="bottom" title="ปรับสถานะพ้นสภาพ"><i class="x icon"></i></Button>
                 }
             </div>
@@ -122,6 +128,8 @@ else
 }
 <dormitoryApps.Client.Pages.Employee.IndexModal.ImgModal @ref="imgModal"/>
 <dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
+<dormitoryApps.Client.Pages.Employee.IndexModal.PostitionChange @ref="positionChange"/>
+<dormitoryApps.Client.Pages.Employee.IndexModal.OfficerCard @ref="card"/>
 <style>
 .loader {
   border: 16px solid #f3f3f3;

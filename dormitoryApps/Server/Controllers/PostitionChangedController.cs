@@ -15,7 +15,7 @@ namespace dormitoryApps.Server.Controllers
             _postitionChangedService = postitionChangedService;
             _logger = logger;
         }
-        [HttpGet]
+        [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? officerId)
         {
            if(officerId.HasValue)
@@ -23,10 +23,11 @@ namespace dormitoryApps.Server.Controllers
                 var res = await _postitionChangedService.GetByofficer(officerId.Value);
                 return Ok(res);
             }
-            return Ok(await _postitionChangedService.Getall());
+            var resall = await _postitionChangedService.Getall();
+            return Ok(resall);
 
         }
-        [HttpPost]
+        [HttpPost(BaseUrl)]
         public async Task<IActionResult> Create([FromBody]PostitionChanged item)
         {
             return Ok(await _postitionChangedService.Create(item));

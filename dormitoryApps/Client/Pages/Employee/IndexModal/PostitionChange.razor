@@ -1,0 +1,168 @@
+﻿@using Blazorise;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Other;
+@using System.Globalization;
+@inject PostitionChangedServices _postitionChangedServices;
+@inject PostitionServices _postitionServices;
+@inject PostitionLineService _postitionLineService;
+@inject DepartmentServices _departmentServices;
+@inject OfficerServices _officerServices;
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+@code {
+    Officer thisUser;
+    List<Postition> positions;
+    List<PostitionLine> postitionLines;
+    List<Department> departments;
+    List<PostitionChanged> postitionChanged;
+    PostitionChanged? lastChanged;
+    Postition thisPosition;
+    Postition nextPostition;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+    NewPostitionParameter parameter = new NewPostitionParameter();
+    private Modal e;
+    public async Task Show(long officerId)
+    {
+        try{
+            thisUser = await _officerServices.GetById(officerId);
+            positions = await _postitionServices.GetPostitions();
+            postitionLines = await _postitionLineService.GetPostitionLines();
+            postitionChanged = await _postitionChangedServices.GetByOfficer(officerId);
+            if(postitionChanged != null) lastChanged = postitionChanged.OrderByDescending(x => x.Date).FirstOrDefault();    
+            thisPosition = positions.Where(x=>x.Id==thisUser.Postition).FirstOrDefault();
+            nextPostition = await _postitionServices.GetNextPostition(thisUser.Postition);
+            if (thisPosition == null) thisPosition = new Postition();
+            parameter.OfficerId = officerId;
+            parameter.PositionId = nextPostition != null ? nextPostition.Id : thisPosition.Id;
+            parameter.Salary = nextPostition != null ? nextPostition.Salary : thisPosition.Salary;
+            await e.Show();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch(Exception x)
+        {
+            Console.WriteLine(x.Message);
+        }
+    }
+    private async void PositionChange(ChangeEventArgs e)
+    {
+        var tps = await _postitionServices.GetById(int.Parse(e.Value.ToString()));
+        parameter.Salary = tps.Salary;
+        parameter.PositionId=int.Parse(e.Value.ToString());
+        await InvokeAsync(StateHasChanged);
+    }
+    private async void SaveChanges()
+    {
+        try
+        {
+            var res = await _officerServices.PostitionUpgrade(new NewPostitionParameter[] { parameter });
+            if (res > 0)
+            {
+                success.Details = "ปรับตำแหน่งสำเร็จแล้ว";
+                success.NextRequired = false;
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Details = "ปรับตำแหน่งไม่สำเร็จ";
+            error.Open();
+        }
+        catch(Exception x)
+        {
+             error.Details = x.Message;
+            error.Open();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle></ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>ปรับตำแหน่งงานของ @(thisUser != null ? (thisUser.Firstname+" "+thisUser.Surname) : "ไม่พบชื่อ")</h1>
+            </center>
+            <br />
+            <br />
+            <Table Class="table table-bordered" Style="text-align:center">
+                <thead class="table-dark">
+                    <tr>
+                        <th></th>
+                        <th>ตำแหน่งเดิม</th>
+                        <th>ตำแหน่งใหม่</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bg-info">ตำแหน่งงาน</td>
+                        <td >@(thisPosition != null ? thisPosition.Name:null)</td>
+                        <td>
+                             <select id="select" name="select" class="custom-select" @onchange="PositionChange">
+                                 @if(positions == null)
+                                {
+                                    <option disabled>Loading...</option>
+                                }
+                                else
+                                {
+                                    int nextPositionId = nextPostition != null ? nextPostition.Id:0;
+                                    @foreach(var position in positions.OrderBy(x=>x.Level).OrderBy(x=>x.Line))
+                                    {
+                                        string classname = string.Empty;
+                                        if(position.Line != thisPosition.Line && position.Id != nextPositionId)
+                                        {
+                                            classname="bg-info";
+                                        }
+                                        else
+                                        {
+                                            if (position.Level < thisPosition.Level) classname = "bg-secondary";
+                                            else if (position.Level == thisPosition.Level) classname = "bg-warning";
+                                            else if (position.Level == thisPosition.Level + 1 || position.Id == nextPositionId) classname = "bg-success";
+                                            else
+                                            {
+                                                classname = "bg-primary";
+                                            }
+
+                                        }
+                                        <option value="@position.Id" class="@classname" selected="@(position.Id==parameter.PositionId)">@position.Name</option>
+                                    }                                                                           
+                                }                                 
+                            </select>
+                        </td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="bg-info">เงินเดือน</td>
+                        <td >@(thisPosition != null ?$"{thisPosition.Salary.ToString("N",new CultureInfo("th-TH"))} บาท ":null)</td>
+                        <td> 
+                            <input  type="number" @bind-value="parameter.Salary" class="form-control">
+                        </td>
+                    </tr>
+                    @if(nextPostition != null)
+                    {
+                        <tr>
+                        <td class="bg-info">ตำแหน่งถัดไป</td>
+                        <td colspan="2">@nextPostition.Name</td>
+                        </tr>
+                    }                  
+                </tbody>
+            </Table>
+            <br />
+             @if(lastChanged!=null)
+             {
+                 <h2>ตำแหน่งก่อนหน้า : @positions.Where(x=>x.Id == lastChanged.OldPostition).FirstOrDefault().Name</h2> 
+                 <h2>เลื่อนเมี่อ : @lastChanged.Date.ToLongDateString()</h2>
+             }
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary" @onclick="SaveChanges">Save Changes</Button>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
+<dormitoryApps.Client.Pages.Modal.Success @ref="success"/>

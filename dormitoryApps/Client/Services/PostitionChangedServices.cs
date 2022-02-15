@@ -21,8 +21,16 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<PostitionChanged>> GetByOfficer(long officerId)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<PostitionChanged>>($"{ControllerName}?officerId={officerId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<PostitionChanged>>($"{ControllerName}?officerId={officerId}");
+                return res;
+            }
+            catch(Exception x)
+            {
+                _logger.LogError(x.Message, x);
+            }
+            return null;
         }
         public async Task<bool> Create(PostitionChanged item)
         {
