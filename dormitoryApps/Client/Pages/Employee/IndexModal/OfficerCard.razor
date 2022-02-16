@@ -51,8 +51,8 @@
             <h2>รหัส : @officer.Id</h2>
             <h2>ชื่อ : @(officer.Prefix+" "+officer.Firstname+" "+officer.Surname)</h2>
             <h2>Email : @officer.Email</h2>
-            <h2>วันเกิด : @officer.Brithday.ToShortDateString()</h2>
-            <h2>วันที่เริ่มงาน : @officer.Registerd.ToShortDateString()</h2>
+            <h2>วันเกิด : @officer.Brithday.ToString("dd MMMM yyyy",new CultureInfo("th-TH"))</h2>
+            <h2>วันที่เริ่มงาน : @officer.Registerd.ToString("dd MMMM yyyy",new CultureInfo("th-TH"))</h2>
             <h2>ตำแหน่ง : @postition.Name</h2>
             <h2>สายงาน : @postitionLine.Name</h2>
             <h2>แผนก : @department.Name</h2>
