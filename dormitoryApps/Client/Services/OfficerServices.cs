@@ -77,10 +77,26 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<bool>($"{ControllerName}/ExistUsername/{username}");
             return res;
         }
-         public async Task<bool> GetExistEmail(string Email)
-        {
+        public async Task<bool> GetExistEmail(string Email)
+        {          
             var res = await _httpClient.GetFromJsonAsync<bool>($"{ControllerName}/ExistEmail/{Email}");
             return res;
+        }
+        public async Task<bool> ExpiredOfficer(long officerId, string? remark)
+        {
+            ExpiredAndRestoreParameters parameters = new ExpiredAndRestoreParameters();
+            parameters.Id = Encoding.ASCII.GetBytes(officerId.ToString());
+            if (!string.IsNullOrEmpty(remark)) parameters.Comment = Encoding.ASCII.GetBytes(remark);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Expired", parameters);
+            return await res.Content.ReadFromJsonAsync<bool>();
+        }
+         public async Task<bool> RestoreOfficer(long officerId, bool ResetRegisterddate = true)
+        {
+            ExpiredAndRestoreParameters parameters = new ExpiredAndRestoreParameters();
+            parameters.Id = Encoding.ASCII.GetBytes(officerId.ToString());
+            parameters.HasReset = ResetRegisterddate;
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Restored", parameters);
+            return await res.Content.ReadFromJsonAsync<bool>();
         }
 
     }

@@ -72,6 +72,11 @@
                     </div>
                 }
             </h2>
+            @if(officer.Expired)
+            {
+                <h2>พ้นสภาพเมื่อ : @officer.expiredDate.ToString("dd MMMM yyyy")</h2>
+                <h2>เนื่องจาก : @officer.remark</h2>
+            }
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>

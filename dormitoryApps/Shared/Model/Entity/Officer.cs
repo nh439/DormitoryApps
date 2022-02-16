@@ -25,5 +25,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public bool Expired { get; set; } = false;
 		public byte[] Img { get; set; }
 		public bool Issuper { get; set; }
+		public string remark { get; set; }
+		public DateTime expiredDate { get; set; }
 	}
 }

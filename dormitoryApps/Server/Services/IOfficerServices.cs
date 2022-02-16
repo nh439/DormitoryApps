@@ -19,7 +19,8 @@ namespace dormitoryApps.Server.Services
         Task<int> PostitionUpgrade(IEnumerable<NewPostitionParameter> items);
         Task<bool> GetExistUsername(string username);
         Task<bool> GetExistEmail(string Email);
-
+        Task<bool> ExpiredOfficer(long officeId, string remark);
+        Task<bool> RestoreOfficer(long officeId, bool resetRegisterDate);
     }
     public class OfficerServices : IOfficerServices
     {
@@ -84,6 +85,13 @@ namespace dormitoryApps.Server.Services
         {
             return await _repository.GetExistEmail(Email);
         }
-
+        public async Task<bool> ExpiredOfficer(long officeId, string remark)
+        {
+            return await _repository.ExpiredOfficer(officeId, remark);
+        }
+        public async Task<bool> RestoreOfficer(long officeId, bool resetRegisterDate)
+        {
+            return await _repository.RestoreOfficer(officeId, resetRegisterDate);
+        }
     }
 }

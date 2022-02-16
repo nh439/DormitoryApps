@@ -197,7 +197,40 @@ namespace dormitoryApps.Server.Controllers
                 _logger.LogError(x, x.Message);
                 return StatusCode(500, x.Message);
             }
+        }       
+        [HttpPost(ControllerName+"/Expired")]
+        public async Task<IActionResult> ExpiredOfficer([FromBody]ExpiredAndRestoreParameters parameters)
+        {
+            try
+            {
+                long officerId = long.Parse(Encoding.ASCII.GetString(parameters.Id));
+                string remark = Encoding.ASCII.GetString(parameters.Comment);
+                var result = await _officerServices.ExpiredOfficer(officerId, remark);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
         }
+        [HttpPost(ControllerName+"/Restored")]
+        public async Task<IActionResult> RestoreOfficer([FromBody] ExpiredAndRestoreParameters parameters)
+        {
+            try
+            {
+                long officerId = long.Parse(Encoding.ASCII.GetString(parameters.Id));
+                bool reset = parameters.HasReset;
+                var result = await _officerServices.RestoreOfficer(officerId, reset);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
+
 
     }
 }

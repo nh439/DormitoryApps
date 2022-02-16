@@ -143,7 +143,22 @@ namespace dormitoryApps.Server.Repository
             var res = emaillist.Where(x => x == Email);
             return res.Count() <=0  ;
         }
-
+        public async Task<bool> ExpiredOfficer(long officeId,string remark)
+        {
+            StoredProcedureContrainer contrainer = new StoredProcedureContrainer("sp_Expiredofficer");
+            contrainer.Addparameters("officerId", officeId);
+            contrainer.Addparameters("rmk", remark);
+            var res = await _databases.Dorm.ExecuteStoredProcedureAsync(contrainer);
+            return res.HasCompleted;
+        }
+        public async Task<bool> RestoreOfficer(long officeId,bool resetRegisterDate)
+        {
+            StoredProcedureContrainer contrainer = new StoredProcedureContrainer("sp_restoreofficer");
+            contrainer.Addparameters("officerId", officeId);
+            contrainer.Addparameters("resetdate", resetRegisterDate);
+            var res = await _databases.Dorm.ExecuteStoredProcedureAsync(contrainer);
+            return res.HasCompleted;
+        }
     }
 
 }
