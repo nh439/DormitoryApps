@@ -22,6 +22,7 @@
     private dormitoryApps.Client.Pages.Modal.Error error;
     private dormitoryApps.Client.Pages.Employee.IndexModal.PostitionChange positionChange;
     private dormitoryApps.Client.Pages.Employee.IndexModal.OfficerCard card;
+    private dormitoryApps.Client.Pages.Employee.IndexModal.ExpiredModal expired;
     bool isAdmin = false ;
     System.Timers.Timer t1 = new System.Timers.Timer();
     protected override async void OnInitialized()
@@ -120,7 +121,14 @@ else
     @if(isAdmin)
                 {
                     <Button Class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" @onclick="e=>OnPositionChange(officer.Id)" title="ปรับตำแหน่งและเงินเดือน"><i class="arrow up icon"></i></Button>
-                    <Button Class="btn btn-danger" data-toggle="tooltip" data-placement="bottom" title="ปรับสถานะพ้นสภาพ"><i class="x icon"></i></Button>
+                    @if (!officer.Expired)
+                    {
+                        <Button Class="btn btn-danger" data-toggle="tooltip" data-placement="bottom" @onclick="()=>expired.Show(officer.Id)" title="ปรับสถานะพ้นสภาพ"><i class="x icon"></i></Button>
+                    }
+                    else
+                    {
+                        <Button Class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" @onclick="()=>expired.Show(officer.Id)" title="ปรับสถานะคืนสภาพ"><i class="check icon"></i></Button>
+                    }
                 }
             </div>
         }
@@ -130,6 +138,7 @@ else
 <dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
 <dormitoryApps.Client.Pages.Employee.IndexModal.PostitionChange @ref="positionChange"/>
 <dormitoryApps.Client.Pages.Employee.IndexModal.OfficerCard @ref="card"/>
+<dormitoryApps.Client.Pages.Employee.IndexModal.ExpiredModal @ref="expired"/>
 <style>
 .loader {
   border: 16px solid #f3f3f3;

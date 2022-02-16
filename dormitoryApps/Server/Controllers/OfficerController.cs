@@ -204,7 +204,8 @@ namespace dormitoryApps.Server.Controllers
             try
             {
                 long officerId = long.Parse(Encoding.ASCII.GetString(parameters.Id));
-                string remark = Encoding.ASCII.GetString(parameters.Comment);
+                string remark =string.Empty;
+                if(parameters.Comment != null) remark = Encoding.ASCII.GetString(parameters.Comment);
                 var result = await _officerServices.ExpiredOfficer(officerId, remark);
                 return Ok(result);
             }

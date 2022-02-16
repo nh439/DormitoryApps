@@ -1,11 +1,12 @@
-﻿
+﻿@using dormitoryApps.Client.Services;
+@inject OfficerServices officerServices;
 
 @code {
-     public Guid Guid = Guid.NewGuid();
+    public Guid Guid = Guid.NewGuid();
     public string ModalDisplay = "none;";
     public string ModalClass = "";
     public bool ShowBackdrop = false;
-
+    public bool IsExpired = false;
     public void Open()
     {
         ModalDisplay = "block;";
@@ -14,15 +15,19 @@
         StateHasChanged();
     }
 
-    public void Close()
+    public async void Close()
     {
         ModalDisplay = "none";
         ModalClass = "";
         ShowBackdrop = false;
+        if(IsExpired)
+        {
+            await officerServices.Logout();
+        }
         StateHasChanged();
     }
 }
-<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay;color:black">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -36,7 +41,7 @@
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     <img src="/Img/Close-2-icon.png" style="width:200px;height:200px;" />
                     <h1>Oops!</h1>
-                    <h2>Username or Password Incorrect</h2>
+                    <h2>@(IsExpired ?"User Expired" : "Username or Password Incorrect")</h2>
                 </center>
             </div>
             <div class="modal-footer">

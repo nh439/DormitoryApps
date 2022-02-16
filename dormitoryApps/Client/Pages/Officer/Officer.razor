@@ -75,13 +75,17 @@
         Console.WriteLine(res);
         if(!res)
         {
+            modal.IsExpired = false;
             modal.Open();
-            // await js.InvokeAsync<bool>("alert", "Username or Password Incorrect");
-
-            // PassInc();
             return;
         }      
         var currentUser = await officerServices.GetByUsername(Username);
+        if(currentUser.Expired && !currentUser.Issuper)
+        {
+            modal.IsExpired = true;
+            modal.Open();
+            return;
+        }
         string sessionId = await sessionServices.CreateLogin(currentUser.Id);
         await sessionStorageService.SetItemAsStringAsync("Id", sessionId);
         await _localStorageService.SetItemAsStringAsync("Id", sessionId);
