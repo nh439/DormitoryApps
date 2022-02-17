@@ -14,7 +14,7 @@
 @inject NavigationManager _navigationManager;
 @inject OfficerServices _officerServices;
 @inject PostitionServices _postitionServices;
-
+@implements IDisposable;
 @code {
     List<Officer> officers;
     List<Postition> postitions;
@@ -38,6 +38,7 @@
     private async void LoadFiles(InputFileChangeEventArgs e,long EmployeeId)
     {
         var file = e.File;
+        e.GetMultipleFiles();
         if(file.ContentType.Contains("image"))
         {
             var stream = file.OpenReadStream();
@@ -69,7 +70,11 @@
     }
     private async void OnPositionChange(long officeId)
     {
-       await positionChange.Show(officeId);
+        await positionChange.Show(officeId);
+    }
+    void IDisposable.Dispose()
+    {
+        t1?.Dispose();
     }
 }
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">

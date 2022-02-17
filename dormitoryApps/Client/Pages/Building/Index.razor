@@ -1,0 +1,84 @@
+﻿@page "/Buildings"
+@using System;
+@using System.Timers;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;  
+@inject SessionServices _sessionServices;
+@inject BuildingServices _buildingServices;
+@inject NavigationManager _navigationManager;
+@inject RoomServices _roomServices;
+@implements IDisposable;
+@code {
+    System.Timers.Timer timer = new System.Timers.Timer();
+    List<Buildings> buildings;
+    List<Room> rooms = new List<Room>();
+    protected override void OnInitialized()
+    {
+        timer = new System.Timers.Timer(2000);
+        timer.Elapsed += GetBuildings;
+        timer.Enabled = true;
+    }
+    private async void GetBuildings(object sender,ElapsedEventArgs e)
+    {
+        buildings = await _buildingServices.Get();
+        if (buildings == null) buildings = new List<Buildings>();
+        rooms = await _roomServices.GetRooms();
+        await InvokeAsync(StateHasChanged);
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+}
+<center>
+    <h1>อาคาร และ ห้องพัก</h1>
+</center>
+<br />
+<br />
+<br />
+<button class="btn btn-primary ">เพิ่มอาคาร</button>
+<br />
+<table class ="table table-bordered" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัส</th>
+            <th>ชื่ออาคาร</th>
+            <th>จำนวนชั้น</th>
+            <th>จำนวนห้อง</th>
+            <th>จำนวนห้องว่าง</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="alert-success">
+        @if(buildings == null)
+        {
+            <tr>
+                <td colspan="6">Fetching...</td>
+            </tr>
+        }
+        else if (buildings.Count==0)
+        {
+            <tr>
+                <td colspan="6">ไม่พบอาคารในระบบ</td>
+            </tr>
+        }
+        else
+        {
+            @foreach(var building in buildings)
+            {
+                <tr>
+                    <td>@building.Id</td>
+                    <td>@building.Name</td>
+                    <td>@rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Max()</td>
+                    <td>@rooms.Where(x=>x.Building==building.Id).Count()</td>
+                    <td>0</td>
+                    <td><button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" ><i class="building outline icon"></i></button></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
