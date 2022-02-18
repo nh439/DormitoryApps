@@ -15,6 +15,7 @@
     System.Timers.Timer timer = new System.Timers.Timer();
     List<Buildings> buildings;
     List<Room> rooms = new List<Room>();
+    private dormitoryApps.Client.Pages.Building.Modal.Create create;
     protected override void OnInitialized()
     {
         timer = new System.Timers.Timer(2000);
@@ -39,7 +40,7 @@
 <br />
 <br />
 <br />
-<button class="btn btn-primary ">เพิ่มอาคาร</button>
+<button class="btn btn-primary " @onclick="()=> create.Open()">เพิ่มอาคาร</button>
 <br />
 <table class ="table table-bordered" style="text-align:center">
     <thead class="table-dark">
@@ -81,4 +82,5 @@
         }
     </tbody>
 </table>
+<dormitoryApps.Client.Pages.Building.Modal.Create @ref="create"/>
 

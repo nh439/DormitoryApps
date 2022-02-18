@@ -1,0 +1,164 @@
+﻿@using Blazorise;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.location;
+@inject BuildingServices _buildingServices;
+@inject AddressServices _addressServices;
+@inject DistrictServices _districtServices;
+
+@code {
+    private Modal e;
+    Buildings item = new Buildings()
+    {MyAddress = new dormitoryApps.Shared.Model.Entity.Address {PostalCode=0 } };
+    List<Districts> districts;
+    List<string> province = new List<string>();
+    List<string> District = new List<string>();
+    List<string> subDistricts = new List<string>();
+
+    public async void Open()
+    {
+        districts = await _districtServices.Getall();
+        province = districts.Select(x => x.province).Distinct().ToList();
+        e.Show();
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void ProvinceChanges(ChangeEventArgs e)
+    {
+        item.MyAddress.District = "a";
+        item.MyAddress.Subdistrict = "a";
+        District = new List<string>();
+        subDistricts = new List<string>();
+        await InvokeAsync(StateHasChanged);
+        item.MyAddress.Province = e.Value.ToString();
+        District = districts.Where(x => x.province == item.MyAddress.Province).Select(x => x.amphoe).Distinct().ToList(); 
+        item.MyAddress.PostalCode = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void DistrictChanges(ChangeEventArgs e)
+    {        
+        item.MyAddress.Subdistrict = "a";
+        subDistricts = new List<string>();
+        await InvokeAsync(StateHasChanged);
+        item.MyAddress.District = e.Value.ToString();
+        subDistricts = districts.Where(x => x.province == item.MyAddress.Province && x.amphoe == item.MyAddress.District).Select(x => x.district).ToList();
+        item.MyAddress.PostalCode = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void SubDistrictChanges(ChangeEventArgs e)
+    {
+        item.MyAddress.Subdistrict = e.Value.ToString();
+        var zip = await _districtServices.GetPostalCode(item.MyAddress.Province, item.MyAddress.District, item.MyAddress.Subdistrict);
+        item.MyAddress.PostalCode = zip.HasValue ? zip.Value : 0;
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>
+                เพิ่มอาคาร และ สถานที่
+            </ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>เพิ่มอาคาร และ สถานที่</h1>
+            </center>
+
+            <div class="form-group">
+                <label for="bld">ชื่ออาคาร</label>
+                <input id="bld" @bind-value="item.Name" type="text" class="form-control">
+            </div>
+            <br />
+            <h1>ที่อยู่</h1>
+            <hr />
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="etc">เลขที่</label>
+                        <input id="etc" placeholder="99/78" @bind-value="item.MyAddress.etc" type="text" class="form-control">
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="etcs">หมู่(ไม่มีใส่ 0)</label>
+                        <input id="etcs" type="number" @bind-value="item.MyAddress.Moo" class="form-control">
+                    </div>
+                </Div>
+            </Div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="a">จังหวัด</label>
+                        <div>
+                            <select id="a" @onchange="ProvinceChanges"  class="custom-select">
+                                <option value="a" selected>โปรดเลือก</option>
+                                @if(province == null)
+                                {
+                                    <option disabled>ไม่พบจังหวัด</option>
+                                }
+                                else
+                                {
+                                    @foreach(var prov in province)
+                                    {
+                                        <option value="@prov">@prov</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="b">อำเภอ/เขต</label>
+                        <div>
+                            <select id="b" @onchange="DistrictChanges" class="custom-select">
+                                <option value="a" selected>โปรดเลือก</option>
+                                  @if(District == null)
+                                {
+                                    <option disabled>ไม่พบอำเภอ</option>
+                                }
+                                else
+                                {
+                                    @foreach(var dis in District)
+                                    {
+                                        <option value="@dis">@dis</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            <div class="form-group">
+                <label for="c">ตำบล/แขวง</label>
+                <div>
+                    <select id="c" @onchange="SubDistrictChanges" class="custom-select">
+                        <option value="a" selected>โปรดเลือก</option>
+                         @if(subDistricts == null)
+                                {
+                                    <option disabled>ไม่พบตำบล</option>
+                                }
+                                else
+                                {
+                                    @foreach(var sub in subDistricts)
+                                    {
+                                        <option value="@sub">@sub</option>
+                                    }
+                                }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Zip">รหัส</label>
+                <input id="Zip" @bind-value="item.MyAddress.PostalCode" type="text" class="form-control" readonly>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary">Save Changes</Button>
+            <Button @onclick="()=>e.Hide()" Class="btn btn-secondary">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>

@@ -13,18 +13,31 @@ namespace dormitoryApps.Server.Services
     public class BuildingsServices : IBuildingsServices
     {
         private readonly BuildingsRepository _repository;
+        private readonly AddressRepository _addressRepository;
 
-        public BuildingsServices(BuildingsRepository repository)
+        public BuildingsServices(BuildingsRepository repository, AddressRepository addressRepository)
         {
             _repository = repository;
+            _addressRepository = addressRepository;
         }
         public async Task<bool> Create(Buildings item)
         {
-            return await _repository.Create(item);
+            var res = await _repository.Create(item);
+            if (item.MyAddress != null)
+            {
+                item.MyAddress.Id = item.Location;
+                await _addressRepository.Create(item.MyAddress);
+            }
+            return res;
         }
         public async Task<bool> Update(Buildings item)
         {
-            return await _repository.Update(item);
+            var res= await _repository.Update(item);
+            if(res)
+            {
+                await _addressRepository.Update(item.MyAddress);
+            }
+            return res;
         }
         public async Task<List<Buildings>> GetAll()
         {
@@ -32,7 +45,9 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<Buildings> GetById(int id)
         {
-            return await _repository.GetById(id);
+            var res = await _repository.GetById(id);
+            res.MyAddress = await _addressRepository.GetById(res.Location);
+            return res;
         }
     }
 }

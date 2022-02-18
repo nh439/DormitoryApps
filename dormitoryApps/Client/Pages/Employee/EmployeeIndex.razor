@@ -38,7 +38,6 @@
     private async void LoadFiles(InputFileChangeEventArgs e,long EmployeeId)
     {
         var file = e.File;
-        e.GetMultipleFiles();
         if(file.ContentType.Contains("image"))
         {
             var stream = file.OpenReadStream();
