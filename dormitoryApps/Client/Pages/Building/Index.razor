@@ -15,12 +15,14 @@
     System.Timers.Timer timer = new System.Timers.Timer();
     List<Buildings> buildings;
     List<Room> rooms = new List<Room>();
+    bool isAdmin = false;
     private dormitoryApps.Client.Pages.Building.Modal.Create create;
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         timer = new System.Timers.Timer(2000);
         timer.Elapsed += GetBuildings;
         timer.Enabled = true;
+        isAdmin = await _sessionServices.IsAdmin();
     }
     private async void GetBuildings(object sender,ElapsedEventArgs e)
     {
@@ -34,13 +36,18 @@
         timer?.Dispose();
     }
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
     <h1>อาคาร และ ห้องพัก</h1>
 </center>
 <br />
 <br />
 <br />
-<button class="btn btn-primary " @onclick="()=> create.Open()">เพิ่มอาคาร</button>
+@if (isAdmin)
+{
+    <button class="btn btn-primary " @onclick="()=> create.Open()">เพิ่มอาคาร</button>
+}
+<br />
 <br />
 <table class ="table table-bordered" style="text-align:center">
     <thead class="table-dark">
@@ -73,7 +80,7 @@
                 <tr>
                     <td>@building.Id</td>
                     <td>@building.Name</td>
-                    <td>@rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Max()</td>
+                    <td>@(rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor) != null && rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Count() > 0? rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Max() : 1)</td>
                     <td>@rooms.Where(x=>x.Building==building.Id).Count()</td>
                     <td>0</td>
                     <td><button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" ><i class="building outline icon"></i></button></td>

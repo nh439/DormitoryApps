@@ -24,14 +24,15 @@
     }
     public async void ProvinceChanges(ChangeEventArgs e)
     {
-        item.MyAddress.District = "a";
-        item.MyAddress.Subdistrict = "a";
         District = new List<string>();
         subDistricts = new List<string>();
-        await InvokeAsync(StateHasChanged);
         item.MyAddress.Province = e.Value.ToString();
         District = districts.Where(x => x.province == item.MyAddress.Province).Select(x => x.amphoe).Distinct().ToList(); 
-        item.MyAddress.PostalCode = 0;
+        item.MyAddress.District= District.FirstOrDefault();
+        subDistricts = districts.Where(x => x.province == item.MyAddress.Province && x.amphoe == item.MyAddress.District).Select(x => x.district).ToList();
+        item.MyAddress.Subdistrict = subDistricts.FirstOrDefault();
+        var zip = await _districtServices.GetPostalCode(item.MyAddress.Province, item.MyAddress.District, item.MyAddress.Subdistrict);
+        item.MyAddress.PostalCode = zip.HasValue ? zip.Value : 0;
         await InvokeAsync(StateHasChanged);
     }
     public async void DistrictChanges(ChangeEventArgs e)
@@ -41,7 +42,9 @@
         await InvokeAsync(StateHasChanged);
         item.MyAddress.District = e.Value.ToString();
         subDistricts = districts.Where(x => x.province == item.MyAddress.Province && x.amphoe == item.MyAddress.District).Select(x => x.district).ToList();
-        item.MyAddress.PostalCode = 0;
+        item.MyAddress.Subdistrict = subDistricts.FirstOrDefault();
+        var zip = await _districtServices.GetPostalCode(item.MyAddress.Province, item.MyAddress.District, item.MyAddress.Subdistrict);
+        item.MyAddress.PostalCode = zip.HasValue ? zip.Value : 0;
         await InvokeAsync(StateHasChanged);
     }
     public async void SubDistrictChanges(ChangeEventArgs e)
@@ -49,6 +52,50 @@
         item.MyAddress.Subdistrict = e.Value.ToString();
         var zip = await _districtServices.GetPostalCode(item.MyAddress.Province, item.MyAddress.District, item.MyAddress.Subdistrict);
         item.MyAddress.PostalCode = zip.HasValue ? zip.Value : 0;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void SaveChanges()
+    {
+        try
+        {
+            var allbid = await _buildingServices.Get();
+            var duplicate = allbid.Where(x => x.Name == item.Name).FirstOrDefault();
+            if(string.IsNullOrEmpty(item.Name))
+            {
+                error.Header = "Required";
+                error.Details = "ชื่ออาคารห้ามเว้นว่าง";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            if(duplicate != null)
+            {
+                error.Header = "Caution";
+                error.Details = "ชื่ออาคารนี้มีแล้ว";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            var res = await _buildingServices.Create(item);
+            if(res)
+            {
+                success.NextRequired = false;
+                success.Details="เพิ่มอาคารสำเร็จ";
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops";
+            error.Details = "เพิ่มอาคารไม่สำเร็จ";
+            error.Open();
+        }
+        catch(Exception x)
+        {
+            error.Header = "!Oops";
+            error.Details = x.Message;
+            error.Open();
+        }
         await InvokeAsync(StateHasChanged);
     }
 }
@@ -115,7 +162,6 @@
                         <label for="b">อำเภอ/เขต</label>
                         <div>
                             <select id="b" @onchange="DistrictChanges" class="custom-select">
-                                <option value="a" selected>โปรดเลือก</option>
                                   @if(District == null)
                                 {
                                     <option disabled>ไม่พบอำเภอ</option>
@@ -135,8 +181,7 @@
             <div class="form-group">
                 <label for="c">ตำบล/แขวง</label>
                 <div>
-                    <select id="c" @onchange="SubDistrictChanges" class="custom-select">
-                        <option value="a" selected>โปรดเลือก</option>
+                    <select id="c" @onchange="SubDistrictChanges" class="custom-select">                    
                          @if(subDistricts == null)
                                 {
                                     <option disabled>ไม่พบตำบล</option>
@@ -157,8 +202,14 @@
             </div>
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-primary">Save Changes</Button>
+            <Button @onclick="SaveChanges" Disabled="@(item.MyAddress.PostalCode==0)" Class="btn btn-primary">Save Changes</Button>
             <Button @onclick="()=>e.Hide()" Class="btn btn-secondary">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
+<dormitoryApps.Client.Pages.Modal.Success @ref="success"/>
+@code{
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+}

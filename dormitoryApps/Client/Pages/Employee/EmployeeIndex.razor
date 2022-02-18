@@ -37,24 +37,35 @@
     }
     private async void LoadFiles(InputFileChangeEventArgs e,long EmployeeId)
     {
-        var file = e.File;
-        if(file.ContentType.Contains("image"))
+        try
         {
-            var stream = file.OpenReadStream();
-            MemoryStream memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            byte[] content = memoryStream.ToArray();
-            memoryStream.Close();
-            stream.Close();
-            imgModal.Open(EmployeeId, content);
+
+
+            var file = e.File;
+            if (file.ContentType.Contains("image"))
+            {
+                var stream = file.OpenReadStream();
+                MemoryStream memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                byte[] content = memoryStream.ToArray();
+                memoryStream.Close();
+                stream.Close();
+                imgModal.Open(EmployeeId, content);
+            }
+            else
+            {
+                error.Header = "File Not Allow";
+                error.Details = "Image File Only";
+                error.Open();
+            }
         }
-        else
+        catch(Exception x)
         {
-            error.Header = "File Not Allow";
-            error.Details = "Image File Only";
+            error.Header = "Error";
+            error.Details = x.Message;
             error.Open();
         }
-
+        await InvokeAsync(StateHasChanged);
     }
     private async void TimerTick(Object source, ElapsedEventArgs e)
     {
