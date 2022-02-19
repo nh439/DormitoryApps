@@ -16,7 +16,43 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.InsertEntitiesAsync<RoomFurnHeaderValues>(item);
             return res;
         }
-
+        public async Task<int> Create(IEnumerable<RoomFurnHeaderValues> values)
+        {
+            var res = await _databases.Dorm.InsertEntitiesAsync<RoomFurnHeaderValues>(values);
+            return res;
+        }
+        public async Task<bool> Update(RoomFurnHeaderValues item)
+        {
+            var res = await _databases.Dorm.UpdateEntityAsync<RoomFurnHeaderValues>(item, $"Id={item.Id}");
+            return res == 1;
+        }
+        public async  Task<bool> Delete(long Id)
+        {
+            
+            var res = await _databases.Dorm.DeleteAsync(TableName,$"Id={Id}");
+            return res==1;
+        }
+        public async  Task<bool> DeleteByHeader(long headerId)
+        {
+            
+            var res = await _databases.Dorm.DeleteAsync(TableName,$"Header={headerId}");
+            return res==1;
+        }
+        public async Task< List<RoomFurnHeaderValues>> Getall()
+        {
+            var res= await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeaderValues>();
+            return res.ToList();
+        }
+        public async Task<List<RoomFurnHeaderValues>> GetByHeader(long HeaderId)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeaderValues>(TableName,$"Header={HeaderId}");
+            return res.ToList();
+        }
+        public async Task<RoomFurnHeaderValues> GetById(long Id)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeaderValues>(TableName,$"Id={Id}");
+            return res.FirstOrDefault();
+        }
 
     }
 }
