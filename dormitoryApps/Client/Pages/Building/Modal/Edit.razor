@@ -15,11 +15,14 @@
     List<string> District = new List<string>();
     List<string> subDistricts = new List<string>();
 
-    public async void Open()
+    public async void Open(int buildingId)
     {
+        item = await _buildingServices.Get(buildingId);       
         e.Show();
-        districts = await _districtServices.Getall();
+         districts = await _districtServices.Getall();
         province = districts.Select(x => x.province).Distinct().ToList();
+        District = districts.Where(x => x.province == item.MyAddress.Province).Select(x => x.amphoe).Distinct().ToList();
+        subDistricts = districts.Where(x => x.province == item.MyAddress.Province && x.amphoe == item.MyAddress.District).Select(x => x.district).ToList();
         await InvokeAsync(StateHasChanged);
     }
     public async void ProvinceChanges(ChangeEventArgs e)
@@ -76,18 +79,18 @@
                 await InvokeAsync(StateHasChanged);
                 return;
             }
-            var res = await _buildingServices.Create(item);
+            var res = await _buildingServices.Update(item);
             if(res)
             {
                 success.NextRequired = false;
-                success.Details="เพิ่มอาคารสำเร็จ";
+                success.Details="แก้ไขข้อมูลอาคารสำเร็จ";
                 success.Open();
                 await e.Hide();
                 await InvokeAsync(StateHasChanged);
                 return;
             }
             error.Header = "!Oops";
-            error.Details = "เพิ่มอาคารไม่สำเร็จ";
+            error.Details = "แก้ไขข้อมูลไม่สำเร็จ";
             error.Open();
         }
         catch(Exception x)
@@ -105,13 +108,13 @@
     <ModalContent>
         <ModalHeader>
             <ModalTitle>
-                เพิ่มอาคาร และ สถานที่
+                แก้ไขข้อมูลอาคาร และ สถานที่
             </ModalTitle>
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
             <center>
-                <h1>เพิ่มอาคาร และ สถานที่</h1>
+                <h1>แก้ไขข้อมูลอาคาร และ สถานที่</h1>
             </center>
 
             <div class="form-group">
@@ -150,7 +153,7 @@
                                 {
                                     @foreach(var prov in province)
                                     {
-                                        <option value="@prov">@prov</option>
+                                        <option value="@prov" selected="@(prov==item.MyAddress.Province)">@prov</option>
                                     }
                                 }
                             </select>
@@ -170,7 +173,7 @@
                                 {
                                     @foreach(var dis in District)
                                     {
-                                        <option value="@dis">@dis</option>
+                                        <option value="@dis" selected="@(dis==item.MyAddress.District)">@dis</option>
                                     }
                                 }
                             </select>
@@ -190,7 +193,7 @@
                                 {
                                     @foreach(var sub in subDistricts)
                                     {
-                                        <option value="@sub">@sub</option>
+                                        <option value="@sub" selected="@(sub==item.MyAddress.Subdistrict)">@sub</option>
                                     }
                                 }
                     </select>

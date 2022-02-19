@@ -17,6 +17,7 @@
     List<Room> rooms = new List<Room>();
     bool isAdmin = false;
     private dormitoryApps.Client.Pages.Building.Modal.Create create;
+    private dormitoryApps.Client.Pages.Building.Modal.Edit edit;
     protected override async void OnInitialized()
     {
         timer = new System.Timers.Timer(2000);
@@ -83,11 +84,18 @@
                     <td>@(rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor) != null && rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Count() > 0? rooms.Where(x=>x.Building==building.Id).Select(x=>x.Floor).Max() : 1)</td>
                     <td>@rooms.Where(x=>x.Building==building.Id).Count()</td>
                     <td>0</td>
-                    <td><button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" ><i class="building outline icon"></i></button></td>
+                    <td>
+                        @if(isAdmin)
+                        {
+                            <button class="btn btn-warning mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไขMetadata" @onclick="()=>edit.Open(building.Id)" > <i class="edit outline icon"></i></button>
+                        }                       
+                        <button class="btn btn-info mx-1" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" ><i class="building outline icon"></i></button>
+                    </td>
+                   
                 </tr>
             }
         }
     </tbody>
 </table>
 <dormitoryApps.Client.Pages.Building.Modal.Create @ref="create"/>
-
+<dormitoryApps.Client.Pages.Building.Modal.Edit @ref="edit"/>
