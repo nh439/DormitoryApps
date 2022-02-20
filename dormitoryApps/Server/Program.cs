@@ -37,6 +37,7 @@ builder.Services.AddScoped<MyServiceRepository>();
 builder.Services.AddScoped<InvoiceServiceRepository>();
 builder.Services.AddScoped<PostitionChangedRepository>();
 builder.Services.AddScoped<RoomFurnHeaderValuesRepository>();
+builder.Services.AddScoped<RoomFurnHeaderRepository>();
 #endregion
 
 #region Services
@@ -62,6 +63,7 @@ builder.Services.AddScoped<IIServices, iIService>();
 builder.Services.AddScoped<IPostitionChangedService, PostitionChangedService>();
 builder.Services.AddScoped<JwTServices>();
 builder.Services.AddScoped<IRoomFurnHeaderValuesServices, RoomFurnHeaderValuesServices>();
+builder.Services.AddScoped<IRoomFurnHeaderServices, RoomFurnHeaderServices>();
 #endregion
 
 var app = builder.Build();

@@ -13,7 +13,7 @@ namespace dormitoryApps.Shared.Model.Entity
         public string Header { get; set; }
         public string Description { get; set; }
         public bool CustomValue { get; set; }
-        public RoomFurnHeaderValues? values { get; set; }
+        public List<RoomFurnHeaderValues>? values { get; set; }
     }
     public static class RoomFurnHeaderAttr
     {
