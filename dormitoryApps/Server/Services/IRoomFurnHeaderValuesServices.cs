@@ -9,7 +9,7 @@ namespace dormitoryApps.Server.Services
         Task<int> Create(IEnumerable<RoomFurnHeaderValues> values);
         Task<bool> Update(RoomFurnHeaderValues item);
         Task<bool> Delete(long Id);
-        Task<bool> DeleteByHeader(long headerId);
+        Task<int> DeleteByHeader(long headerId);
         Task<List<RoomFurnHeaderValues>> Getall();
         Task<List<RoomFurnHeaderValues>> GetByHeader(long HeaderId);
         Task<RoomFurnHeaderValues> GetById(long Id);
@@ -38,7 +38,7 @@ namespace dormitoryApps.Server.Services
         {
             return await _repository.Delete(Id);
         }
-        public async Task<bool> DeleteByHeader(long headerId)
+        public async Task<int> DeleteByHeader(long headerId)
         {
             return await _repository.DeleteByHeader(headerId);
         }

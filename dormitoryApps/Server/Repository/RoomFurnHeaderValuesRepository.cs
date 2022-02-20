@@ -32,11 +32,11 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.DeleteAsync(TableName,$"Id={Id}");
             return res==1;
         }
-        public async  Task<bool> DeleteByHeader(long headerId)
+        public async  Task<int> DeleteByHeader(long headerId)
         {
             
             var res = await _databases.Dorm.DeleteAsync(TableName,$"Header={headerId}");
-            return res==1;
+            return res;
         }
         public async Task< List<RoomFurnHeaderValues>> Getall()
         {

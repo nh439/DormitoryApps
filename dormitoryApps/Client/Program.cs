@@ -49,4 +49,5 @@ builder.Services.AddScoped<RoomImgServices>();
 builder.Services.AddScoped<MyServicesServices>();
 builder.Services.AddScoped<InvoiceServices>();
 builder.Services.AddScoped<PostitionChangedServices>();
+builder.Services.AddScoped<RoomFurnHeaderValuesServices>();
 await builder.Build().RunAsync();
