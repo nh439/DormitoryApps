@@ -13,6 +13,7 @@ namespace dormitoryApps.Server.Services
         Task<List<RoomFurnHeader>> Getall();
         Task<List<RoomFurnHeader>> GetByType(string type);
         Task<RoomFurnHeader> GetById(long Id);
+        Task<string[]> GetTypes();
     }
     public class RoomFurnHeaderServices : IRoomFurnHeaderServices
     {
