@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.1" />
-    <PackageReference Include="RocketSQL" Version="1.1.7" />
+    <PackageReference Include="RocketSQL" Version="1.1.8" />
   </ItemGroup>
 
   <ItemGroup>

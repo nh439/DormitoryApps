@@ -1,0 +1,91 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@page "/stuff"
+@implements IDisposable;
+@inject RoomFurnHeaderServices _roomFurnHeaderServices;
+@code {
+    List<RoomFurnHeader> headers;
+    private dormitoryApps.Client.Pages.stuff.IndexModal.Create create;
+    private dormitoryApps.Client.Pages.stuff.IndexModal.Edit edit;
+    Timer t1 = new Timer();
+    protected override void OnInitialized()
+    {
+         t1 = new Timer(2000);
+         t1.Elapsed += OnFetch;
+         t1.Enabled = true;
+    }
+    private async void OnFetch(object sender,ElapsedEventArgs e)
+    {
+        headers = await _roomFurnHeaderServices.GetallHeaders();
+        if (headers == null) headers = new List<RoomFurnHeader>();
+        await InvokeAsync(StateHasChanged);
+
+    }
+    void IDisposable.Dispose()
+    {
+        t1?.Dispose();
+    }
+
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<ceter>
+    <h1>รายละเอียดสิ่งของภายในห้อง</h1>
+</ceter>
+<br />
+<br />
+<button class="btn btn-primary" @onclick="()=>create.Open()">เพิ่ม</button>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>Id</th>
+            <th>ชนิด</th>
+            <th>หัวข้อ</th>
+            <th>คำอธิบาย</th>
+            <th>กำหนดค่าเองได้</th>
+            <th>ค่าที่รับ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-success">
+        @if(headers==null)
+        {
+            <tr>
+                <td colspan="8">Fetching...</td>
+            </tr>
+        }
+        else if(headers.Count==0)
+        {
+             <tr>
+                <td colspan="8">ไม่พบข้อมูล</td>
+            </tr>
+        }
+        else
+        {
+            @foreach(var header in headers)
+            {
+            <tr>
+                <td>@header.Id</td>
+                <td>@header.Type</td>
+                <td>@header.Header</td>
+                <td>@header.Description</td>
+                <td>
+                    @if( header.CustomValue)
+                    {
+                            <i class="check icon"></i>
+                    }
+                </td>
+                <td>@header.ValueType</td>
+                <td>
+                    <Blazorise.Button Color="Blazorise.Color.Info" Disabled="header.CustomValue">เพิ่ม Value</Blazorise.Button>
+                    <Blazorise.Button Color="Blazorise.Color.Warning"  @onclick="()=>edit.Open(header.Type)">แก้ไข</Blazorise.Button>
+                </td>
+            </tr>
+            }
+        }
+    </tbody>
+</table>
+<dormitoryApps.Client.Pages.stuff.IndexModal.Create @ref="create"/>
+<dormitoryApps.Client.Pages.stuff.IndexModal.Edit @ref="edit"/>

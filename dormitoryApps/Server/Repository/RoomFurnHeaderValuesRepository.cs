@@ -35,7 +35,7 @@ namespace dormitoryApps.Server.Repository
         public async  Task<int> DeleteByHeader(long headerId)
         {
             
-            var res = await _databases.Dorm.DeleteAsync(TableName,$"Header={headerId}");
+            var res = await _databases.Dorm.DeleteAsync(TableName,$"HeaderId={headerId}");
             return res;
         }
         public async Task< List<RoomFurnHeaderValues>> Getall()
@@ -45,7 +45,7 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<List<RoomFurnHeaderValues>> GetByHeader(long HeaderId)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeaderValues>(TableName,$"Header={HeaderId}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeaderValues>(TableName,$"HeaderId={HeaderId}");
             return res.ToList();
         }
         public async Task<RoomFurnHeaderValues> GetById(long Id)

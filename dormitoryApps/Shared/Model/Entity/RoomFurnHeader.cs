@@ -13,7 +13,8 @@ namespace dormitoryApps.Shared.Model.Entity
         public string Header { get; set; }
         public string Description { get; set; }
         public bool CustomValue { get; set; }
-        public List<RoomFurnHeaderValues>? values { get; set; }
+        public string ValueType { get; set; }
+        public List<RoomFurnHeaderValues> values { get; set; }
     }
     public static class RoomFurnHeaderAttr
     {
@@ -23,5 +24,13 @@ namespace dormitoryApps.Shared.Model.Entity
         public const string Attr04 = "Attr04";
         public const string Attr05 = "Attr05";
         public const string Attr06 = "Attr06";
+    }
+    public static class RoomFurnHeaderValuesType
+    {
+        public const string TEXT = "text";
+        public const string NUMBER = "decimal";
+        public const string LONG = "long";
+        public const string BOOLEAN = "bool";
+        public static string[] HeaderTypeset = { TEXT, NUMBER, LONG, BOOLEAN };
     }
 }

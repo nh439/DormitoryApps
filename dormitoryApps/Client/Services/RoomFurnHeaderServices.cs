@@ -42,7 +42,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<int> Create(IEnumerable<RoomFurnHeader> items)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", items);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
             return await res.Content.ReadFromJsonAsync<int>();
         }
 
@@ -56,10 +56,10 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
-        public async Task<bool> DeleteByType(string itemType)
+        public async Task<int> DeleteByType(string itemType)
         {
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/DeleteByType", itemType);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            return await res.Content.ReadFromJsonAsync<int>();
         }
 
     }

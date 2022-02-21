@@ -1,0 +1,365 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomFurnHeaderServices _roomFurnHeaderServices;
+@inject RoomFurnHeaderValuesServices _roomFurnHeaderValuesServices;
+@code {
+    string name;
+    RoomFurnHeader headerattr1 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr01,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    RoomFurnHeader headerattr2 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr02,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    RoomFurnHeader headerattr3 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr03,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    RoomFurnHeader headerattr4 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr04,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    RoomFurnHeader headerattr5 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr05,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    RoomFurnHeader headerattr6 = new RoomFurnHeader
+        {
+            Header = RoomFurnHeaderAttr.Attr06,
+            ValueType=RoomFurnHeaderValuesType.TEXT,
+            CustomValue=false
+        };
+    private Modal e;
+    bool a1, a2, a3, a4, a5, a6;
+    public void Open()
+    {
+        e.Show();
+        StateHasChanged();
+    }
+    private bool valuecheck(ChangeEventArgs e)
+    {
+        return e.Value.ToString().ToLower() == "true" ||
+         e.Value.ToString().ToLower() == "checked";
+    }
+    public async void SaveChanges()
+    {
+        try
+        {
+            var existType= await _roomFurnHeaderServices.GetTypes();
+
+            if (string.IsNullOrEmpty(name))
+            {
+                error.Header = "Required";
+                error.Details = "ชื่อสิ่งของห้ามเว้นว่าง";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+
+            }
+            if(existType.Contains(name))
+            {
+                error.Header = "Duplicate";
+                error.Details = "ชื่อสิ่งของห้ามซ้ำ";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            List<RoomFurnHeader> headers = new List<RoomFurnHeader>();
+            if (a1) headers.Add(headerattr1);
+            if (a2) headers.Add(headerattr2);
+            if (a3) headers.Add(headerattr3);
+            if (a4) headers.Add(headerattr4);
+            if (a5) headers.Add(headerattr5);
+            if (a6) headers.Add(headerattr6);
+            headers.ForEach(header =>
+            {
+                header.Type = name;
+
+            });
+            var res = await _roomFurnHeaderServices.Create(headers);
+            var actionResult = res == headers.Count();
+            if(actionResult)
+            {
+                success.Header="ยินดีด้วย";
+                success.Details="เพิ่มสำเร็จ";
+                success.NextRequired = false;
+                success.Open();
+                e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops";
+                error.Details = "เพิ่มไม่สำเร็จ";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+        }
+        catch(Exception x)
+        {
+                error.Header = "!Oops";
+                error.Details = x.Message;
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+                
+        }
+
+
+    }
+
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal Style="color:black" @ref="e">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>เพิ่มสิ่งของ</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>
+                    เพิ่มรายละเอียดสิ่งของ
+                </h1>
+            </center>
+            <br />
+            <div class="form-group">
+                <label for="text">ชื่อ</label>
+                <input @bind-value="name" type="text" class="form-control">
+            </div>
+            <br />
+            <br />
+            <center>
+                <Table Class="table table-bordered" Style="text-align:center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th></th>
+                            <th>รหัส</th>
+                            <th>คำอธิบาย</th>
+                            <th>กำหนดค่าเอง</th>
+                            <th>ชนิดค่า</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--Attr1-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a1=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr1.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr1.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr1.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr1.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!--Attr2-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a2=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr2.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr2.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr2.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr2.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!--Attr3-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a3=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr3.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr3.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr3.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr3.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!--Attr4-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a4=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr4.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr4.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr4.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr4.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!--Attr5-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a5=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr5.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr5.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr5.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr5.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!--Attr6-->
+                        <tr>
+                            <td>
+                                <input type="checkbox" @onchange="e=>a6=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr6.Header" type="text" class="form-control" readonly />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input @bind-value="headerattr6.Description" type="text" class="form-control" />
+                                </div>
+                            </td>
+                            <td>
+                                <input type="checkbox" @onchange="e=>headerattr6.CustomValue=valuecheck(e)" />
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select @bind="headerattr6.ValueType" class="custom-select">
+                                            @foreach (var i in RoomFurnHeaderValuesType.HeaderTypeset)
+                                            {
+                                                <option value="@i">@i</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </Table>
+            </center>
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">Save Changes</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+@code
+{
+    private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+}
