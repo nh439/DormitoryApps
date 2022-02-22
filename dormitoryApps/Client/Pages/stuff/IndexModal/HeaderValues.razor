@@ -1,0 +1,194 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomFurnHeaderServices _roomFurnHeaderServices;
+@inject RoomFurnHeaderValuesServices _roomFurnHeaderValuesServices;
+
+@code {
+    Modal e;
+    int counter = 3;
+    string[] values = new string[3];
+    RoomFurnHeader mainitem = new RoomFurnHeader();
+    string inputType = "text";
+    long header;
+    public async void Open(long headerId)
+    {
+        mainitem = await _roomFurnHeaderServices.GetById(headerId);
+        await e.Show();
+        if (mainitem == null)
+        {
+            error.Details = "ไม่พบข้อมูล";
+            error.Header = "ขออภัย";
+            error.Open();
+            await e.Hide();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        counter = 3;
+        switch (mainitem.ValueType)
+        {
+            case RoomFurnHeaderValuesType.TEXT: inputType = "text"; break;
+            case RoomFurnHeaderValuesType.LONG: inputType = "number"; break;
+            case RoomFurnHeaderValuesType.NUMBER: inputType = "number"; break;
+        }
+        if (mainitem.values != null && mainitem.values.Count > 0)
+        {
+
+            var res = mainitem.values.ToArray();
+            values = res.Select(x => x.Value).ToArray();
+            counter = values.Length;
+        }
+        else
+        {
+            values = new string[counter];
+        }
+        header = headerId;
+        Console.WriteLine(values.Length);
+        await InvokeAsync(StateHasChanged);
+
+    }
+    public void AddRow()
+    {
+        string[] oldVal = values;
+        counter += 1;
+        values = new string[counter];
+        for (int i = 0; i < oldVal.Length; i++)
+        {
+            values[i] = oldVal[i];
+        }
+        StateHasChanged();
+    }
+    public async void SaveChanges()
+    {
+        try
+        {
+            var idSet = await _roomFurnHeaderValuesServices.GetByHeader(header);
+            values = values.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            List<RoomFurnHeaderValues> headerValues = new List<RoomFurnHeaderValues>();
+            bool correctType = false;
+            for (int i = 0; i < values.Length; i++)
+            {
+                long id = idSet.Count > i ? idSet[i].Id : 0;
+                if (mainitem.ValueType == RoomFurnHeaderValuesType.LONG)
+                {
+                    correctType = long.TryParse(values[i], out long res);
+                }
+                else if (mainitem.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                {
+                    correctType = decimal.TryParse(values[i], out decimal res);
+                }
+                else
+                {
+                    correctType = true;
+                }
+                if (!correctType)
+                {
+                    error.Header = "ชนิดข้อมูลไม่ถูกต้อง";
+                    error.Details = $"ชนิดข้อมูล {values[i]} ไม่ถูกต้อง";
+                    error.Open();
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+
+                headerValues.Add(new RoomFurnHeaderValues
+                    {
+                        Id = id,
+                        HeaderId = header,
+                        Value = values[i]
+                    });
+            }
+            await _roomFurnHeaderValuesServices.DeleteByHeader(header);
+            var actionResult = await _roomFurnHeaderValuesServices.Create(headerValues);
+            if (actionResult == headerValues.Count)
+            {
+                success.NextRequired = false;
+                success.Details = "บันทึกสำเร็จ";
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops";
+            error.Details = "บันทึกไม่สำเร็จ";
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops";
+            error.Details = x.Message;
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>จัดการชุดข้อมูล</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (mainitem == new RoomFurnHeader())
+            {
+                <center>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <h2>ชื่อสิ่งของ : @mainitem.Type</h2>
+                <h2>ชื่อประเภท : @mainitem.Description</h2>
+                <h2>หน่วย : @mainitem.ValueType</h2>
+            }
+            <br />
+            <h1>Values</h1>
+            <hr />
+            @if (mainitem.ValueType == RoomFurnHeaderValuesType.BOOLEAN)
+            {
+                <h1>ไม่สามารถกำหนดค่าให้กับตัวแปร Yes No ได้</h1>
+            }
+            else
+            {
+                @for (int i = 0; i < values.Length; i++)
+                {
+                    Console.WriteLine(values.Length);
+                    int j = i;
+                    if (mainitem.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                    {
+                        <div class="form-group row">
+                            <div class="col">
+                                <input @bind-value="values[j]" type="number" step=0.001 class="form-control">
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group row">
+                            <div class="col">
+                                <input @bind-value="values[j]" type="@inputType" class="form-control">
+                            </div>
+                        </div>
+                    }
+                }
+                <div class="form-group">
+                    <Button Class="btn btn-success" @onclick="AddRow"><i class="plus icon"></i></Button>
+                </div>
+            }
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary" @onclick="SaveChanges" Disabled="mainitem.ValueType == RoomFurnHeaderValuesType.BOOLEAN">Save Changes</Button>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code
+{
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+}

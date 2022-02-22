@@ -8,6 +8,7 @@
     List<RoomFurnHeader> headers;
     private dormitoryApps.Client.Pages.stuff.IndexModal.Create create;
     private dormitoryApps.Client.Pages.stuff.IndexModal.Edit edit;
+    private dormitoryApps.Client.Pages.stuff.IndexModal.HeaderValues headerValues;
     Timer t1 = new Timer();
     protected override void OnInitialized()
     {
@@ -79,7 +80,7 @@
                 </td>
                 <td>@header.ValueType</td>
                 <td>
-                    <Blazorise.Button Color="Blazorise.Color.Info" Disabled="header.CustomValue">เพิ่ม Value</Blazorise.Button>
+                    <Blazorise.Button Color="Blazorise.Color.Info"@onclick="()=>headerValues.Open(header.Id)"  Disabled="header.CustomValue">เพิ่ม Value</Blazorise.Button>
                     <Blazorise.Button Color="Blazorise.Color.Warning"  @onclick="()=>edit.Open(header.Type)">แก้ไข</Blazorise.Button>
                 </td>
             </tr>
@@ -89,3 +90,4 @@
 </table>
 <dormitoryApps.Client.Pages.stuff.IndexModal.Create @ref="create"/>
 <dormitoryApps.Client.Pages.stuff.IndexModal.Edit @ref="edit"/>
+<dormitoryApps.Client.Pages.stuff.IndexModal.HeaderValues @ref="headerValues"/>
