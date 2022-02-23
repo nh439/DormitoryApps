@@ -56,8 +56,18 @@ namespace dormitoryApps.Server.Controllers
         {
             try
             {
-                string username =Encoding.ASCII.GetString(login.Username);
-                string password =Encoding.ASCII.GetString(login.Password);
+                string content = Encoding.ASCII.GetString(login.Content);
+                string[] loginarr = content.Split('|');
+                if(loginarr.Length != 3 )
+                {
+                    return BadRequest("Parameter Incorrect");
+                }
+                if(loginarr[2] != login.Reference)
+                {
+                    return BadRequest("Parameter Incorrect");
+                }
+                string username =loginarr[1];
+                string password = loginarr[0];
                 var result = await _officerServices.LoginCheck(username, password);
                 return Ok(result);
             }

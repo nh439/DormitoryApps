@@ -29,6 +29,12 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
 
         }
+        [HttpGet(BaseUrl+"/Contains/{keyword}")]
+        public async Task<IActionResult> GecContains(string keyword)
+        {
+            var res = await _roomFurnHeaderServices.GetContains(keyword);
+            return Ok(res);
+        }
         [HttpGet(BaseUrl + "/Type/{name}")]
         public async Task<IActionResult> GetByType(string name)
         {

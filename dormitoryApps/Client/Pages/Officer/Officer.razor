@@ -32,6 +32,7 @@
         </div> 
         <input id="user" @bind="@Username" type="text" @oninput="@(val=> Username=(string)val.Value)" class="form-control">
       </div>
+      <small style="display:@(userrequired ? "block":"none");color:red;font-weight:bold">ต้องกรอกชื่อผู้ใช้</small>
     </div>
   </div>
   <div class="form-group row">
@@ -45,6 +46,7 @@
         </div> 
         <input id="pass" @bind="@Password" @oninput="@(val=> Password=(string)val.Value)" type="password" class="form-control">
       </div>
+      <small style="display:@(passrequired ? "block":"none");color:red;font-weight:bold">ต้องกรอกรหัสผ่าน</small>
     </div>
   </div> 
   <div class="form-group row">
@@ -68,9 +70,18 @@
     public string Username { get; set; }
     public string Password { get; set; }
     string Logclass = "display:none";
+    bool passrequired = false;
+    bool userrequired = false;
     private async void Usersubmit()
     {
         Logclass = "display:block";
+        userrequired = string.IsNullOrEmpty(Username);
+        passrequired = string.IsNullOrEmpty(Password);
+        if(userrequired || passrequired)
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
         var res = await officerServices.GetLogin(username: Username, password: Password);
         Console.WriteLine(res);
         if(!res)

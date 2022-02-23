@@ -6,22 +6,39 @@
 @inject RoomFurnHeaderServices _roomFurnHeaderServices;
 @code {
     List<RoomFurnHeader> headers;
+    string query;
     private dormitoryApps.Client.Pages.stuff.IndexModal.Create create;
     private dormitoryApps.Client.Pages.stuff.IndexModal.Edit edit;
     private dormitoryApps.Client.Pages.stuff.IndexModal.HeaderValues headerValues;
     Timer t1 = new Timer();
     protected override void OnInitialized()
     {
-         t1 = new Timer(2000);
-         t1.Elapsed += OnFetch;
-         t1.Enabled = true;
+        query = string.Empty;
+        t1 = new Timer(2000);
+        t1.Elapsed += OnFetch;
+        t1.Enabled = true;
     }
     private async void OnFetch(object sender,ElapsedEventArgs e)
-    {
-        headers = await _roomFurnHeaderServices.GetallHeaders();
+    {      
+        headers = await _roomFurnHeaderServices.GetallHeaders();     
         if (headers == null) headers = new List<RoomFurnHeader>();
         await InvokeAsync(StateHasChanged);
 
+    }
+    async void OnSearch()
+    {
+        headers=null;
+        t1.Enabled = false;
+        if (string.IsNullOrEmpty(query))
+        {
+            OnInitialized();
+        }
+        else
+        {
+            headers = await _roomFurnHeaderServices.GetContain(query);
+        }
+        if (headers == null) headers = new List<RoomFurnHeader>();
+        await InvokeAsync(StateHasChanged);
     }
     void IDisposable.Dispose()
     {
@@ -35,6 +52,22 @@
 </ceter>
 <br />
 <br />
+ <div class="form-group row">
+    <div class="col-8">
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <div class="input-group-text">
+            <i class="fa fa-search"></i>
+          </div>
+        </div> 
+        <input @bind-value="query" type="text" class="form-control">
+        <button class="btn btn-info" @onclick="OnSearch"><i class="search icon"></i></button>
+        <button class="btn btn-info" @onclick="OnInitialized"><i class="sync icon"></i></button>
+      </div>
+    </div>
+  </div> 
+      <br />
+      <br />
 <button class="btn btn-primary" @onclick="()=>create.Open()">เพิ่ม</button>
 <br />
 <br />

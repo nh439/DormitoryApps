@@ -21,7 +21,10 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> GetLogin (string username, string password)
         {
-            var item = new LoginParameter { Username = ASCIIEncoding.ASCII.GetBytes(username), Password = ASCIIEncoding.ASCII.GetBytes(password) };
+            
+            LoginParameter item = new LoginParameter();
+            string cipher = password + "|" + username + "|" + item.Reference;
+            item.Content = Encoding.ASCII.GetBytes(cipher);
             var response = await _httpClient.PostAsJsonAsync($"{ ControllerName}/Login", item);
             if(!response.IsSuccessStatusCode)
             {

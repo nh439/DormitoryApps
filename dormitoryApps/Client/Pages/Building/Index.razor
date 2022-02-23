@@ -32,6 +32,10 @@
         rooms = await _roomServices.GetRooms();
         await InvokeAsync(StateHasChanged);
     }
+    public void RoomNav(int roomId)
+    {
+        _navigationManager.NavigateTo($"/Building/{roomId}");
+    }
     void IDisposable.Dispose()
     {
         timer?.Dispose();
@@ -89,7 +93,7 @@
                         {
                             <button class="btn btn-warning mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไขMetadata" @onclick="()=>edit.Open(building.Id)" > <i class="edit outline icon"></i></button>
                         }                       
-                        <button class="btn btn-info mx-1" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" ><i class="building outline icon"></i></button>
+                        <button class="btn btn-info mx-1" data-toggle="tooltip" data-placement="bottom" title="ดูห้องพัก และ ข้อมูลภายใน" @onclick="()=>RoomNav(building.Id)" ><i class="building outline icon"></i></button>
                     </td>
                    
                 </tr>

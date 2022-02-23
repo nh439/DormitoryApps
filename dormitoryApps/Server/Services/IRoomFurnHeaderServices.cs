@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<int> DeleteByType(string itemType);
         Task<List<RoomFurnHeader>> Getall();
         Task<List<RoomFurnHeader>> GetByType(string type);
+        Task<List<RoomFurnHeader>> GetContains(string keyword);
         Task<RoomFurnHeader> GetById(long Id);
         Task<string[]> GetTypes();
     }
@@ -73,6 +74,15 @@ namespace dormitoryApps.Server.Services
         public async Task<List<RoomFurnHeader>> Getall()
         {
             var res = await _repository.Getall();
+            res.ForEach(async x =>
+            {
+                x.values = await _roomFurnHeaderValuesRepository.GetByHeader(x.Id);
+            });
+            return res;
+        }
+        public async Task<List<RoomFurnHeader>> GetContains(string keyword)
+        {
+            var res = await _repository.GetContains(keyword);
             res.ForEach(async x =>
             {
                 x.values = await _roomFurnHeaderValuesRepository.GetByHeader(x.Id);

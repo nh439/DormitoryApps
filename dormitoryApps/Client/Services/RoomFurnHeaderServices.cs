@@ -24,6 +24,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Type/{type}");
             return res;
         }
+        public async Task<List<RoomFurnHeader>> GetContain(string keyword)
+        {
+            var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Contains/{keyword}");
+            return res;
+        }
         public async Task<RoomFurnHeader> GetById(long Id)
         {
             var res = await _httpClient.GetFromJsonAsync<RoomFurnHeader>($"{ControllerName}?Id={Id}");

@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Databases;
 using dormitoryApps.Shared.Model.Entity;
+using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
 {
@@ -40,6 +41,17 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<RoomFurnHeader>> Getall()
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeader>();
+            return res.ToList();
+        }
+        public async Task<List<RoomFurnHeader>> GetContains(string keyword)
+        {
+            ConditionSet condition = new ConditionSet();
+            string keywordcol = "Type,Header,Description,ValueType";
+            foreach(var colcriteria in keywordcol.Split(','))
+            {
+                condition.Add(colcriteria, keyword, SqlOperator.Contain, SqlCondition.OR);
+            }
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomFurnHeader>(TableName,condition);
             return res.ToList();
         }
         public async Task<List<RoomFurnHeader>> GetByType(string type)

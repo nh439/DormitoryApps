@@ -8,7 +8,8 @@ namespace dormitoryApps.Shared.Model.Other
 {
     public class LoginParameter
     {
-        public byte[] Username { get; set; }
-        public byte[] Password { get; set; }
+        public byte[] Content { get; set; }
+        public string Reference { get; set; } = Guid.NewGuid().ToString();
+        public DateTime TimeStamp = DateTime.Now;
     }
 }
