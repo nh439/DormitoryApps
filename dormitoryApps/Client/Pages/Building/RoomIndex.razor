@@ -1,6 +1,136 @@
 ﻿@page "/Building/{Id:int}"
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@implements IDisposable;
+@inject BuildingServices _buildingServices;
+@inject RoomServices _roomServices;
 
 @code {
     [Parameter]
     public int Id { get; set; }
-}
+    List<Room> rooms;
+    Buildings myBuildings = new Buildings();
+    Timer timer = new Timer();
+    protected override async void OnInitialized()
+    {
+
+        myBuildings = await _buildingServices.Get(Id);
+        timer.Elapsed += OnTick;
+        timer.Interval = 1000;
+        timer.Enabled = true;
+    }
+    private async void OnTick(object sender, ElapsedEventArgs e)
+    {
+        rooms = await _roomServices.GetByBuilding(Id);
+        if (rooms == null) rooms = new List<Room>();
+        await InvokeAsync(StateHasChanged);
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+    }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>อาคาร @myBuildings.Name</h1>
+</center>
+<br />
+<br />
+<button class="btn btn-primary">เพิ่มห้องพัก</button>
+<br />
+<br />
+<table class="table table-bordered" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>Id</th>
+            <th>ชื่อห้อง</th>
+            <th>ชั้น</th>
+            <th>ขนาด</th>
+            <th>มีเครื่องปรับอากาศ</th>
+            <th>มีเครื่องทำน้ำอุ่น</th>
+            <th>มีพัดลม</th>
+            <th>มีเฟอร์นิเจอร์</th>
+            <th>มีตู้เย็น</th>
+            <th>ค่าเช่า</th>
+            <th>เปิดรับเช่า</th>
+            <th>สถานะ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (rooms == null)
+        {
+            <tr class="table-info">
+                <td colspan="13">Fetching...</td>
+            </tr>
+        }
+        else if (rooms.Count == 0)
+        {
+            <tr class="table-info">
+                <td colspan="13">ไม่พบห้องพัก</td>
+            </tr>
+        }
+        else
+        {
+            bool className = false;
+            @foreach (var room in rooms.OrderBy(x => x.Id).OrderBy(x => x.Floor))
+            {
+                <tr class="@(className ? "table-primary":"table-success")">
+                    <td>@room.Id</td>
+                    <td>@room.RoomName</td>
+                    <td>@room.Floor</td>
+                    <td>@room.Size ตร.ม</td>
+                    <td>
+                        @if (room.Aircond)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (room.WaterHeater)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (room.Fan)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (room.Furniture)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (room.Fridge)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @room.Rental บาท
+                    </td>
+                    <td>
+                        @if (room.Enabled)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        <div class="green label">
+                            ว่าง
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btb-warning"><i class="edit outline icon"></i></button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
