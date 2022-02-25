@@ -52,10 +52,10 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName,$"Type='{typeName}'");
             return res.ToList();
         }
-        public async Task<RoomfurnTemplate> GetById(int id)
+        public async Task<RoomfurnTemplate> GetById(long id)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName, $"Id={id}");
-            return res;
+            return res.FirstOrDefault();
         }
 
     }
