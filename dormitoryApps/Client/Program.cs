@@ -52,4 +52,5 @@ builder.Services.AddScoped<PostitionChangedServices>();
 builder.Services.AddScoped<RoomFurnHeaderValuesServices>();
 builder.Services.AddScoped<RoomFurnHeaderServices >();
 builder.Services.AddScoped<RoomfurnTemplateServices >();
+builder.Services.AddScoped<RoomTemplateServices >();
 await builder.Build().RunAsync();

@@ -11,14 +11,14 @@ namespace dormitoryApps.Shared.Model.Entity
 		public int Id { get; set; }
 		public string RoomName { get; set; }
 		public decimal? Size { get; set; }
-		public byte Aircond { get; set; }
-		public byte WaterHeater { get; set; }
-		public byte TV { get; set; }
-		public byte Fan { get; set; }
+		public bool Aircond { get; set; }
+		public bool WaterHeater { get; set; }
+		public bool TV { get; set; }
+		public bool Fan { get; set; }
 		public decimal Rental { get; set; }
-		public byte Furniture { get; set; }
-		public byte Fridge { get; set; }
-		public byte Enabled { get; set; }
+		public bool Furniture { get; set; }
+		public bool Fridge { get; set; }
+		public bool Enabled { get; set; }
 		public virtual List<RoomfurnTemplate> Furnitures { get; set; }
 	}
 }
