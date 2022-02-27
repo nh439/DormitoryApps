@@ -30,14 +30,14 @@
     {
         timer?.Dispose();
     }
-    }
+}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
     <h1>อาคาร @myBuildings.Name</h1>
 </center>
 <br />
 <br />
-<button class="btn btn-primary">เพิ่มห้องพัก</button>
+<button class="btn btn-primary" @onclick="()=>createRoom.open(Id)">เพิ่มห้องพัก</button>
 <br />
 <br />
 <table class="table table-bordered" style="text-align:center">
@@ -133,4 +133,7 @@
         }
     </tbody>
 </table>
-
+<dormitoryApps.Client.Pages.Building.Modal.CreateRoom @ref="createRoom"/>
+@code{
+    private dormitoryApps.Client.Pages.Building.Modal.CreateRoom createRoom;
+}

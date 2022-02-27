@@ -30,8 +30,10 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<bool> Create(Room item)
         {
+            item.Furniture = false;
             if(item.FurnitureList != null)
             {
+                item.Furniture = true;
                 item.FurnitureList.ForEach(x=>x.RoomId=item.Id);
                 await _roomFurnRepository.Create(item.FurnitureList);
             }

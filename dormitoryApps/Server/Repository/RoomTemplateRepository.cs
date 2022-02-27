@@ -38,6 +38,12 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>($"Id={Id}");
             return res.FirstOrDefault();
         }
+        public async Task<RoomTemplate> GetByName(string name)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>($"RoomName='{name}'");
+            return res.FirstOrDefault();
+        }
+
         public async Task<string[]> GetNames()
         {
             var res = await _databases.Dorm.SelectDistinctAsync(TableName, "RoomName");

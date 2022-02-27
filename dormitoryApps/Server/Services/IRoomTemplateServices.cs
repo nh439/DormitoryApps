@@ -11,6 +11,7 @@ namespace dormitoryApps.Server.Services
         Task<RoomTemplate> GetById(int Id);
         Task<string[]> GetNames();
         Task<bool> AddTemplate(int roomId, string roomName);
+        Task<RoomTemplate> GetByName(string name);
     }
     public class RoomTemplateServices : IRoomTemplateServices
     {
@@ -69,6 +70,12 @@ namespace dormitoryApps.Server.Services
         public async Task<bool> AddTemplate(int roomId, string roomName)
         {
             return await _repository.AddTemplate(roomId, roomName);
+        }
+        public async Task<RoomTemplate> GetByName(string name)
+        {
+            var res = await _repository.GetByName(name);
+            if (res != null) res.Furnitures = await _roomfurnTemplateRepository.GetByRoomId(res.Id);
+            return res;
         }
     }
 }

@@ -26,6 +26,12 @@ namespace dormitoryApps.Server.Controllers
             }
             return Ok(await _roomTemplateServices.GetNames());
         }
+        [HttpGet(BaseUrl+"/name/{name}")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            var res = await _roomTemplateServices.GetByName(name);
+            return Ok(res);
+        }
         [HttpPost(BaseUrl + "/Create")]
         public async Task<IActionResult> Create([FromBody] RoomTemplate template)
         {
