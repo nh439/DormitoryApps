@@ -6,7 +6,7 @@
 
 @code {
     Modal e;
-    Room item = new Room();
+    Room item = new Room(){Floor=1};
     int floor;
     string[] templates;
     string selectedTemplate;
@@ -27,8 +27,10 @@
     }
     private async void SaveChanges()
     {
+        Random ra = new Random();
         try
         {
+            item.Id = ra.Next(0, int.MaxValue);
             var res = await _roomServices.Create(item);
             if(!string.IsNullOrEmpty(selectedTemplate))
             {
@@ -103,7 +105,7 @@
 
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-<Modal @ref="e">
+<Modal @ref="e" Style="color:black">
     <ModalContent>
         <ModalHeader>
             <ModalTitle>
@@ -119,7 +121,7 @@
   <div class="form-group">
     <label for="select">ชั้น</label> 
     <div>
-      <select id="select" @onchange="e=>item.Floor=(int)e.Value" class="custom-select">
+      <select id="select" @onchange="e=>item.Floor=int.Parse(e.Value.ToString())" class="custom-select">
           @for(int i = 1 ; i<=floor;i++)
                         {
                             <option value="@i">ชั้นที่ @i</option>
