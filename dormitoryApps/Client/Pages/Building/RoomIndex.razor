@@ -5,6 +5,7 @@
 @implements IDisposable;
 @inject BuildingServices _buildingServices;
 @inject RoomServices _roomServices;
+@inject NavigationManager _navigationManager;
 
 @code {
     [Parameter]
@@ -43,7 +44,7 @@
 <table class="table table-bordered" style="text-align:center">
     <thead class="table-dark">
         <tr>
-            <th>Id</th>
+            <th>#</th>
             <th>ชื่อห้อง</th>
             <th>ชั้น</th>
             <th>ขนาด</th>
@@ -74,10 +75,11 @@
         else
         {
             bool className = false;
+            int count = 1;
             @foreach (var room in rooms.OrderBy(x => x.RoomName).OrderBy(x => x.Floor))
             {
                 <tr class="@(className ? "table-primary":"table-success")">
-                    <td>@room.Id</td>
+                    <td>@count</td>
                     <td>@room.RoomName</td>
                     <td>@room.Floor</td>
                     <td>@room.Size ตร.ม</td>
@@ -128,14 +130,16 @@
                     <td>
                         <button class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title="แก้ไขรายละเอียด"><i class="edit outline icon"></i></button>
                         <button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="บันทึกรูปแบบห้อง"><i class="save outline icon"></i></button>
-                        <button class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="สิ่งของภายในห้อง"><i class="list icon"></i></button>
+                        <a class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="สิ่งของภายในห้อง" href="@($"/Furniture/{room.Id}")"><i class="list icon"></i></a>
                     </td>
                 </tr>
+                count++;
+
             }
         }
     </tbody>
 </table>
-<dormitoryApps.Client.Pages.Building.Modal.CreateRoom @ref="createRoom"/>
-@code{
+<dormitoryApps.Client.Pages.Building.Modal.CreateRoom @ref="createRoom" />
+@code {
     private dormitoryApps.Client.Pages.Building.Modal.CreateRoom createRoom;
 }

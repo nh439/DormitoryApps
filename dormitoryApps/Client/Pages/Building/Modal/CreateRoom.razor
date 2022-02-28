@@ -30,7 +30,7 @@
         Random ra = new Random();
         try
         {
-            item.Id = ra.Next(0, int.MaxValue);
+            item.Id = ra.Next(int.MinValue, int.MaxValue);
             var res = await _roomServices.Create(item);
             if(!string.IsNullOrEmpty(selectedTemplate))
             {
