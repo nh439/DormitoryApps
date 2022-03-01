@@ -10,7 +10,7 @@
 @code {
     [Parameter]
     public int Id { get; set; }
-    Room myroom = new Room();;
+    Room myroom = new Room();
     List<RoomFurn> roomFurns;
     Timer timer;
     protected override async void OnInitialized()
@@ -35,6 +35,7 @@
         timer?.Dispose();
     }
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
 <h1>
    ห้อง @myroom.RoomName
@@ -43,7 +44,7 @@
 <br />
 <br />
 <br />
-<button class="btn btn-outline-primary">เพิ่ม</button>
+<button class="btn btn-outline-primary" @onclick="()=>create.Open()">เพิ่ม</button>
 <br />
 <br />
 <table class="table table-bordered border-primary" style="text-align:center">
@@ -81,10 +82,18 @@
                     <td>@item.Type</td>
                     <td>@item.Model</td>
                     <td>@item.Price.ToString("#,###") บาท</td>
-                    <td></td>
+                    <td>
+                        <button class="btn btn-warning mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไข"><i class="edit outline icon"></i></button>
+                        <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบ"><i class="trash alternate outline icon"></i></button>
+                    </td>
                 </tr>
                 count++;
             }
         }
     </tbody>
 </table>
+<dormitoryApps.Client.Pages.Furniture.Modal.Create @ref="create"/>
+
+@code{
+   private dormitoryApps.Client.Pages.Furniture.Modal.Create create;
+}
