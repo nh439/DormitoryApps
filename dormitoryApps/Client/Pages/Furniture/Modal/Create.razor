@@ -36,15 +36,24 @@
     TypeValidate = false;
 
     RoomFurn myItem = new RoomFurn();
+    int roomId;
 
-    public async void Open()
+    public async void Open(int rid)
     {
-        myItem = new RoomFurn();
+        myItem = new RoomFurn()
+            {
+                RoomId = rid
+            };
+        roomId = rid;
         await e.Show();
         itemType = await _roomFurnHeaderServices.GetTypes();
         headerValues = await _roomFurnHeaderValuesServices.GetValues();
         await InvokeAsync(StateHasChanged);
 
+    }
+    private string checkChanges(ChangeEventArgs e)
+    {
+        return e.Value.ToString() == "true" ? true.ToString() : false.ToString();
     }
     private async void TypeChange(ChangeEventArgs e)
     {
@@ -67,10 +76,6 @@
         A6 = Attr06 != null && Attr06 != new RoomFurnHeader();
         await InvokeAsync(StateHasChanged);
     }
-    private void RadioChanged(object input, bool e)
-    {
-        input = e;
-    }
     private async void SaveChanges()
     {
         try
@@ -81,6 +86,12 @@
             {
                 StateHasChanged();
                 return;
+            }
+            Room room = await _roomServices.GetRoom(roomId);
+            if (!room.Furniture)
+            {
+                room.Furniture = true;
+                await _roomServices.Update(room);
             }
             var createResult = await _roomFurnServices.Create(myItem);
             if (createResult)
@@ -107,7 +118,7 @@
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-<Modal @ref="e">
+<Modal @ref="e" Style="color:black">
     <ModalContent>
         <ModalHeader>
             <ModalTitle>เพิ่มเฟอร์นิเจอร์</ModalTitle>
@@ -212,14 +223,14 @@
                 }
                 else
                 {
-                    myItem.Attr01 = false.ToString();
-                    <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr01,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr01.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr01.Description" class="custom-control-label">@Attr01.Description</label>
-                            </div>
+                    <div class="form-group">
+                        <label for="select">@Attr01.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr01" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" >Yes</option>
+                                <option value="false">No</option>
+                            </select>
                         </div>
                     </div>
                 }
@@ -266,14 +277,14 @@
                 }
                 else
                 {
-                    myItem.Attr02 = false.ToString();
-                   <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr02,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr02.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr02.Description" class="custom-control-label">@Attr02.Description</label>
-                            </div>
+                    <div class="form-group">
+                        <label for="select">@Attr02.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr02" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" >Yes</option>
+                                <option value="false">No</option>
+                            </select>
                         </div>
                     </div>
                 }
@@ -320,16 +331,16 @@
                 }
                 else
                 {
-                    myItem.Attr03 = false.ToString();
-                    <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr03,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr03.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr02.Description" class="custom-control-label">@Attr03.Description</label>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="form-group">
+                                            <label for="select">@Attr03.Description</label>
+                                            <div>
+                                                  <select id="select" @bind="myItem.Attr03" class="custom-select">
+                                                        <option selected disabled>โปรดเลือก</option>
+                                                        <option value="true"  >Yes</option>
+                                                        <option value="false" >No</option>
+                                                  </select>
+                                            </div>
+                                      </div>
                 }
             }
 
@@ -375,16 +386,16 @@
                 }
                 else
                 {
-                    myItem.Attr04 = false.ToString();
-                     <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr04,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr04.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr04.Description" class="custom-control-label">@Attr04.Description</label>
-                            </div>
-                        </div>
-                    </div>
+                   <div class="form-group">
+                                            <label for="select">@Attr04.Description</label>
+                                            <div>
+                                                  <select id="select" @bind="myItem.Attr04" class="custom-select">
+                                                        <option selected disabled>โปรดเลือก</option>
+                                                        <option value="true" >Yes</option>
+                                                        <option value="false" >No</option>
+                                                  </select>
+                                            </div>
+                                      </div>
                 }
             }
 
@@ -429,16 +440,16 @@
                 }
                 else
                 {
-                    myItem.Attr05 = false.ToString();
-                    <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr05,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr05.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr05.Description" class="custom-control-label">@Attr05.Description</label>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="form-group">
+                                            <label for="select">@Attr05.Description</label>
+                                            <div>
+                                                  <select id="select" @bind="myItem.Attr05" class="custom-select">
+                                                        <option selected disabled>โปรดเลือก</option>
+                                                        <option value="true" >Yes</option>
+                                                        <option value="false" >No</option>
+                                                  </select>
+                                            </div>
+                                      </div>
                 }
             }
 
@@ -483,16 +494,16 @@
                 }
                 else
                 {
-                    myItem.Attr06 = false.ToString();
-                     <div class="form-group row">
-                        <div class="col-4"></div>
-                        <div class="col-8">
-                            <div class="custom-control custom-checkbox custom-control-inline">
-                                <input @onchange="e=> RadioChanged(myItem.Attr06,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr06.Description" type="checkbox" class="custom-control-input" value="true">
-                                <label for="@Attr06.Description" class="custom-control-label">@Attr06.Description</label>
-                            </div>
-                        </div>
-                    </div>
+                   <div class="form-group">
+                                            <label for="select">@Attr06.Description</label>
+                                            <div>
+                                                  <select id="select" @bind="myItem.Attr06" class="custom-select">
+                                                      <option selected disabled>โปรดเลือก</option>
+                                                        <option value="true"  >Yes</option>
+                                                        <option value="false" >No</option>
+                                                  </select>
+                                            </div>
+                                      </div>
                 }
             }
 
