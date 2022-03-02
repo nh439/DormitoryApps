@@ -31,10 +31,15 @@
     A5 = false,
     A6 = false;
 
+    bool NameValidate = false,
+    ModelValidate = false,
+    TypeValidate = false;
+
     RoomFurn myItem = new RoomFurn();
 
     public async void Open()
     {
+        myItem = new RoomFurn();
         await e.Show();
         itemType = await _roomFurnHeaderServices.GetTypes();
         headerValues = await _roomFurnHeaderValuesServices.GetValues();
@@ -43,6 +48,7 @@
     }
     private async void TypeChange(ChangeEventArgs e)
     {
+        TypeValidate = true;
         string typename = e.Value.ToString();
         myItem.Type = typename;
         var header = await _roomFurnHeaderServices.GetByType(typename);
@@ -61,9 +67,41 @@
         A6 = Attr06 != null && Attr06 != new RoomFurnHeader();
         await InvokeAsync(StateHasChanged);
     }
-    private void RadioChanged(object input,bool e)
+    private void RadioChanged(object input, bool e)
     {
         input = e;
+    }
+    private async void SaveChanges()
+    {
+        try
+        {
+            NameValidate = string.IsNullOrEmpty(myItem.Name);
+            ModelValidate = string.IsNullOrEmpty(myItem.Model);
+            if (NameValidate || ModelValidate)
+            {
+                StateHasChanged();
+                return;
+            }
+            var createResult = await _roomFurnServices.Create(myItem);
+            if (createResult)
+            {
+                success.Details = "Completed";
+                success.NextRequired = false;
+                success.Open();
+                e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+        }
+
+        await InvokeAsync(StateHasChanged);
+
     }
 
 }
@@ -82,6 +120,7 @@
                         <label for="text">ชื่อสิ่งของ*</label>
                         <input id="text" @bind-value="myItem.Name" type="text" class="form-control">
                     </div>
+                    <small style="display:@(NameValidate ? "block":"none")">Name Required</small>
                 </Div>
                 <Div Class="col">
                     <div class="form-group">
@@ -126,6 +165,7 @@
                         <label for="text2">รุ่น</label>
                         <input id="text2" @bind-value="myItem.Model" type="text" class="form-control">
                     </div>
+                    <small style="display:@(ModelValidate  ? "block":"none")">Model Required</small>
                 </Div>
 
             </Div>
@@ -142,6 +182,7 @@
                             <label for="@Attr01.Description">@Attr01.Description</label>
                             <div>
                                 <select id="@Attr01.Description" @bind="myItem.Attr01" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr01.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -172,16 +213,12 @@
                 else
                 {
                     myItem.Attr01 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr01.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr01,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr01,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                    <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr01,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr01.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr01.Description" class="custom-control-label">@Attr01.Description</label>
                             </div>
                         </div>
                     </div>
@@ -199,6 +236,7 @@
                             <label for="@Attr02.Description">@Attr02.Description</label>
                             <div>
                                 <select id="@Attr02.Description" @bind="myItem.Attr02" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr02.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -229,16 +267,12 @@
                 else
                 {
                     myItem.Attr02 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr02.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr02,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr02,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                   <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr02,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr02.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr02.Description" class="custom-control-label">@Attr02.Description</label>
                             </div>
                         </div>
                     </div>
@@ -256,6 +290,7 @@
                             <label for="@Attr03.Description">@Attr03.Description</label>
                             <div>
                                 <select id="@Attr03.Description" @bind="myItem.Attr03" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr03.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -286,16 +321,12 @@
                 else
                 {
                     myItem.Attr03 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr03.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr03,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr03,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                    <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr03,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr03.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr02.Description" class="custom-control-label">@Attr03.Description</label>
                             </div>
                         </div>
                     </div>
@@ -314,6 +345,7 @@
                             <label for="@Attr04.Description">@Attr04.Description</label>
                             <div>
                                 <select id="@Attr04.Description" @bind="myItem.Attr04" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr04.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -344,16 +376,12 @@
                 else
                 {
                     myItem.Attr04 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr04.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr04,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr04,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                     <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr04,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr04.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr04.Description" class="custom-control-label">@Attr04.Description</label>
                             </div>
                         </div>
                     </div>
@@ -371,6 +399,7 @@
                             <label for="@Attr05.Description">@Attr05.Description</label>
                             <div>
                                 <select id="@Attr05.Description" @bind="myItem.Attr05" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr05.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -401,16 +430,12 @@
                 else
                 {
                     myItem.Attr05 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr05.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr05,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr05,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                    <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr05,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr05.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr05.Description" class="custom-control-label">@Attr05.Description</label>
                             </div>
                         </div>
                     </div>
@@ -428,6 +453,7 @@
                             <label for="@Attr06.Description">@Attr06.Description</label>
                             <div>
                                 <select id="@Attr06.Description" @bind="myItem.Attr06" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr06.Id).OrderBy(x => x.Value))
                                     {
                                         <option value="@val.Value">@val.Value</option>
@@ -458,16 +484,12 @@
                 else
                 {
                     myItem.Attr06 = false.ToString();
-                    <div class="form-group">
-                        <label>@Attr06.Description</label>
-                        <div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input  id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="e=>RadioChanged(Attr06,true)">
-                                <label for="radio_0" class="custom-control-label">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="e=>RadioChanged(Attr06,false)" checked>
-                                <label for="radio_1" class="custom-control-label">No</label>
+                     <div class="form-group row">
+                        <div class="col-4"></div>
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @onchange="e=> RadioChanged(myItem.Attr06,(e.Value.ToString().ToLower()==true.ToString().ToLower() ? true:false))" id="@Attr06.Description" type="checkbox" class="custom-control-input" value="true">
+                                <label for="@Attr06.Description" class="custom-control-label">@Attr06.Description</label>
                             </div>
                         </div>
                     </div>
@@ -477,8 +499,15 @@
 
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary">Save Changes</Button>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges" Disabled="!TypeValidate">Save Changes</Button>
             <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Back</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
+
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+} 
