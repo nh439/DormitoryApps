@@ -21,9 +21,9 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<RoomFurn>>(ControllerName);
             return res;
         }
-        public async Task<List<RoomFurn>> GetById(long id)
+        public async Task<RoomFurn> GetById(long id)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RoomFurn>>($"{ControllerName}?id={id}");
+            var res = await _httpClient.GetFromJsonAsync<RoomFurn>($"{ControllerName}?id={id}");
             return res;
         }
         public async Task<List<RoomFurn>> GetByRoom(int roomid)

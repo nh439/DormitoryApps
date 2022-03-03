@@ -83,7 +83,7 @@
                     <td>@item.Model</td>
                     <td>@item.Price.ToString("#,###") บาท</td>
                     <td>
-                        <button class="btn btn-warning mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไข"><i class="edit outline icon"></i></button>
+                        <button class="btn btn-warning mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไข" @onclick="()=>update.Open(item.Id)"><i class="edit outline icon"></i></button>
                         <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบ"><i class="trash alternate outline icon"></i></button>
                     </td>
                 </tr>
@@ -93,7 +93,9 @@
     </tbody>
 </table>
 <dormitoryApps.Client.Pages.Furniture.Modal.Create @ref="create"/>
+<dormitoryApps.Client.Pages.Furniture.Modal.Update @ref="update"/>
 
 @code{
-   private dormitoryApps.Client.Pages.Furniture.Modal.Create create;
+    private dormitoryApps.Client.Pages.Furniture.Modal.Create create;
+    private dormitoryApps.Client.Pages.Furniture.Modal.Update update;
 }

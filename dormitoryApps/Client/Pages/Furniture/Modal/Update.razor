@@ -32,35 +32,17 @@
     A6 = false;
 
     bool NameValidate = false,
-    ModelValidate = false,
-    TypeValidate = false;
+    ModelValidate = false;
 
     RoomFurn myItem = new RoomFurn();
-    int roomId;
 
-    public async void Open(int rid)
+    public async void Open(long id)
     {
-        myItem = new RoomFurn()
-            {
-                RoomId = rid
-            };
-        roomId = rid;
+        myItem = await _roomFurnServices.GetById(id);
         await e.Show();
         itemType = await _roomFurnHeaderServices.GetTypes();
         headerValues = await _roomFurnHeaderValuesServices.GetValues();
-        await InvokeAsync(StateHasChanged);
-
-    }
-    private string checkChanges(ChangeEventArgs e)
-    {
-        return e.Value.ToString() == "true" ? true.ToString() : false.ToString();
-    }
-    private async void TypeChange(ChangeEventArgs e)
-    {
-        TypeValidate = true;
-        string typename = e.Value.ToString();
-        myItem.Type = typename;
-        var header = await _roomFurnHeaderServices.GetByType(typename);
+        var header = await _roomFurnHeaderServices.GetByType(myItem.Type);
         Attr01 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr01).FirstOrDefault();
         Attr02 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr02).FirstOrDefault();
         Attr03 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr03).FirstOrDefault();
@@ -75,6 +57,8 @@
         A5 = Attr05 != null && Attr05 != new RoomFurnHeader();
         A6 = Attr06 != null && Attr06 != new RoomFurnHeader();
         await InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
+
     }
     private async void SaveChanges()
     {
@@ -87,13 +71,7 @@
                 StateHasChanged();
                 return;
             }
-            Room room = await _roomServices.GetRoom(roomId);
-            if (!room.Furniture)
-            {
-                room.Furniture = true;
-                await _roomServices.Update(room);
-            }
-            var createResult = await _roomFurnServices.Create(myItem);
+            var createResult = await _roomFurnServices.Update(myItem);
             if (createResult)
             {
                 success.Details = "Completed";
@@ -121,7 +99,7 @@
 <Modal @ref="e" Style="color:black">
     <ModalContent>
         <ModalHeader>
-            <ModalTitle>เพิ่มเฟอร์นิเจอร์</ModalTitle>
+            <ModalTitle>แก้ไขเฟอร์นิเจอร์</ModalTitle>
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
@@ -135,27 +113,8 @@
                 </Div>
                 <Div Class="col">
                     <div class="form-group">
-                        <label for="select">ประเภทสิ่งของ</label>
-                        <div>
-                            <select id="select" @onchange="TypeChange" name="select" class="custom-select">
-                                @if (itemType == null)
-                                {
-                                    <option selected disabled>Loading...</option>
-                                }
-                                else if (itemType.Length == 0)
-                                {
-                                    <option selected disabled>ไม่พบประเภทสิ่งของ</option>
-                                }
-                                else
-                                {
-                                    <option selected disabled>โปรดเลือก</option>
-                                    @foreach (var item in itemType)
-                                    {
-                                        <option value="@item">@item </option>
-                                    }
-                                }
-                            </select>
-                        </div>
+                        <label for="text">รุ่น</label>
+                        <input id="text" @bind-value="myItem.Type" type="text" class="form-control" readonly>
                     </div>
                 </Div>
             </Div>
@@ -173,7 +132,7 @@
                 </Div>
                 <Div Class="col">
                     <div class="form-group">
-                        <label for="text2">รุ่น</label>
+                        <label for="text2">ประเภท</label>
                         <input id="text2" @bind-value="myItem.Model" type="text" class="form-control">
                     </div>
                     <small style="display:@(ModelValidate  ? "block":"none")">Model Required</small>
@@ -196,7 +155,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr01.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(val.Value==myItem.Attr01)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -228,8 +187,8 @@
                         <div>
                             <select id="select" @bind="myItem.Attr01" class="custom-select">
                                 <option selected disabled>โปรดเลือก</option>
-                                <option value="true" >Yes</option>
-                                <option value="false">No</option>
+                                <option value="true" selected="@("true"==myItem.Attr01)">Yes</option>
+                                <option value="false" selected="@("false"==myItem.Attr01)">No</option>
                             </select>
                         </div>
                     </div>
@@ -250,7 +209,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr02.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(myItem.Attr02==val.Value)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -282,8 +241,8 @@
                         <div>
                             <select id="select" @bind="myItem.Attr02" class="custom-select">
                                 <option selected disabled>โปรดเลือก</option>
-                                <option value="true" >Yes</option>
-                                <option value="false">No</option>
+                                <option value="true" selected="@(myItem.Attr02=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr02=="false")">No</option>
                             </select>
                         </div>
                     </div>
@@ -304,7 +263,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr03.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(myItem.Attr03==val.Value)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -332,15 +291,15 @@
                 else
                 {
                     <div class="form-group">
-                                            <label for="select">@Attr03.Description</label>
-                                            <div>
-                                                  <select id="select" @bind="myItem.Attr03" class="custom-select">
-                                                        <option selected disabled>โปรดเลือก</option>
-                                                        <option value="true"  >Yes</option>
-                                                        <option value="false" >No</option>
-                                                  </select>
-                                            </div>
-                                      </div>
+                        <label for="select">@Attr03.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr03" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr03=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr03=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
                 }
             }
 
@@ -359,7 +318,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr04.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(myItem.Attr04==val.Value)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -386,16 +345,16 @@
                 }
                 else
                 {
-                   <div class="form-group">
-                                            <label for="select">@Attr04.Description</label>
-                                            <div>
-                                                  <select id="select" @bind="myItem.Attr04" class="custom-select">
-                                                        <option selected disabled>โปรดเลือก</option>
-                                                        <option value="true" >Yes</option>
-                                                        <option value="false" >No</option>
-                                                  </select>
-                                            </div>
-                                      </div>
+                    <div class="form-group">
+                        <label for="select">@Attr04.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr04" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr04=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr04=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
                 }
             }
 
@@ -413,7 +372,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr05.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(myItem.Attr05==val.Value)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -441,15 +400,15 @@
                 else
                 {
                     <div class="form-group">
-                                            <label for="select">@Attr05.Description</label>
-                                            <div>
-                                                  <select id="select" @bind="myItem.Attr05" class="custom-select">
-                                                        <option selected disabled>โปรดเลือก</option>
-                                                        <option value="true" >Yes</option>
-                                                        <option value="false" >No</option>
-                                                  </select>
-                                            </div>
-                                      </div>
+                        <label for="select">@Attr05.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr05" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr05=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr05=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
                 }
             }
 
@@ -467,7 +426,7 @@
                                     <option selected disabled>โปรดเลือก</option>
                                     @foreach (var val in headerValues.Where(x => x.HeaderId == Attr06.Id).OrderBy(x => x.Value))
                                     {
-                                        <option value="@val.Value">@val.Value</option>
+                                        <option value="@val.Value" selected="@(myItem.Attr06==val.Value)">@val.Value</option>
                                     }
                                 </select>
                             </div>
@@ -494,23 +453,23 @@
                 }
                 else
                 {
-                   <div class="form-group">
-                                            <label for="select">@Attr06.Description</label>
-                                            <div>
-                                                  <select id="select" @bind="myItem.Attr06" class="custom-select">
-                                                      <option selected disabled>โปรดเลือก</option>
-                                                        <option value="true" >Yes</option>
-                                                        <option value="false" >No</option>
-                                                  </select>
-                                            </div>
-                                      </div>
+                    <div class="form-group">
+                        <label for="select">@Attr06.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr06" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr06=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr06=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
                 }
             }
 
 
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary" @onclick="SaveChanges" Disabled="!TypeValidate">Save Changes</Button>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">Save Changes</Button>
             <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Back</Button>
         </ModalFooter>
     </ModalContent>
