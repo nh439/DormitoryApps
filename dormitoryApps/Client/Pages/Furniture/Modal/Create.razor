@@ -103,6 +103,9 @@
                 await InvokeAsync(StateHasChanged);
                 return;
             }
+            error.Header = "!Oops!";
+            error.Details = "Something Went Wrong";
+            error.Open();
         }
         catch (Exception x)
         {

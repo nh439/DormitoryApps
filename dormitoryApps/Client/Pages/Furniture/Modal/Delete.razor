@@ -1,0 +1,113 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomServices _roomServices;
+@inject RoomFurnServices _roomFurnServices;
+@code {
+    long furnId;
+    Modal e;
+    RoomFurn thisItem = new RoomFurn();
+    public async void Open(long Id)
+    {
+        e.Show();
+        furnId = Id;
+        thisItem = await _roomFurnServices.GetById(Id);
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void AcceptDeleted()
+    {
+        try
+        {
+            var result = await _roomFurnServices.Delete(furnId);
+            if (result)
+            {
+                success.Details = "Completed";
+                success.NextRequired = false;
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops!";
+            error.Details = "Something Went Wrong";
+            error.Open();
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+}
+
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>
+                เอาของออกจากห้อง
+            </ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>
+                    เอาของออกจากห้อง
+                </h1>
+                <br />
+                <br />
+               
+            </center>
+            @if(thisItem == null)
+            {
+                <center>
+                <h1>Loading ...</h1>
+                </center>
+            }     
+            else{
+            <table Class="table table-bordered" border="3" Style="text-align:center">
+                 <thead>
+                     <tr>
+                         <th>Header</th>
+                         <th>Id</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                     <tr>
+                         <td>รหัส</td>
+                         <td>@thisItem.Id</td>
+                     </tr>
+                      <tr>
+                         <td>ชื่อ</td>
+                         <td>@thisItem.Name</td>
+                     </tr>
+                     <tr>
+                         <td>ประเภท</td>
+                         <td>@thisItem.Type</td>
+                     </tr>
+                     <tr>
+                         <td>รุ่น</td>
+                         <td>@thisItem.Model</td>
+                     </tr>
+                     <tr>
+                         <td>ราคา</td>
+                         <td>@thisItem.Price.ToString("#,###") บาท</td>
+                     </tr>
+                 </tbody>
+                </table>
+                }
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-danger" @onclick="AcceptDeleted">Delete</Button>
+            <Button Class="btn btn-outline-success" @onclick="()=>e.Hide()">Discard</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+} 
