@@ -129,7 +129,7 @@
                     </td>
                     <td>
                         <button class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title="แก้ไขรายละเอียด"><i class="edit outline icon"></i></button>
-                        <button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="บันทึกรูปแบบห้อง"><i class="save outline icon"></i></button>
+                        <button class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="บันทึกรูปแบบห้อง" @onclick="()=>saveTemplate.Open(room.Id)"><i class="save outline icon"></i></button>
                         <a class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="สิ่งของภายในห้อง" href="@($"/Furniture/{room.Id}")"><i class="list icon"></i></a>
                     </td>
                 </tr>
@@ -140,6 +140,8 @@
     </tbody>
 </table>
 <dormitoryApps.Client.Pages.Building.Modal.CreateRoom @ref="createRoom" />
+<dormitoryApps.Client.Pages.Building.Modal.SaveTemplate @ref="saveTemplate" />
 @code {
     private dormitoryApps.Client.Pages.Building.Modal.CreateRoom createRoom;
+    private dormitoryApps.Client.Pages.Building.Modal.SaveTemplate saveTemplate;
 }

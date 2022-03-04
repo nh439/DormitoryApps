@@ -1,0 +1,47 @@
+﻿
+@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject BuildingServices _buildingServices;
+@inject RoomServices _roomServices;
+@inject RoomFurnServices _roomFurnServices;
+@inject RoomFurnHeaderServices _roomFurnHeaderServices;
+@inject RoomFurnHeaderValuesServices _roomFurnHeaderValuesServices;
+@code {
+    Modal e;
+    int roomId;
+    Room templateroom = new Room();
+    public async void Open(int roomid)
+    {
+        roomId = roomid;
+        templateroom = await _roomServices.GetRoom(roomid);
+        await e.Show();
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>
+                Save Template
+            </ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>บันทึกห้องลง Template</h1>
+            </center>
+            <br />
+            <br />
+            <div class="form-group">
+                <label for="tname">ชื่อ Template</label>
+                <input id="tname" name="tname" type="text" class="form-control">
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary">Save Changes</Button>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
