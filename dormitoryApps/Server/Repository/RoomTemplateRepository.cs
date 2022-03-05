@@ -52,7 +52,7 @@ namespace dormitoryApps.Server.Repository
         public async Task<bool> AddTemplate(int roomId,string roomName)
         {
             StoredProcedureContrainer storedProcedure = new StoredProcedureContrainer("sp_SaveTemplate");
-            storedProcedure.Addparameters("roomId", roomId);
+            storedProcedure.Addparameters("rid", roomId);
             storedProcedure.Addparameters("roomName", roomName);
             var res = await _databases.Dorm.ExecuteStoredProcedureAsync(storedProcedure);
             return res.HasCompleted;

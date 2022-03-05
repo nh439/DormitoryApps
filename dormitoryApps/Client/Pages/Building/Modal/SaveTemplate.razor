@@ -1,21 +1,58 @@
-﻿
-@using Blazorise;
+﻿@using Blazorise;
 @using dormitoryApps.Shared.Model.Entity;
 @using dormitoryApps.Client.Services;
+@using System.Linq;
 @inject BuildingServices _buildingServices;
 @inject RoomServices _roomServices;
 @inject RoomFurnServices _roomFurnServices;
 @inject RoomFurnHeaderServices _roomFurnHeaderServices;
 @inject RoomFurnHeaderValuesServices _roomFurnHeaderValuesServices;
+@inject RoomTemplateServices _templateServices;
 @code {
     Modal e;
     int roomId;
     Room templateroom = new Room();
+    string templateName;
     public async void Open(int roomid)
     {
         roomId = roomid;
         templateroom = await _roomServices.GetRoom(roomid);
         await e.Show();
+    }
+    public async void SaveChanges()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(templateName))
+            {
+                error.Header = "Required";
+                error.Details = "Name Is Required";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            var result = await _templateServices.Addtemplate(roomId, templateName);
+            if (result)
+            {
+                success.NextRequired = false;
+                success.Details = "Completed";
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops!";
+            error.Details = "Something went wrong";
+            error.Open();
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -36,12 +73,162 @@
             <br />
             <div class="form-group">
                 <label for="tname">ชื่อ Template</label>
-                <input id="tname" name="tname" type="text" class="form-control">
+                <input id="tname" @bind-value="templateName" type="text" class="form-control">
             </div>
+            <br />
+            <br />
+            <center>
+                <h1>รายละเอียด</h1>
+            </center>
+            <table class="table table-bordered" style="text-align:center">
+                <thead>
+                    <tr>
+                        <th>ชื่อ</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ขนาดห้อง</td>
+                        <td>@templateroom.Size ตร.ม</td>
+                    </tr>
+                    <tr>
+                        <td>ค่าเช่า</td>
+                        <td>@templateroom.Rental บาท</td>
+                    </tr>
+                    <tr>
+                        <td>มีเครื่องปรับอากาศ</td>
+                        <td>
+                            @if (templateroom.Aircond)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>มีเครื่องทำน้ำอุ่น</td>
+                        <td>
+                            @if (templateroom.WaterHeater)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>มีโทรทัศน์</td>
+                        <td>
+                            @if (templateroom.TV)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>มีพัดลม</td>
+                        <td>
+                            @if (templateroom.TV)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>มีเฟอร์นิเจอร์</td>
+                        <td>
+                            @if (templateroom.Furniture)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>มีตู้เย็น</td>
+                        <td>
+                            @if (templateroom.Fridge)
+                            {
+                                <i class="check icon"></i>
+                            }
+                            else
+                            {
+                                <i class="x icon"></i>
+                            }
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <center>
+                <h1>เฟอร์นิเจอร์</h1>
+            </center>
+            <table class="table table-bordered" style="text-align:center">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ชื่อ</th>
+                        <th>ชนิด</th>
+                        <th>ราคา</th>
+                        <th>รุ่น</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (templateroom.FurnitureList == null)
+                    {
+                        <tr>
+                            <td colspan="4">Loading...</td>
+                        </tr>
+                    }
+                    else if (templateroom.FurnitureList.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4">ไม่พบเฟอร์นิเจอร์</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var (item, idx) in templateroom.FurnitureList.Select((x, i) => (x, 1 + i)))
+                        {
+                            <tr>
+                                <td>@idx</td>
+                                <td>@item.Name</td>
+                                <td>@item.Type</td>
+                                <td>@item.Price บาท</td>
+                                <td>@item.Model</td>
+                            </tr>
+                        }
+
+                    }
+                </tbody>
+            </table>
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-primary">Save Changes</Button>
+            <Button Class="btn btn-primary" @onclick="SaveChanges">Save Changes</Button>
             <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+} 
