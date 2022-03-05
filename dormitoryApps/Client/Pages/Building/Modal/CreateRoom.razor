@@ -30,8 +30,7 @@
         Random ra = new Random();
         try
         {
-            item.Id = ra.Next(int.MinValue, int.MaxValue);
-            var res = await _roomServices.Create(item);
+            item.Id = ra.Next(int.MinValue, int.MaxValue);            
             if(!string.IsNullOrEmpty(selectedTemplate))
             {
                 var myTemplate = await _roomTemplateServices.GetByName(selectedTemplate);
@@ -55,6 +54,7 @@
                 }
 
             }
+            var res = await _roomServices.Create(item);
             if(res)
             {
                 success.NextRequired = false;
@@ -80,6 +80,7 @@
     private async void tps(ChangeEventArgs e)
     {
         var x = e.Value.ToString();
+        selectedTemplate = x;
         isTemplated= !string.IsNullOrEmpty(x);
         if(isTemplated)
         {
@@ -148,9 +149,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="select1" @onchange="tps">From Template</label> 
+                <label for="select1">From Template</label> 
                 <div>
-                    <select id="select1" @bind="selectedTemplate" class="custom-select">
+                    <select id="select1"  @onchange="tps"  class="custom-select">
                         <option value="" selected>Custom</option>
                         @if(templates != null)
                         {

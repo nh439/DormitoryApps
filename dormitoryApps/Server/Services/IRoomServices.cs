@@ -31,18 +31,19 @@ namespace dormitoryApps.Server.Services
         public async Task<bool> Create(Room item)
         {
             item.Furniture = false;
-            if(item.FurnitureList != null)
-            {
-                item.Furniture = true;
-                item.FurnitureList.ForEach(x=>x.RoomId=item.Id);
+            if (item.FurnitureList != null) item.Furniture = true;
+            var res=  await _repository.Create(item);
+            if (item.FurnitureList != null)
+            {               
+                item.FurnitureList.ForEach(x => x.RoomId = item.Id);
                 await _roomFurnRepository.Create(item.FurnitureList);
             }
-            if(item.Imgs !=null)
+            if (item.Imgs != null)
             {
-                item.Imgs.ForEach(x=>x.RoomId=item.Id);
+                item.Imgs.ForEach(x => x.RoomId = item.Id);
                 await _roomImgRepository.Create(item.Imgs);
             }
-            return await _repository.Create(item);
+            return res;
         }
         public async Task<bool> Update(Room item)
         {

@@ -40,7 +40,7 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<RoomTemplate> GetByName(string name)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>($"RoomName='{name}'");
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>(TableName,$"RoomName='{name}'");
             return res.FirstOrDefault();
         }
 
