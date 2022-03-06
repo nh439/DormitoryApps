@@ -9,8 +9,8 @@
     List<Session> sessions;
     List<Officer> officers;
     Timer timer = new Timer();
-    int col = 4;
-    bool asc = true;
+    int col = 3;
+    bool asc = false;
     protected override void OnInitialized()
     {
         Get();
@@ -73,10 +73,10 @@
     }
     private void SortChanges(int sorrtcol)
     {
-        if (col == sorrtcol) asc = false;
+        if (col == sorrtcol) asc = !asc;
         else
         {
-            asc = true;
+            asc = col == 3 || col==4? false: true;
         }
         col = sorrtcol;
     }
@@ -99,6 +99,8 @@
 <br />
 <br />
 <button class="btn btn-info"><i class="search icon"></i> Advanced Search</button>
+<button class="btn btn-warning "><i class="x icon"></i> Forced Logout</button>
+<button class="btn btn-danger"><i class="trash icon"></i> Clear Session</button>
 <br />
 <br>
 <h2>Total : @(sessions != null ? sessions.Count:"Loading...")</h2>
