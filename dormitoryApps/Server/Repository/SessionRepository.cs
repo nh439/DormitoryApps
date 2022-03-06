@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Databases;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
@@ -47,6 +48,37 @@ namespace dormitoryApps.Server.Repository
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<Session>(TableName,$"UserId={UserId}");
             return res.ToList();
+        }
+        public async Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria)
+        {
+            ConditionSet set = new ConditionSet();
+            if(criteria.LoggedIn.MinDate.HasValue)
+            {
+                set.Add("LoggedIn", criteria.LoggedIn.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.LoggedIn.MaxDate.HasValue)
+            {
+                set.Add("LoggedIn", criteria.LoggedIn.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if (criteria.LoggedOut.MinDate.HasValue)
+            {
+                set.Add("LoggOut", criteria.LoggedOut.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+            }
+            if (criteria.LoggedOut.MaxDate.HasValue)
+            {
+                set.Add("LoggOut", criteria.LoggedOut.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+            }
+            if(criteria.UserId.HasValue)
+            {
+                set.Add("UserId", criteria.UserId.Value, SqlOperator.Equal, SqlCondition.AND);
+            }
+            if(criteria.IsloggedOut > 0 )
+            {
+                set.Add("Isloggout", criteria.IsloggedOut == 1 ? true : false);
+            }
+            var res = await _databases.Dorm.SelectEntitiesAsync<Session>(TableName, set);
+            return res.ToList();
+
         }
         public int SuperForcedlogout(int day)
         {
