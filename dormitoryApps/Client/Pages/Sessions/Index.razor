@@ -1,0 +1,148 @@
+﻿@page "/Sessions"
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@implements IDisposable;
+@code {
+    List<Session> sessions;
+    List<Officer> officers;
+    Timer timer = new Timer();
+    int col = 4;
+    bool asc = true;
+    protected override void OnInitialized()
+    {
+        Get();
+        timer = new Timer();
+        timer.Interval = 1000;
+        timer.Elapsed += OnTick;
+        timer.Enabled = true;
+        StateHasChanged();
+    }
+    private async void Get()
+    {
+        officers = await _officerServices.GetEmployee();
+        sessions = await _sessionServices.Get();
+        if (sessions == null) sessions = new List<Session>();
+        else
+        {
+          sessions =  Onsort(sessions);
+        }
+
+    }
+    public List<Session> Onsort(IEnumerable<Session> item)
+    {
+        if (asc)
+        {
+            switch (col)
+            {
+                case 1: item = item.OrderBy(x => x.Id); break;
+                case 2:
+                    var sessionemp = (
+                    from session in sessions
+                    join employee in officers on session.UserId equals employee.Id
+                    select new { Employee = employee, UserSession = session }
+                    );
+                    item = sessionemp.OrderBy(x => x.Employee.Firstname).Select(x => x.UserSession);
+                    break;
+                case 3: item = item.OrderBy(x => x.LoggedIn); break;
+                case 4: item = item.OrderBy(x => x.LoggOut); break;
+                case 5: item = item.OrderBy(x => x.Isloggout); break;
+            }
+        }
+        else
+        {
+            switch (col)
+            {
+                case 1: item = item.OrderByDescending(x => x.Id); break;
+                case 2:
+                    var sessionemp = (
+                    from session in sessions
+                    join employee in officers on session.UserId equals employee.Id
+                    select new { Employee = employee, UserSession = session }
+                    );
+                    item = sessionemp.OrderByDescending(x => x.Employee.Firstname).Select(x => x.UserSession);
+                    break;
+                case 3: item = item.OrderByDescending(x => x.LoggedIn); break;
+                case 4: item = item.OrderByDescending(x => x.LoggOut); break;
+                case 5: item = item.OrderByDescending(x => x.Isloggout); break;
+            }
+        }
+        return item.ToList();
+    }
+    private void SortChanges(int sorrtcol)
+    {
+        if (col == sorrtcol) asc = false;
+        else
+        {
+            asc = true;
+        }
+        col = sorrtcol;
+    }
+    private async void OnTick(object sender, ElapsedEventArgs e)
+    {
+        Get();
+        await InvokeAsync(StateHasChanged);
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<br />
+<center>
+    <h1>ประวัติการใช้งาน</h1>
+</center>
+<br />
+<br />
+<br />
+<button class="btn btn-info"><i class="search icon"></i> Advanced Search</button>
+<br />
+<br>
+<h2>Total : @(sessions != null ? sessions.Count:"Loading...")</h2>
+<br />
+<table class="table table-bordered border-2" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th @onclick="e=> SortChanges(1)">รหัส Session</th>
+            <th @onclick="e=> SortChanges(2)">พนักงาน</th>
+            <th @onclick="e=> SortChanges(3)">เวลา Log in</th>
+            <th @onclick="e=> SortChanges(4)">เวลา Log out</th>
+            <th @onclick="e=> SortChanges(5)">ออกจากระบบ</th>
+        </tr>
+    </thead>
+    <tbody class="table-success">
+        @if (sessions == null)
+        {
+            <tr>
+                <td colspan="5">Fetching...</td>
+            </tr>
+        }
+        else if (sessions.Count == 0)
+        {
+             <tr>
+                <td colspan="5">No User Sessions</td>
+            </tr>
+        }
+        else
+        {
+            @foreach(var item in sessions)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@officers.Where(x=>x.Id==item.UserId).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()</td>
+                    <td>@item.LoggedIn.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                    <td>@(item.LoggOut.HasValue ?  item.LoggOut.Value.ToString("dd MMMM yyyy HH:mm:ss"):null)</td>
+                    <td>
+                        @if(item.Isloggout)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
