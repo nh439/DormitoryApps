@@ -11,7 +11,7 @@ namespace dormitoryApps.Server.Services
         Task<bool> UpdateCommit(IEnumerable<RoomImg> items);
         Task<bool> Delete(long Id);
         Task<int> DeleteByRoom(int roomId);
-        Task<List<RoomImg>> GetByRoom(int roomId);
+        Task<RoomImg> GetByRoom(int roomId);
         Task<List<RoomImg>> GetById(long Id);
     }
     public class RoomImgServices : IRoomImgServices
@@ -46,7 +46,7 @@ namespace dormitoryApps.Server.Services
         {
             return await _repository.DeleteByRoom(roomId);
         }
-        public async Task<List<RoomImg>> GetByRoom(int roomId)
+        public async Task<RoomImg> GetByRoom(int roomId)
         {
             return await _repository.GetByRoom(roomId);
         }

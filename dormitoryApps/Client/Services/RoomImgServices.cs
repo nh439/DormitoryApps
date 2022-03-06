@@ -16,41 +16,97 @@ namespace dormitoryApps.Client.Services
             _sessionServices = sessionServices;
             _logger = logger;
         }
-        public async Task<List<RoomImg>> GetByRoom(int roomId)
+        public async Task<RoomImg> GetByRoom(int roomId)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RoomImg>>($"{ControllerName}/{roomId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<RoomImg>($"{ControllerName}/{roomId}");
+                return res;
+            }
+            catch(Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return null;
+            }
         }
         public async Task<RoomImg> GetById(long Id)
         {
-            var res = await _httpClient.GetFromJsonAsync<RoomImg>($"{ControllerName}/Id/{Id}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<RoomImg>($"{ControllerName}/Id/{Id}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return null;
+            }
         }
         public async Task<bool> Create(RoomImg item)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return false;
+            }
         }
         public async Task<bool> Update(RoomImg item)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return false;
+            }
         }
         public async Task<bool> UpdateCommit(IEnumerable<RoomImg> items)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/UpdateCommit", items);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/UpdateCommit", items);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return false;
+            }
         }
         public async Task<bool> Delete(long itemId)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return false;
+            }
         }
 
         public async Task<int> DeleteByRoom(int roomId)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/DeleteByRoom", roomId);
-            return await res.Content.ReadFromJsonAsync<int>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/DeleteByRoom", roomId);
+                return await res.Content.ReadFromJsonAsync<int>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return -1;
+            }
         }
 
     }

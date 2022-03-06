@@ -38,15 +38,20 @@ namespace dormitoryApps.Server.Services
                 item.FurnitureList.ForEach(x => x.RoomId = item.Id);
                 await _roomFurnRepository.Create(item.FurnitureList);
             }
-            if (item.Imgs != null)
+            if (item.Img != null)
             {
-                item.Imgs.ForEach(x => x.RoomId = item.Id);
-                await _roomImgRepository.Create(item.Imgs);
+                item.Img.RoomId = item.Id;
+                await _roomImgRepository.Create(item.Img);
             }
             return res;
         }
         public async Task<bool> Update(Room item)
         {
+            await _roomImgRepository.DeleteByRoom(item.Id);
+            if(item.Img != null)
+            {
+                await _roomImgRepository.Create(item.Img);
+            }
             return await _repository.Update(item);
         }
         public async Task<bool> Delete(int roomId)

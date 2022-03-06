@@ -45,10 +45,10 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.DeleteAsync(TableName,$"RoomId={roomId}");
             return res;
         }
-        public async Task<List<RoomImg>> GetByRoom(int roomId)
+        public async Task<RoomImg> GetByRoom(int roomId)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomImg>(TableName, $"RoomId={roomId}");
-            return res.ToList();
+            return res.FirstOrDefault();
         }
         public async Task<List<RoomImg>> GetById(long Id)
         {

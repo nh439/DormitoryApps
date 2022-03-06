@@ -3,22 +3,21 @@
 @using dormitoryApps.Shared.Model.Entity;
 @inject RoomServices _roomServices;
 @inject RoomTemplateServices _roomTemplateServices;
+@inject RoomImgServices _roomImgServices;
 
 @code {
     Modal e;
-    Room item = new Room(){Floor=1,Img = new RoomImg()};
-    int floor;
-    string[] templates;
-    string selectedTemplate;
-    bool isTemplated = false;
-    public async void open(int buildingId)
+    Room item = new Room(){Floor=1,Img=new RoomImg()};
+    int floor = 1;
+    public async void open(int roomId)
     {       
-        await e.Show();        
-        item.Building = buildingId;
-        var allroom = await _roomServices.GetByBuilding(buildingId);
+        e.Show();
+        item = await _roomServices.GetRoom(roomId);
+        var allroom = await _roomServices.GetByBuilding(item.Building);
         var maxfloor = allroom != null && allroom.Count > 0 ?  allroom.Select(x => x.Floor).ToArray().Max():0;
         floor = 1 + maxfloor;
-        templates = await _roomTemplateServices.GetTemplateNames();
+        item.Img = await _roomImgServices.GetByRoom(roomId);
+        if (item.Img == null) item.Img = new RoomImg();
         await InvokeAsync(StateHasChanged);
     }
     private void CheckBoxChanged(ChangeEventArgs e,out bool changeResult)
@@ -27,34 +26,9 @@
     }
     private async void SaveChanges()
     {
-        Random ra = new Random();
         try
-        {
-            item.Id = ra.Next(int.MinValue, int.MaxValue);            
-            if(!string.IsNullOrEmpty(selectedTemplate))
-            {
-                var myTemplate = await _roomTemplateServices.GetByName(selectedTemplate);
-                item.FurnitureList = new List<RoomFurn>();
-                foreach(var f in myTemplate.Furnitures)
-                {
-                    item.FurnitureList.Add(new RoomFurn
-                        {
-                            Attr01 = f.Attr01,
-                            Attr02 = f.Attr02,
-                            Attr03 = f.Attr03,
-                            Attr04 = f.Attr04,
-                            Attr05 = f.Attr05,
-                            Attr06 = f.Attr06,
-                            Model = f.Model,
-                            Name = f.Name,
-                            Price = f.Price,
-                            Type = f.Type,
-
-                        });
-                }
-
-            }
-            var res = await _roomServices.Create(item);
+        {                 
+            var res = await _roomServices.Update(item);
             if(res)
             {
                 success.NextRequired = false;
@@ -62,7 +36,6 @@
                 success.Details = "เพิ่มสำเร็จ";
                 success.Open();
                 await e.Hide();
-                item = new Room(){Floor=1,Img = new RoomImg()};
                 await InvokeAsync(StateHasChanged);
                 return;
             }
@@ -77,31 +50,7 @@
             error.Open();
         }
         await InvokeAsync(StateHasChanged);
-    }
-    private async void tps(ChangeEventArgs e)
-    {
-        var x = e.Value.ToString();
-        selectedTemplate = x;
-        isTemplated= !string.IsNullOrEmpty(x);
-        if(isTemplated)
-        {
-            var tmplate = await _roomTemplateServices.GetByName(x);
-            if(tmplate == null)
-            {
-                isTemplated= false;
-                return;
-            }
-            item.Aircond=tmplate.Aircond;
-            item.Size=tmplate.Size.HasValue ? tmplate.Size.Value:0;
-            item.Rental=tmplate.Rental;
-            item.WaterHeater=tmplate.WaterHeater;
-            item.TV=tmplate.TV;
-            item.Fan=tmplate.Fan;
-            item.Fridge=tmplate.Fridge;
-            item.Enabled=tmplate.Enabled;
-        }
-        await InvokeAsync(StateHasChanged);
-    }
+    }    
     private async void FileChanges(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -132,7 +81,7 @@
     <ModalContent>
         <ModalHeader>
             <ModalTitle>
-                เพิ่มห้อง
+                แก้ไขห้อง
             </ModalTitle>
             <CloseButton></CloseButton>
         </ModalHeader>
@@ -169,47 +118,32 @@
                         <div class="input-group-text">บาท/เดือน</div>
                     </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="select1">From Template</label> 
-                <div>
-                    <select id="select1"  @onchange="tps"  class="custom-select">
-                        <option value="" selected>Custom</option>
-                        @if(templates != null)
-                        {
-                            @foreach(var t in templates)
-                            {
-                                <option value="@t">@t</option>
-                            }
-                        }
-                    </select>
-                </div>
-            </div> 
+            </div>         
             <div class="form-group">
                 <label>สิ่งของภายในห้อง</label> 
                 <div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Aircond=result;}" checked="@item.Aircond" id="checkbox_0" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Aircond=result;}" checked="@item.Aircond" id="checkbox_0" type="checkbox" class="custom-control-input" value="true" /> 
                         <label for="checkbox_0" class="custom-control-label">เครื่องปรับอากาศ</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.WaterHeater=result;}" checked="@item.WaterHeater" id="checkbox_1" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.WaterHeater=result;}" checked="@item.WaterHeater" id="checkbox_1" type="checkbox" class="custom-control-input" value="true" /> 
                         <label for="checkbox_1" class="custom-control-label">เครื่องทำน้ำอุ่น</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.TV=result;}" checked="@item.TV" id="checkbox_2" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.TV=result;}" checked="@item.TV" id="checkbox_2" type="checkbox" class="custom-control-input" value="true" /> 
                         <label for="checkbox_2" class="custom-control-label">TV</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Fan=result;}" checked="@item.Fan" id="checkbox_3" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Fan=result;}" checked="@item.Fan" id="checkbox_3" type="checkbox" class="custom-control-input" value="true"/> 
                         <label for="checkbox_3" class="custom-control-label">พัดลม</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Fridge=result;}" checked="@item.Fridge" id="checkbox_4" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Fridge=result;}" checked="@item.Fridge" id="checkbox_4" type="checkbox" class="custom-control-input" value="true" /> 
                         <label for="checkbox_4" class="custom-control-label">ตู้เย็น</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
-                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Enabled=result;}" checked="@item.Enabled" id="checkbox_5" type="checkbox" class="custom-control-input" value="true" disabled="@isTemplated"> 
+                        <input @onchange="e=> {CheckBoxChanged(e,out bool result) ;item.Enabled=result;}" checked="@item.Enabled" id="checkbox_5" type="checkbox" class="custom-control-input" value="true" /> 
                         <label for="checkbox_5" class="custom-control-label">เปิดเช่า</label>
                     </div>
                 </div>
