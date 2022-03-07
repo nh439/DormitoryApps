@@ -1,5 +1,6 @@
 ﻿@page "/Sessions"
 @using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Other;
 @using dormitoryApps.Client.Services;
 @using System.Timers;
 @inject OfficerServices _officerServices;
@@ -9,6 +10,7 @@
     List<Session> sessions;
     List<Officer> officers;
     Timer timer = new Timer();
+    SessionAdvancedSearchCriteria criteria= new SessionAdvancedSearchCriteria();
     int col = 3;
     bool asc = false;
     protected override void OnInitialized()
@@ -23,7 +25,7 @@
     private async void Get()
     {
         officers = await _officerServices.GetEmployee();
-        sessions = await _sessionServices.Get();
+        sessions = await _sessionServices.GetWithAdvanceSearch(advancedSearch.MainCriteria);
         if (sessions == null) sessions = new List<Session>();
         else
         {
@@ -98,7 +100,7 @@
 <br />
 <br />
 <br />
-<button class="btn btn-info"><i class="search icon"></i> Advanced Search</button>
+<button class="btn btn-info" @onclick="()=>advancedSearch.Open()"><i class="search icon"></i> Advanced Search</button>
 <button class="btn btn-warning "><i class="x icon"></i> Forced Logout</button>
 <button class="btn btn-danger"><i class="trash icon"></i> Clear Session</button>
 <br />
@@ -148,3 +150,7 @@
         }
     </tbody>
 </table>
+<dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch @ref="advancedSearch"></dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch>
+@code{
+    private dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch advancedSearch = new Modal.AdvancedSearch();
+}

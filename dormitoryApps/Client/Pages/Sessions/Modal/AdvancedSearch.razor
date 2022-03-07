@@ -1,0 +1,89 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Other;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject OfficerServices _officerServices;
+@code {
+    Modal e;
+    public SessionAdvancedSearchCriteria MainCriteria { get; private set; } = new SessionAdvancedSearchCriteria();
+    SessionAdvancedSearchCriteria SubCriteria { get; set; } = new SessionAdvancedSearchCriteria();
+    List<Officer> officers = new List<Officer>();
+    public async void Open()
+    {
+        e.Show();
+        SubCriteria = MainCriteria;
+        officers = await _officerServices.GetEmployee();
+        if (officers == null) officers = new List<Officer>();
+        await InvokeAsync(StateHasChanged);
+
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalHeader>ค้นหาแบบเจาะจง</ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>ค้นหาแบบเจาะจง</h1>
+            </center>
+            <div class="form-group">
+                <h2>เวลา Log in</h2>
+                <hr />
+                <label for="text">Start</label>
+                <input id="text" @bind-value="SubCriteria.LoggedIn.MinDate" type="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="text1">End</label>
+                <input id="text1" @bind-value="SubCriteria.LoggedIn.MaxDate" type="date" class="form-control">
+            </div>
+            <h2>เวลา Log out</h2>
+            <hr />
+            <div class="form-group">
+                <label for="text2">Start</label>
+                <input id="text2" @bind-value="SubCriteria.LoggedOut.MinDate" type="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="text3">End</label>
+                <input id="text3" @bind-value="SubCriteria.LoggedOut.MaxDate" type="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="select">ชื่อพนักงาน</label>
+                <div>
+                    <select id="select" @bind="SubCriteria.UserId" class="custom-select">
+                        <option value="0" selected="@(SubCriteria.UserId==0)">พนักงานทุกคน</option>
+                        @if (officers == null)
+                        {
+                            <option disabled>Loading...</option>
+                        }
+                        else
+                        {
+                            foreach(var i in officers)
+                            {
+                                <option value="@i.Id" selected="@(SubCriteria.UserId==i.Id)">@(i.Firstname+" "+i.Surname)</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="select1">สถานะ</label>
+                <div>
+                    <select id="select1"  @bind="SubCriteria.IsloggedOut" class="custom-select">
+                        <option value="0" >ทั้งหมด</option>
+                        <option value="1"selected="@(SubCriteria.IsloggedOut==1)">ออกจากระบบ</option>
+                        <option value="2" selected="@(SubCriteria.IsloggedOut==2)">ยังอยู่ในระบบ</option>
+                    </select>
+                </div>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="()=>{MainCriteria=SubCriteria; e.Hide(); StateHasChanged();}">Search</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>

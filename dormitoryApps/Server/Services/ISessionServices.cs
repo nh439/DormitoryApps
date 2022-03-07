@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Repository;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Services
 {
@@ -13,6 +14,7 @@ namespace dormitoryApps.Server.Services
         int SuperForcedlogout(int day);
         int DeleteAfterMonth(int month);
         Task<Officer> GetCurrentlogin(string SessionId);
+        Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria);
     }
     public class SessionServices : ISessionServices
     {
@@ -53,6 +55,10 @@ namespace dormitoryApps.Server.Services
         public async Task<Officer> GetCurrentlogin(string SessionId)
         {
             return await _Repository.GetCurrentlogin(SessionId);
+        }
+        public async Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria)
+        {
+            return await _Repository.GetWithAdvanceSearch(criteria);
         }
     }
 }

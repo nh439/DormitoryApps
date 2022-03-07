@@ -52,25 +52,31 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria)
         {
             ConditionSet set = new ConditionSet();
-            if(criteria.LoggedIn.MinDate.HasValue)
+            if (criteria.LoggedIn != null)
             {
-                set.Add("LoggedIn", criteria.LoggedIn.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+                if (criteria.LoggedIn.MinDate.HasValue)
+                {
+                    set.Add("LoggedIn", criteria.LoggedIn.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+                }
+                if (criteria.LoggedIn.MaxDate.HasValue)
+                {
+                    set.Add("LoggedIn", criteria.LoggedIn.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+                }
             }
-            if(criteria.LoggedIn.MaxDate.HasValue)
+            if (criteria.LoggedOut != null)
             {
-                set.Add("LoggedIn", criteria.LoggedIn.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+                if (criteria.LoggedOut.MinDate.HasValue)
+                {
+                    set.Add("LoggOut", criteria.LoggedOut.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+                }
+                if (criteria.LoggedOut.MaxDate.HasValue)
+                {
+                    set.Add("LoggOut", criteria.LoggedOut.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+                }
             }
-            if (criteria.LoggedOut.MinDate.HasValue)
+            if(criteria.UserId != 0)
             {
-                set.Add("LoggOut", criteria.LoggedOut.MinDate.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
-            }
-            if (criteria.LoggedOut.MaxDate.HasValue)
-            {
-                set.Add("LoggOut", criteria.LoggedOut.MaxDate.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
-            }
-            if(criteria.UserId.HasValue)
-            {
-                set.Add("UserId", criteria.UserId.Value, SqlOperator.Equal, SqlCondition.AND);
+                set.Add("UserId", criteria.UserId, SqlOperator.Equal, SqlCondition.AND);
             }
             if(criteria.IsloggedOut > 0 )
             {

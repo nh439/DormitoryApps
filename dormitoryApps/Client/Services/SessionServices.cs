@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using dormitoryApps.Shared.Model.Entity;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Client.Services
 {
@@ -81,6 +82,11 @@ namespace dormitoryApps.Client.Services
                 return false;
             }
             return currentOfficer.Issuper;
+        }
+        public async Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria)
+        {
+            var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
+            return await res.Content.ReadFromJsonAsync<List<Session>>();
         }
 
     }

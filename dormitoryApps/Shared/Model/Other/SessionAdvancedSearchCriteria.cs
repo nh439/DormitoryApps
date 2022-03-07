@@ -8,9 +8,9 @@ namespace dormitoryApps.Shared.Model.Other
 {
     public class SessionAdvancedSearchCriteria
     {
-        public SessionDate LoggedIn { get; set; }
-        public SessionDate LoggedOut { get; set; }
-        public int? UserId { get; set; }
+        public SessionDate LoggedIn { get; set; } = new SessionDate();
+        public SessionDate LoggedOut { get; set; } = new SessionDate();
+        public int UserId { get; set; } = 0;
         public int IsloggedOut { get; set; } = 0;
     }
     public class SessionDate

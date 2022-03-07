@@ -1,6 +1,7 @@
 ﻿using dormitoryApps.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using dormitoryApps.Server.Securites;
+using dormitoryApps.Shared.Model.Other;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -25,23 +26,23 @@ namespace dormitoryApps.Server.Controllers
         public async Task<IActionResult> Index()
         {
             var res = await _sessionService.Getall();
-            return Ok(res.OrderByDescending(x=>x.LoggedIn));
+            return Ok(res.OrderByDescending(x => x.LoggedIn));
         }
         [HttpPost($"{BaseUrl}/Create")]
-        public async Task<IActionResult> Create([FromBody]long UserId)
+        public async Task<IActionResult> Create([FromBody] long UserId)
         {
             var res = await _sessionService.Createlogin(UserId);
             _accessor.HttpContext.Session.SetString("Id", res);
             return Ok(res);
         }
-        [HttpGet(BaseUrl+"/Force/{Id}")]
+        [HttpGet(BaseUrl + "/Force/{Id}")]
         public async Task<IActionResult> Forcelogout(long Id)
         {
             var res = await _sessionService.ForceLogout(Id);
             _accessor.HttpContext.Session.Clear();
             return Ok(res);
         }
-        [HttpGet(BaseUrl+"/Get/{SessionId}")]
+        [HttpGet(BaseUrl + "/Get/{SessionId}")]
         public async Task<IActionResult> GetcurrentLogin(string SessionId)
         {
 
@@ -59,14 +60,20 @@ namespace dormitoryApps.Server.Controllers
             var res = await _sessionService.GetByUser(Id);
             return Ok(res);
         }
-        [HttpPost($"{BaseUrl}/Permissioncheck" )]
-        public IActionResult Getpermission([FromBody]string SessionId)
+        [HttpPost($"{BaseUrl}/Permissioncheck")]
+        public IActionResult Getpermission([FromBody] string SessionId)
         {
             var res = _permissionService.PermissionCheck(SessionId);
-            if(!res)
+            if (!res)
             {
                 return BadRequest("Authencation Failed");
             }
+            return Ok(res);
+        }
+        [HttpPost(BaseUrl)]
+        public async Task<IActionResult> GetWithAdvancedSearch([FromBody] SessionAdvancedSearchCriteria criteria)
+        {
+            var res = await _sessionService.GetWithAdvanceSearch(criteria);
             return Ok(res);
         }
     }
