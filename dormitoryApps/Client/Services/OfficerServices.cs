@@ -101,6 +101,15 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Restored", parameters);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
+        public async Task<bool> PasswordCheck(string password)
+        {
+            var sid = await _localStorageService.GetItemAsStringAsync("Id");
+            if (string.IsNullOrEmpty(sid)) return false;
+            var content = $"{password}$|{sid}";
+            var data = Encoding.ASCII.GetBytes(content);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/PasswordCheck", data);
+            return await res.Content.ReadFromJsonAsync<bool>();
+        }
 
     }
 }

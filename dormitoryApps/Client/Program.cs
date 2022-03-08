@@ -20,10 +20,8 @@ builder.Services.AddSweetAlert2();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredModal();
-builder.Services.AddBlazorise(options =>
-{
-    options.ChangeTextOnKeyPress = true;
-}).AddBlazoredModal()
+builder.Services.AddBlazorise()
+    .AddBlazoredModal()
 .AddBootstrapComponents()
 .AddBootstrapProviders()
 .AddFontAwesomeIcons();

@@ -241,6 +241,29 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, x.Message);
             }
         }
+        [HttpPost(ControllerName+"/PasswordCheck")]
+        public async Task<IActionResult> PasswordCheck([FromBody]byte[] data)
+        {
+            try
+            {
+                var content = Encoding.ASCII.GetString(data);
+                var contentarr = content.Split("$|");
+                string sessionId = _accessor.HttpContext.Session.GetString("Id");
+                if (!contentarr[1].Equals(sessionId))
+                {
+                    return Ok(false);
+                }
+                var currentLogin = await _sessionServices.GetCurrentlogin(sessionId);
+                if (currentLogin == null) return Ok(false);
+                var res = await _officerServices.LoginCheck(currentLogin.Username, contentarr[0]);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
 
 
     }
