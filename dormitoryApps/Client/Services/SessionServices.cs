@@ -88,6 +88,12 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
             return await res.Content.ReadFromJsonAsync<List<Session>>();
         }
+        public async Task<int> Superlogout(int loggedInDay)
+        {
+            if (loggedInDay < 1) return 0;
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/SuperForce", loggedInDay);
+            return await res.Content.ReadFromJsonAsync<int>();
+        }
 
     }
 }

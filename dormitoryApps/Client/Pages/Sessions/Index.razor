@@ -101,7 +101,7 @@
 <br />
 <br />
 <button class="btn btn-info" @onclick="()=>advancedSearch.Open()"><i class="search icon"></i> Advanced Search</button>
-<button class="btn btn-warning "><i class="x icon"></i> Forced Logout</button>
+<button class="btn btn-warning " @onclick="()=>forcedLogout.Open()"><i class="x icon"></i> Forced Logout</button>
 <button class="btn btn-danger"><i class="trash icon"></i> Clear Session</button>
 <br />
 <br>
@@ -151,6 +151,8 @@
     </tbody>
 </table>
 <dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch @ref="advancedSearch"></dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch>
+<dormitoryApps.Client.Pages.Sessions.Modal.ForcedLogout @ref = "forcedLogout"/>
 @code{
     private dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch advancedSearch = new Modal.AdvancedSearch();
+    private dormitoryApps.Client.Pages.Sessions.Modal.ForcedLogout forcedLogout = new Modal.ForcedLogout();
 }

@@ -2,21 +2,46 @@
 @using dormitoryApps.Shared.Model.Entity;
 @using dormitoryApps.Shared.Model.Other;
 @using dormitoryApps.Client.Services;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
 
 @code {
     Modal e;
     bool isNight = false;
-    int unLoggedOut
+    int unLoggedOut = 0;
+    int allUnLoggedOut = 0;
+
     public async void Open()
     {
-        
+        var sessions = await _sessionServices.Get();
+        var unloggedInsession = sessions.Where(x => !x.Isloggout && DateTime.Now.Date.Subtract(x.LoggedIn.Date).Days >= 1);
+        allUnLoggedOut = sessions.Where(x => !x.Isloggout).Count();
+        unLoggedOut = unloggedInsession.Count();
+        await e.Show();
     }
 }
 <Modal @ref="e">
     <ModalContent>
-        <ModalHeader></ModalHeader>
-        <ModalBody></ModalBody>
-        <ModalFooter></ModalFooter>
+        <ModalHeader>
+            <ModalTitle>บังคับ Logout</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <div class="form-group">
+                <label for="select">Log in เกิน(วัน)</label>
+                <div>
+                    <select id="select" name="select" class="custom-select"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="text">รหัสผ่าน</label>
+                <input id="text" name="text" type="password" class="form-control">
+            </div>     
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary">บังคับออกจากระบบ</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
+        </ModalFooter>
     </ModalContent>
 
 </Modal>

@@ -42,6 +42,13 @@ namespace dormitoryApps.Server.Controllers
             _accessor.HttpContext.Session.Clear();
             return Ok(res);
         }
+        [HttpPost(BaseUrl + "/SuperForce")]
+        public IActionResult SuperForcelogout([FromBody]int day)
+        {
+            var res = _sessionService.SuperForcedlogout(day);
+            return Ok(res);
+        }
+
         [HttpGet(BaseUrl + "/Get/{SessionId}")]
         public async Task<IActionResult> GetcurrentLogin(string SessionId)
         {
