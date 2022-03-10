@@ -5,6 +5,7 @@
 @using System.Timers;
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
+@inject NavigationManager _navigationManager;
 @implements IDisposable;
 @code {
     List<Session> sessions;
@@ -13,14 +14,16 @@
     SessionAdvancedSearchCriteria criteria= new SessionAdvancedSearchCriteria();
     int col = 3;
     bool asc = false;
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
+        await _sessionServices.RequiredPermission();
+        if(!await _sessionServices.IsAdmin()) _navigationManager.NavigateTo("/");
         Get();
         timer = new Timer();
         timer.Interval = 1000;
         timer.Elapsed += OnTick;
         timer.Enabled = true;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
     private async void Get()
     {

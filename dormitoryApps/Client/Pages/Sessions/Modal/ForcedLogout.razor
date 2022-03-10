@@ -10,6 +10,8 @@
     bool isNight = false;
     int unLoggedOut = 0;
     int allUnLoggedOut = 0;
+    int days = 1;
+    string password = string.Empty;
 
     public async void Open()
     {
@@ -17,7 +19,51 @@
         var unloggedInsession = sessions.Where(x => !x.Isloggout && DateTime.Now.Date.Subtract(x.LoggedIn.Date).Days >= 1);
         allUnLoggedOut = sessions.Where(x => !x.Isloggout).Count();
         unLoggedOut = unloggedInsession.Count();
+        days = 1;
+        password = string.Empty;
+        isNight = DateTime.Now.Hour >= 23 || DateTime.Now.Hour < 1;
         await e.Show();
+    }
+    private async void Clear()
+    {
+        try
+        {
+            bool passwordChecked = isNight;
+            if (!passwordChecked)
+            {
+                passwordChecked = await _officerServices.PasswordCheck(password);
+                if (!passwordChecked)
+                {
+                    error.Header = "!Oops!";
+                    error.Details = "Password Incorrect";
+                    error.Open();
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+            }
+            var actionResult = await _sessionServices.Superlogout(days);
+            if (actionResult >= 0)
+            {
+                success.Header = "Success";
+                success.NextRequired = false;
+                success.Details = $"{actionResult} Sessions Cleared";
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops!";
+            error.Details = "Something Went Wrong";
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch(Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }
 <Modal @ref="e">
@@ -27,21 +73,48 @@
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
+            <table class="table table-bordered border-dark" style="text-align:center;font-weight:bold;">
+                <tbody class="border-dark border-2">
+                    <tr>
+                        <td>จำนวน Unlogged Sessions</td>
+                        <td>@allUnLoggedOut</td>
+                    </tr>
+                    <tr>
+                        <td>จำนวน Unlogged Sessions ที่บังคับได้</td>
+                        <td>@unLoggedOut</td>
+                    </tr>
+
+                </tbody>
+            </table>
             <div class="form-group">
                 <label for="select">Log in เกิน(วัน)</label>
                 <div>
-                    <select id="select" name="select" class="custom-select"></select>
+                    <select id="select" @bind="days" class="custom-select">
+                        @for (int i = 1; i <= 30; i++)
+                        {
+                            <option value="@i">@i</option>
+                        }
+                    </select>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:@(!isNight ?"block":"none")">
                 <label for="text">รหัสผ่าน</label>
-                <input id="text" name="text" type="password" class="form-control">
-            </div>     
+                <input id="text" @bind-value="password" type="password" class="form-control">
+            </div>
+            <div class="form-group">
+                หมายเหตุ สามารถบังคับlog out ได้เฉพาะที่log in มาเกิน 1 วัน
+            </div>
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary">บังคับออกจากระบบ</Button>
+            <Button Class="btn btn-outline-primary" @onclick="Clear">บังคับออกจากระบบ</Button>
             <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
         </ModalFooter>
     </ModalContent>
 
 </Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success = new Pages.Modal.Success() { NextRequired = false };
+}
