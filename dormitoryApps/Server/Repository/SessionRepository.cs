@@ -91,12 +91,12 @@ namespace dormitoryApps.Server.Repository
             DBRowContrainer contrainer = new DBRowContrainer(TableName);
             contrainer.Add("LoggOut", DateTime.Now);
             contrainer.Add("Isloggout",true);
-            var res = _databases.Dorm.Update(contrainer, $"TIMESTAMPDIFF(day,LoggedIn,current_timestamp())>{day}");
+            var res = _databases.Dorm.Update(contrainer, $"TIMESTAMPDIFF(day,LoggedIn,current_timestamp())>{day} and LoggOut is null");
             return res;
         }
         public int DeleteAfterMonth(int month)
         {
-            var res = _databases.Dorm.Delete(TableName, $"TIMESTAMPDIFF(day,Loggedout,current_timestamp())>{month}");
+            var res = _databases.Dorm.Delete(TableName, $"TIMESTAMPDIFF(month,LoggOut,current_timestamp())>{month}");
             return res;
         }
         public async Task<Officer?> GetCurrentlogin(string SessionId)

@@ -43,7 +43,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpPost(BaseUrl + "/SuperForce")]
-        public IActionResult SuperForcelogout([FromBody]int day)
+        public IActionResult SuperForcelogout([FromBody] int day)
         {
             var res = _sessionService.SuperForcedlogout(day);
             return Ok(res);
@@ -81,6 +81,12 @@ namespace dormitoryApps.Server.Controllers
         public async Task<IActionResult> GetWithAdvancedSearch([FromBody] SessionAdvancedSearchCriteria criteria)
         {
             var res = await _sessionService.GetWithAdvanceSearch(criteria);
+            return Ok(res);
+        }
+        [HttpPost($"{BaseUrl}/Delete")]
+        public IActionResult Delete([FromBody] int month)
+        {
+            var res =  _sessionService.DeleteAfterMonth(month);
             return Ok(res);
         }
     }

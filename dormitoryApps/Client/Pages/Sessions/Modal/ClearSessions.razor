@@ -1,0 +1,96 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Other;
+@using dormitoryApps.Client.Services;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
+
+@code {
+    Modal e;
+    int[] months = new int[] { 1, 3, 6, 9, 12, 15, 18, 24 };
+    int m = 1;
+    string password;
+    bool isRequired = false;
+    public void Open()
+    {
+        e.Show();
+        StateHasChanged();
+    }
+    private async void Clear()
+    {
+        try
+        {
+            isRequired = string.IsNullOrEmpty(password);
+            if (isRequired) return;
+            if (!await _officerServices.PasswordCheck(password))
+            {
+                error.Header = "!Oops!";
+                error.Details = "Password Incorrect";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            var actionResult = await _sessionServices.Delete(m);
+            if (actionResult >= 0)
+            {
+                success.Header = "Success";
+                success.NextRequired = false;
+                success.Details = $"{actionResult} Sessions Cleared";
+                success.Open();
+                await e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Header = "!Oops!";
+            error.Details = "Something Went Wrong";
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
+<Modal @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>ล้าง Session</h1>
+            </center>
+            <div class="form-group">
+                <label for="select">ล้าง Session ที่ login มากกว่า</label>
+                <div>
+                    <select id="select" @bind="m" class="custom-select">
+                        @foreach (var month in months)
+                        {
+                            <option value="@month">@month เดือน</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="text">รหัสผ่าน</label>
+                <input id="text" @bind-value="password" type="password" class="form-control">
+                <small style="display:@(isRequired ? "block":"none");color:red">Password Is Required</small>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="Clear">บังคับออกจากระบบ</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
+        </ModalFooter>
+    </ModalContent>
+
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success = new Pages.Modal.Success() { NextRequired = false };
+}

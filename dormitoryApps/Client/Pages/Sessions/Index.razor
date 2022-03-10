@@ -105,7 +105,7 @@
 <br />
 <button class="btn btn-info" @onclick="()=>advancedSearch.Open()"><i class="search icon"></i> Advanced Search</button>
 <button class="btn btn-warning " @onclick="()=>forcedLogout.Open()"><i class="x icon"></i> Forced Logout</button>
-<button class="btn btn-danger"><i class="trash icon"></i> Clear Session</button>
+<button class="btn btn-danger" @onclick="()=>clearSessions.Open()"><i class="trash icon"></i> Clear Session</button>
 <br />
 <br>
 <h2>Total : @(sessions != null ? sessions.Count:"Loading...")</h2>
@@ -155,7 +155,9 @@
 </table>
 <dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch @ref="advancedSearch"></dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch>
 <dormitoryApps.Client.Pages.Sessions.Modal.ForcedLogout @ref = "forcedLogout"/>
+<dormitoryApps.Client.Pages.Sessions.Modal.ClearSessions @ref="clearSessions"/>
 @code{
     private dormitoryApps.Client.Pages.Sessions.Modal.AdvancedSearch advancedSearch = new Modal.AdvancedSearch();
     private dormitoryApps.Client.Pages.Sessions.Modal.ForcedLogout forcedLogout = new Modal.ForcedLogout();
+    private dormitoryApps.Client.Pages.Sessions.Modal.ClearSessions clearSessions = new Modal.ClearSessions();
 }

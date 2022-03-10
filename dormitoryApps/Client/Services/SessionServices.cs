@@ -94,6 +94,10 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/SuperForce", loggedInDay);
             return await res.Content.ReadFromJsonAsync<int>();
         }
-
+        public async Task<int> Delete(int month)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", month);
+            return await res.Content.ReadFromJsonAsync<int>();
+        }
     }
 }
