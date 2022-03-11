@@ -26,6 +26,12 @@ namespace dormitoryApps.Server.Controllers
             }
             return Ok(await _roomTemplateServices.GetNames());
         }
+        [HttpGet(BaseUrl+"/all")]
+        public async Task<IActionResult> Getall()
+        {
+            var res = await _roomTemplateServices.Getall();
+            return Ok(res);
+        }
         [HttpGet(BaseUrl+"/name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {

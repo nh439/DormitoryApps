@@ -1,0 +1,126 @@
+﻿@page "/Templates"
+@using System.Timers;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomTemplateServices _roomTemplateServices;
+@implements IDisposable;
+
+@code {
+    List<RoomTemplate> templates;
+    Timer timer = new Timer();
+    protected override async void OnInitialized()
+    {
+        Get();
+        timer = new Timer(1000);
+        timer.Elapsed += Ticking;
+        timer.Enabled=true;
+        await InvokeAsync(StateHasChanged);
+    }
+    private async void Get()
+    {
+        templates = await _roomTemplateServices.GetTemplates();
+        if (templates == null) templates = new List<RoomTemplate>();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+    private async void Ticking(object sender,ElapsedEventArgs e)
+    {
+        Get();
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>แม่แบบห้อง</h1>
+</center>
+<br />
+<br />
+<br />
+<br />
+@if(templates==null)
+{
+    <br />
+    <br />
+    <br />
+    <center>
+        <div class="loader"></div>
+        <h1>Loading</h1>
+    </center>
+}
+else if(templates.Count==0)
+{
+     <br />
+    <br />
+    <br />
+    <center>
+        <h1>No Template</h1>
+    </center>
+}
+else
+{
+     var classes = new[]
+            {
+            "bg-primary text-white",
+            "bg-secondary text-white",
+            "bg-success text-white",
+            "bg-danger text-white",
+            "bg-info text-white",
+            "bg-light text-dark",
+            "bg-dark text-white",
+            "bg-white text-dark",
+            };
+<div class="ui three column grid">
+    @foreach(var (template,index) in templates.Select((x,i)=>(x,i)))
+        {
+            int classidx = index % classes.Length;
+            <div class="column">
+        <div class="ui segment @(classes[classidx])">
+          <div style="text-align:right">
+              <h1>@template.RoomName</h1>
+              <h2>@(template.Size.HasValue ? template.Size:0) ตร.ม</h2>
+          </div>
+          <br>
+          <br>
+          <div>
+          <button class="btn btn-info mx-1">
+          <i class="address card icon"></i>
+          </button>
+          <button class="btn btn-warning mx-1">
+          <i class="list icon"></i>
+          </button>
+          <button class="btn btn-danger mx-1">
+          <i class="trash alternate outline icon"></i>
+          </button>
+          </div>
+        </div>
+    </div>
+    }
+</div>
+}
+
+<style>
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid blue;
+  border-right: 16px solid green;
+  border-bottom: 16px solid red;
+  border-left: 16px solid pink;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>

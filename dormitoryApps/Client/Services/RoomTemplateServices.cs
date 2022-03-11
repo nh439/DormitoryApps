@@ -20,6 +20,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<RoomTemplate>($"{ControllerName}?id={Id}");
             return res;
         }
+        public async Task<List<RoomTemplate>> GetTemplates()
+        {
+            var res = await _httpClient.GetFromJsonAsync<List<RoomTemplate>>($"{ControllerName}/all");
+            return res;
+        }
         public async Task<RoomTemplate> GetByName(string name)
         {
             var res = await _httpClient.GetFromJsonAsync<RoomTemplate>($"{ControllerName}/name/{name}");

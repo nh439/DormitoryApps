@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<string[]> GetNames();
         Task<bool> AddTemplate(int roomId, string roomName);
         Task<RoomTemplate> GetByName(string name);
+        Task<List<RoomTemplate>> Getall();
     }
     public class RoomTemplateServices : IRoomTemplateServices
     {
