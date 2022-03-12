@@ -35,7 +35,7 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<RoomTemplate> GetById(int Id)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>($"Id={Id}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>(TableName,$"Id={Id}");
             return res.FirstOrDefault();
         }
         public async Task<RoomTemplate> GetByName(string name)

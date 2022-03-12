@@ -9,7 +9,7 @@ namespace dormitoryApps.Shared.Model.Entity
     public class RoomTemplate
     {
 		public int Id { get; set; }
-		public string RoomName { get; set; }
+		public string TemplateName { get; set; }
 		public decimal? Size { get; set; }
 		public bool Aircond { get; set; }
 		public bool WaterHeater { get; set; }
@@ -18,7 +18,6 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Rental { get; set; }
 		public bool Furniture { get; set; }
 		public bool Fridge { get; set; }
-		public bool Enabled { get; set; }
 		public virtual List<RoomfurnTemplate> Furnitures { get; set; }
 	}
 }

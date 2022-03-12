@@ -1,0 +1,144 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomTemplateServices roomTemplateServices;
+
+@code {
+    Modal e;
+    RoomTemplate item = new RoomTemplate();
+    bool waiting = true;
+    bool nameValidate = false;
+    bool rentalValidate = false;
+    bool sizeValidate = false;
+    public async void Open(int templateId)
+    {
+        waiting = true;
+        await e.Show();
+        nameValidate = false;
+        rentalValidate = false;
+        sizeValidate = false;
+        item = await roomTemplateServices.GetById(templateId);
+        waiting = item == null;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void SaveChanges()
+    {
+        try
+        {
+            nameValidate = string.IsNullOrEmpty(item.TemplateName);
+            rentalValidate = item.Rental == null;
+            sizeValidate = !item.Size.HasValue;
+            if (nameValidate || rentalValidate || sizeValidate)
+            {
+                StateHasChanged();
+                return;
+            }
+            var actionResult = await roomTemplateServices.Update(item);
+            if (actionResult)
+            {
+                success.NextRequired = false;
+                success.Details = "Update Successful";
+                await e.Hide();
+                success.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Details = "Update Unsuccessful";
+            error.Open();
+        }
+        catch (Exception x)
+        {
+            error.Details = x.Message;
+            error.Open();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <div class="form-group">
+                <label for="text">ชื่อ Template*</label>
+                <input id="text" @bind-value="item.TemplateName" readonly="@waiting" type="text" class="form-control">
+            </div>
+            <small style="display:@(nameValidate ? "block":"none")">Template Name Is Required</small>
+            <div class="form-group">
+                <label for="text1">ขนาด</label>
+                <div class="input-group">
+                    <input id="text1" @bind-value="item.Size" type="number" step="0.01" readonly="@waiting" class="form-control">
+                    <div class="input-group-append">
+                        <div class="input-group-text">ตร.ม</div>
+                    </div>
+                </div>
+                <small style="display:@(sizeValidate ? "block":"none")">Size Is Required</small>
+            </div>
+            <div class="form-group">
+                <label for="ค่าเช่า">ค่าเช่า</label>
+                <div class="input-group">
+                    <input id="ค่าเช่า" @bind-value="item.Rental" type="number" step="0.01" readonly="@waiting" class="form-control">
+                    <div class="input-group-append">
+                        <div class="input-group-text">บาท</div>
+                    </div>
+                </div>
+                <small style="display:@(rentalValidate ? "block":"none")">Rental Is Required</small>
+            </div>
+            <br />
+            <br />
+            <br />
+            <div class="form-group">
+                <div>
+                    <div class="custom-controls-stacked">
+                        <div class="custom-control custom-checkbox">
+                            <input @onchange="e=> item.Aircond= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Aircond" id="checkbox_0" type="checkbox" class="custom-control-input" value="true">
+                            <label for="checkbox_0" class="custom-control-label">เครื่องปรับอากาศ</label>
+                        </div>
+                    </div>
+                    <div class="custom-controls-stacked">
+                        <div class="custom-control custom-checkbox">
+                            <input @onchange="e=> item.WaterHeater= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.WaterHeater" id="checkbox_1" type="checkbox" class="custom-control-input" value="true">
+                            <label for="checkbox_1" class="custom-control-label">เครื่องทำน้ำอุ่น</label>
+                        </div>
+                    </div>
+                    <div class="custom-controls-stacked">
+                        <div class="custom-control custom-checkbox">
+                            <input @onchange="e=> item.TV= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.TV" id="checkbox_2" type="checkbox" class="custom-control-input" value="true">
+                            <label for="checkbox_2" class="custom-control-label">TV</label>
+                        </div>
+                    </div>
+                    <div class="custom-controls-stacked">
+                        <div class="custom-control custom-checkbox">
+                            <input @onchange="e=> item.Fan= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Fan" id="checkbox_3" type="checkbox" class="custom-control-input" value="true">
+                            <label for="checkbox_3" class="custom-control-label">พัดลม</label>
+                        </div>
+                    </div>
+                    <div class="custom-controls-stacked">
+                        <div class="custom-control custom-checkbox">
+                            <input @onchange="e=> item.Fridge= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Fridge" id="checkbox_4" type="checkbox" class="custom-control-input" value="true">
+                            <label for="checkbox_4" class="custom-control-label">ตู้เย็น</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">Save Changes</Button>
+            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">Discard</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<style>
+    small {
+        color: red;
+    }
+</style>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+}
