@@ -17,8 +17,11 @@
         nameValidate = false;
         rentalValidate = false;
         sizeValidate = false;
-        item = await roomTemplateServices.GetById(templateId);
-        waiting = item == null;
+        await roomTemplateServices.GetById(templateId).ContinueWith( x =>
+        {
+            item = x.Result;
+            waiting = x.Result == null;
+        });  
         await InvokeAsync(StateHasChanged);
     }
     public async void SaveChanges()
