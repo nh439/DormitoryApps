@@ -1,0 +1,77 @@
+﻿@using System.Timers;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using Blazorise;
+@inject RoomTemplateServices _roomTemplateServices;
+
+@code {
+    Modal e;
+    bool waiting = true;
+    RoomTemplate thisTemplate = new RoomTemplate()
+        {
+            TemplateName = "Loading..."
+        };
+    public async void Open(int templateId)
+    {
+        await e.Show();
+        thisTemplate = await _roomTemplateServices.GetById(templateId);
+        if(thisTemplate==null)
+        {
+            thisTemplate = new RoomTemplate()
+                {
+                    TemplateName = " Not Found This template"
+                };
+            waiting = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        waiting = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    private async void Accept()
+    {
+        try
+        {
+            var actionReusult = await _roomTemplateServices.Delete(thisTemplate.Id);
+            if(actionReusult)
+            {
+                success.Details = $"Template {thisTemplate.TemplateName} Has Deleted";
+                e.Hide();
+                success.NextRequired = false;
+                success.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Details="Delete Failed";
+            error.Open();
+        }
+        catch(Exception x)
+        {
+            error.Details=x.Message;
+            error.Open();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    }
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>คุณแน่ใจว่าต้องการจะลบ @thisTemplate.TemplateName</h1>
+            </center>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-primary" @onclick="Accept" Disabled="waiting">Accept Delete</Button>
+            <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">Decline</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+} 

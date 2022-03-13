@@ -6,22 +6,15 @@
 @code {
     Modal e;
     RoomTemplate item = new RoomTemplate();
-    bool waiting = true;
     bool nameValidate = false;
     bool rentalValidate = false;
     bool sizeValidate = false;
-    public async void Open(int templateId)
+    public async void Open()
     {
-        waiting = true;
         await e.Show();
         nameValidate = false;
         rentalValidate = false;
-        sizeValidate = false;
-        await roomTemplateServices.GetById(templateId).ContinueWith( x =>
-        {
-            item = x.Result;
-            waiting = x.Result == null;
-        });  
+        sizeValidate = false;       
         await InvokeAsync(StateHasChanged);
     }
     public async void SaveChanges()
@@ -36,13 +29,14 @@
                 StateHasChanged();
                 return;
             }
-            var actionResult = await roomTemplateServices.Update(item);
+            var actionResult = await roomTemplateServices.Create(item);
             if (actionResult)
             {
                 success.NextRequired = false;
                 success.Details = "Update Successful";
                 await e.Hide();
                 success.Open();
+                item = new RoomTemplate();
                 await InvokeAsync(StateHasChanged);
                 return;
             }
@@ -62,19 +56,19 @@
 <Modal @ref="e" Style="color:black">
     <ModalContent>
         <ModalHeader>
-            <ModalTitle>แก้ไข Template</ModalTitle>
+            <ModalTitle>สร้าง Template</ModalTitle>
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
             <div class="form-group">
                 <label for="text">ชื่อ Template*</label>
-                <input id="text" @bind-value="item.TemplateName" readonly="@waiting" type="text" class="form-control">
+                <input id="text" @bind-value="item.TemplateName" type="text" class="form-control">
             </div>
             <small style="display:@(nameValidate ? "block":"none")">Template Name Is Required</small>
             <div class="form-group">
                 <label for="text1">ขนาด</label>
                 <div class="input-group">
-                    <input id="text1" @bind-value="item.Size" type="number" step="0.01" readonly="@waiting" class="form-control">
+                    <input id="text1" @bind-value="item.Size" type="number" step="0.01"  class="form-control">
                     <div class="input-group-append">
                         <div class="input-group-text">ตร.ม</div>
                     </div>
@@ -84,7 +78,7 @@
             <div class="form-group">
                 <label for="ค่าเช่า">ค่าเช่า</label>
                 <div class="input-group">
-                    <input id="ค่าเช่า" @bind-value="item.Rental" type="number" step="0.01" readonly="@waiting" class="form-control">
+                    <input id="ค่าเช่า" @bind-value="item.Rental" type="number" step="0.01"  class="form-control">
                     <div class="input-group-append">
                         <div class="input-group-text">บาท</div>
                     </div>
@@ -98,32 +92,32 @@
                 <div>
                     <div class="custom-controls-stacked">
                         <div class="custom-control custom-checkbox">
-                            <input @onchange="e=> item.Aircond= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Aircond" id="checkbox_0" type="checkbox" class="custom-control-input" value="true">
-                            <label for="checkbox_0" class="custom-control-label">เครื่องปรับอากาศ</label>
+                            <input @onchange="e=> item.Aircond= e.Value.ToString().ToLower()==true.ToString().ToLower() " id="c0" type="checkbox" class="custom-control-input" value="true">
+                            <label for="c0" class="custom-control-label">เครื่องปรับอากาศ</label>
                         </div>
                     </div>
                     <div class="custom-controls-stacked">
                         <div class="custom-control custom-checkbox">
-                            <input @onchange="e=> item.WaterHeater= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.WaterHeater" id="checkbox_1" type="checkbox" class="custom-control-input" value="true">
-                            <label for="checkbox_1" class="custom-control-label">เครื่องทำน้ำอุ่น</label>
+                            <input @onchange="e=> item.WaterHeater= e.Value.ToString().ToLower()==true.ToString().ToLower() " id="c1" type="checkbox" class="custom-control-input" value="true">
+                            <label for="c1" class="custom-control-label">เครื่องทำน้ำอุ่น</label>
                         </div>
                     </div>
                     <div class="custom-controls-stacked">
                         <div class="custom-control custom-checkbox">
-                            <input @onchange="e=> item.TV= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.TV" id="checkbox_2" type="checkbox" class="custom-control-input" value="true">
-                            <label for="checkbox_2" class="custom-control-label">TV</label>
+                            <input @onchange="e=> item.TV= e.Value.ToString().ToLower()==true.ToString().ToLower() " id="c2" type="checkbox" class="custom-control-input" value="true">
+                            <label for="c2" class="custom-control-label">TV</label>
                         </div>
                     </div>
                     <div class="custom-controls-stacked">
                         <div class="custom-control custom-checkbox">
-                            <input @onchange="e=> item.Fan= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Fan" id="checkbox_3" type="checkbox" class="custom-control-input" value="true">
-                            <label for="checkbox_3" class="custom-control-label">พัดลม</label>
+                            <input @onchange="e=> item.Fan= e.Value.ToString().ToLower()==true.ToString().ToLower() " id="c3" type="checkbox" class="custom-control-input" value="true">
+                            <label for="c3" class="custom-control-label">พัดลม</label>
                         </div>
                     </div>
                     <div class="custom-controls-stacked">
                         <div class="custom-control custom-checkbox">
-                            <input @onchange="e=> item.Fridge= e.Value.ToString().ToLower()==true.ToString().ToLower() " disabled="@waiting" checked="@item.Fridge" id="checkbox_4" type="checkbox" class="custom-control-input" value="true">
-                            <label for="checkbox_4" class="custom-control-label">ตู้เย็น</label>
+                            <input @onchange="e=> item.Fridge= e.Value.ToString().ToLower()==true.ToString().ToLower() " id="c4" type="checkbox" class="custom-control-input" value="true">
+                            <label for="c4" class="custom-control-label">ตู้เย็น</label>
                         </div>
                     </div>
                 </div>
