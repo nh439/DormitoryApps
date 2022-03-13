@@ -1,0 +1,482 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject RoomTemplateServices _roomTemplateServices;
+@inject RoomfurnTemplateServices _roomFurnTemplateServices;
+@inject RoomFurnHeaderServices _roomFurnHeaderServices;
+@inject RoomFurnHeaderValuesServices _roomFurnHeaderValuesServices;
+@code {
+    Modal e;
+    string[] itemType;
+    List<RoomFurnHeaderValues> headerValues;
+    RoomFurnHeader Attr01 = new RoomFurnHeader();
+    RoomFurnHeader Attr02 = new RoomFurnHeader();
+    RoomFurnHeader Attr03 = new RoomFurnHeader();
+    RoomFurnHeader Attr04 = new RoomFurnHeader();
+    RoomFurnHeader Attr05 = new RoomFurnHeader();
+    RoomFurnHeader Attr06 = new RoomFurnHeader();
+
+    List<RoomFurnHeaderValues> values1 = new List<RoomFurnHeaderValues>();
+    List<RoomFurnHeaderValues> values2 = new List<RoomFurnHeaderValues>();
+    List<RoomFurnHeaderValues> values3 = new List<RoomFurnHeaderValues>();
+    List<RoomFurnHeaderValues> values4 = new List<RoomFurnHeaderValues>();
+    List<RoomFurnHeaderValues> values5 = new List<RoomFurnHeaderValues>();
+    List<RoomFurnHeaderValues> values6 = new List<RoomFurnHeaderValues>();
+
+    bool A1 = false,
+    A2 = false,
+    A3 = false,
+    A4 = false,
+    A5 = false,
+    A6 = false;
+
+    bool NameValidate = false,
+    ModelValidate = false;
+
+    RoomfurnTemplate myItem = new RoomfurnTemplate();
+
+    public async void Open(long id)
+    {
+        myItem = await _roomFurnTemplateServices.Get(id);
+        await e.Show();
+        itemType = await _roomFurnHeaderServices.GetTypes();
+        headerValues = await _roomFurnHeaderValuesServices.GetValues();
+        var header = await _roomFurnHeaderServices.GetByType(myItem.Type);
+        Attr01 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr01).FirstOrDefault();
+        Attr02 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr02).FirstOrDefault();
+        Attr03 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr03).FirstOrDefault();
+        Attr04 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr04).FirstOrDefault();
+        Attr05 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr05).FirstOrDefault();
+        Attr06 = header.Where(x => x.Header == RoomFurnHeaderAttr.Attr06).FirstOrDefault();
+
+        A1 = Attr01 != null && Attr01 != new RoomFurnHeader();
+        A2 = Attr02 != null && Attr02 != new RoomFurnHeader();
+        A3 = Attr03 != null && Attr03 != new RoomFurnHeader();
+        A4 = Attr04 != null && Attr04 != new RoomFurnHeader();
+        A5 = Attr05 != null && Attr05 != new RoomFurnHeader();
+        A6 = Attr06 != null && Attr06 != new RoomFurnHeader();
+        await InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
+
+    }
+    private async void SaveChanges()
+    {
+        try
+        {
+            NameValidate = string.IsNullOrEmpty(myItem.Name);
+            ModelValidate = string.IsNullOrEmpty(myItem.Model);
+            if (NameValidate || ModelValidate)
+            {
+                StateHasChanged();
+                return;
+            }
+            var createResult = await _roomFurnTemplateServices.Update(myItem);
+            if (createResult)
+            {
+                success.Details = "Completed";
+                success.NextRequired = false;
+                success.Open();
+                e.Hide();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops!";
+            error.Details = x.Message;
+            error.Open();
+        }
+
+        await InvokeAsync(StateHasChanged);
+
+    }
+
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>แก้ไขเฟอร์นิเจอร์</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ชื่อสิ่งของ*</label>
+                        <input id="text" @bind-value="myItem.Name" type="text" class="form-control">
+                    </div>
+                    <small style="display:@(NameValidate ? "block":"none")">Name Required</small>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">รุ่น</label>
+                        <input id="text" @bind-value="myItem.Type" type="text" class="form-control" readonly>
+                    </div>
+                </Div>
+            </Div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text1">ราคา</label>
+                        <div class="input-group">
+                            <input id="text1" @bind-value="myItem.Price" type="text" class="form-control">
+                            <div class="input-group-append">
+                                <div class="input-group-text">บาท</div>
+                            </div>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text2">ประเภท</label>
+                        <input id="text2" @bind-value="myItem.Model" type="text" class="form-control">
+                    </div>
+                    <small style="display:@(ModelValidate  ? "block":"none")">Model Required</small>
+                </Div>
+
+            </Div>
+            <hr />
+
+            <!-- ATTRIBUTE01 -->
+            @if (A1)
+            {
+                @if (Attr01.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr01.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr01.Description">@Attr01.Description</label>
+                            <div>
+                                <select id="@Attr01.Description" @bind="myItem.Attr01" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr01.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(val.Value==myItem.Attr01)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr01.ValueType == RoomFurnHeaderValuesType.LONG || Attr01.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr01.Description">@Attr01.Description</label>
+                                <input id="@Attr01.Description" @bind-value="myItem.Attr01" name="text" type="number" step="@(Attr01.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr01.Description">@Attr01.Description</label>
+                                <input id="@Attr01.Description" @bind-value="myItem.Attr01" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr01.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr01" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@("true"==myItem.Attr01)">Yes</option>
+                                <option value="false" selected="@("false"==myItem.Attr01)">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- ATTRIBUTE02 -->
+            @if (A2)
+            {
+                @if (Attr02.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr02.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr02.Description">@Attr02.Description</label>
+                            <div>
+                                <select id="@Attr02.Description" @bind="myItem.Attr02" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr02.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(myItem.Attr02==val.Value)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr02.ValueType == RoomFurnHeaderValuesType.LONG || Attr02.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr02.Description">@Attr02.Description</label>
+                                <input id="@Attr02.Description" @bind-value="myItem.Attr02" name="text" type="number" step="@(Attr02.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr02.Description">@Attr02.Description</label>
+                                <input id="@Attr02.Description" @bind-value="myItem.Attr02" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr02.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr02" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr02=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr02=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- ATTRIBUTE03 -->
+            @if (A3)
+            {
+                @if (Attr03.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr03.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr03.Description">@Attr03.Description</label>
+                            <div>
+                                <select id="@Attr03.Description" @bind="myItem.Attr03" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr03.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(myItem.Attr03==val.Value)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr03.ValueType == RoomFurnHeaderValuesType.LONG || Attr03.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr03.Description">@Attr03.Description</label>
+                                <input id="@Attr03.Description" @bind-value="myItem.Attr03" name="text" type="number" step="@(Attr03.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr03.Description">@Attr03.Description</label>
+                                <input id="@Attr03.Description" @bind-value="myItem.Attr03" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr03.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr03" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr03=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr03=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+
+            <!-- ATTRIBUTE04 -->
+            @if (A4)
+            {
+                @if (Attr04.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr04.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr04.Description">@Attr04.Description</label>
+                            <div>
+                                <select id="@Attr04.Description" @bind="myItem.Attr04" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr04.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(myItem.Attr04==val.Value)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr04.ValueType == RoomFurnHeaderValuesType.LONG || Attr04.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr04.Description">@Attr04.Description</label>
+                                <input id="@Attr04.Description" @bind-value="myItem.Attr04" name="text" type="number" step="@(Attr04.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr04.Description">@Attr04.Description</label>
+                                <input id="@Attr04.Description" @bind-value="myItem.Attr04" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr04.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr04" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr04=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr04=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- ATTRIBUTE05 -->
+            @if (A5)
+            {
+                @if (Attr05.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr05.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr05.Description">@Attr05.Description</label>
+                            <div>
+                                <select id="@Attr05.Description" @bind="myItem.Attr05" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr05.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(myItem.Attr05==val.Value)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr05.ValueType == RoomFurnHeaderValuesType.LONG || Attr05.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr05.Description">@Attr05.Description</label>
+                                <input id="@Attr05.Description" @bind-value="myItem.Attr05" name="text" type="number" step="@(Attr05.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr05.Description">@Attr05.Description</label>
+                                <input id="@Attr05.Description" @bind-value="myItem.Attr05" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr05.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr05" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr05=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr05=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- ATTRIBUTE06 -->
+            @if (A6)
+            {
+                @if (Attr06.ValueType != RoomFurnHeaderValuesType.BOOLEAN)
+                {
+                    @if (!Attr06.CustomValue)
+                    {
+                        <div class="form-group">
+                            <label for="@Attr06.Description">@Attr06.Description</label>
+                            <div>
+                                <select id="@Attr06.Description" @bind="myItem.Attr06" class="custom-select">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var val in headerValues.Where(x => x.HeaderId == Attr06.Id).OrderBy(x => x.Value))
+                                    {
+                                        <option value="@val.Value" selected="@(myItem.Attr06==val.Value)">@val.Value</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        @if (Attr06.ValueType == RoomFurnHeaderValuesType.LONG || Attr06.ValueType == RoomFurnHeaderValuesType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <label for="@Attr06.Description">@Attr06.Description</label>
+                                <input id="@Attr06.Description" @bind-value="myItem.Attr06" name="text" type="number" step="@(Attr06.ValueType == RoomFurnHeaderValuesType.NUMBER ? "0.01":"1")" class="form-control">
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group">
+                                <label for="@Attr06.Description">@Attr06.Description</label>
+                                <input id="@Attr06.Description" @bind-value="myItem.Attr06" type="text" class="form-control">
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label for="select">@Attr06.Description</label>
+                        <div>
+                            <select id="select" @bind="myItem.Attr06" class="custom-select">
+                                <option selected disabled>โปรดเลือก</option>
+                                <option value="true" selected="@(myItem.Attr06=="true")">Yes</option>
+                                <option value="false" selected="@(myItem.Attr06=="false")">No</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            }
+
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">Save Changes</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Back</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+} 

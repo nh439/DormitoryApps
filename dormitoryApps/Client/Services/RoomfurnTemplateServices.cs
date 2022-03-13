@@ -31,6 +31,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<RoomfurnTemplate>>($"{ControllerName}/Type/{typeName}");
             return res;             
         }
+        public async Task<List<RoomfurnTemplate>> GetByTemplate(int templateId)
+        {
+            var res = await _httpClient.GetFromJsonAsync<List<RoomfurnTemplate>>($"{ControllerName}/Template/{templateId}");
+            return res;
+        }
         public async Task<bool> Create(RoomfurnTemplate template)
         {
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", template);
@@ -38,7 +43,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<int> Create(IEnumerable<RoomfurnTemplate> templates)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", templates);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", templates);
             return await res.Content.ReadFromJsonAsync<int>();
         }
         public async Task<bool> Update(RoomfurnTemplate template)

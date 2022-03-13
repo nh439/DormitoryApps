@@ -34,7 +34,7 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<int> DeleteTemplate(int roomId)
         {
-            var res = await _databases.Dorm.DeleteAsync(TableName,$"RoomId={roomId}");
+            var res = await _databases.Dorm.DeleteAsync(TableName,$"TemplateId={roomId}");
             return res;
         }
         public async Task<List<RoomfurnTemplate>> Getall()
@@ -42,9 +42,9 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>();
             return res.ToList();
         }
-        public async Task<List<RoomfurnTemplate>> GetByRoomId(int roomId)
+        public async Task<List<RoomfurnTemplate>> GetByTemplateId(int roomId)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName,$"RoomId={roomId}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName,$"TemplateId={roomId}");
             return res.ToList();
         }
         public async Task<List<RoomfurnTemplate>> GetByType(string typeName)
@@ -52,11 +52,16 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName,$"Type='{typeName}'");
             return res.ToList();
         }
+        public async Task<List<RoomfurnTemplate>> GetByTemplate(int templateId)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName, $"TemplateId={templateId}");
+            return res.ToList();
+        }
         public async Task<RoomfurnTemplate> GetById(long id)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<RoomfurnTemplate>(TableName, $"Id={id}");
             return res.FirstOrDefault();
-        }
+        }      
 
     }
 }

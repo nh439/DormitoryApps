@@ -9,7 +9,7 @@ namespace dormitoryApps.Shared.Model.Entity
     public class RoomfurnTemplate
     {
 		public long Id { get; set; }
-		public int RoomId { get; set; }
+		public int TemplateId { get; set; }
 		public string Name { get; set; }
 		public string Type { get; set; }
 		public decimal Price { get; set; }

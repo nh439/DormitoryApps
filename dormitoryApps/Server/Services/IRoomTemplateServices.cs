@@ -54,14 +54,14 @@ namespace dormitoryApps.Server.Services
             var furnitureList = await _roomfurnTemplateRepository.Getall();
             res.ForEach(s =>
             {
-                s.Furnitures = furnitureList.Where(x => x.RoomId == s.Id).ToList();
+                s.Furnitures = furnitureList.Where(x => x.TemplateId == s.Id).ToList();
             });
             return res;
         }
         public async Task<RoomTemplate> GetById(int Id)
         {
             var res = await _repository.GetById(Id);
-            if(res!= null) res.Furnitures = await _roomfurnTemplateRepository.GetByRoomId(Id);
+            if(res!= null) res.Furnitures = await _roomfurnTemplateRepository.GetByTemplateId(Id);
             return res;
         }
         public async Task<string[]> GetNames()
@@ -75,7 +75,7 @@ namespace dormitoryApps.Server.Services
         public async Task<RoomTemplate> GetByName(string name)
         {
             var res = await _repository.GetByName(name);
-            if (res != null) res.Furnitures = await _roomfurnTemplateRepository.GetByRoomId(res.Id);
+            if (res != null) res.Furnitures = await _roomfurnTemplateRepository.GetByTemplateId(res.Id);
             return res;
         }
     }

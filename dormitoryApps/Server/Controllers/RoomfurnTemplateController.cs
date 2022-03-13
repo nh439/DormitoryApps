@@ -30,13 +30,19 @@ namespace dormitoryApps.Server.Controllers
             var res = await _roomfurnTemplateServices.GetByType(typeName);
             return Ok(res);
         }
+        [HttpGet(BaseUrl+"/Template/{Id}")]
+        public async Task<IActionResult> GetByTemplate(int Id)
+        {
+            var res = await _roomfurnTemplateServices.GetByTemplate(Id);
+            return Ok(res);
+        }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]RoomfurnTemplate template)
         {
             var res = await _roomfurnTemplateServices.Create(template);
             return Ok(res);
         }
-        [HttpPost(BaseUrl+"/Create")]
+        [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Create([FromBody]IEnumerable<RoomfurnTemplate> templates)
         {
             var res = await _roomfurnTemplateServices.Create(templates);

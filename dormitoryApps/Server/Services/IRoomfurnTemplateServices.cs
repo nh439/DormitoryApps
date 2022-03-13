@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<int> DeleteTemplate(int roomId);
         Task<List<RoomfurnTemplate>> Getall();
         Task<List<RoomfurnTemplate>> GetByType(string typeName);
+        Task<List<RoomfurnTemplate>> GetByTemplate(int templateId);
         Task<RoomfurnTemplate> GetById(long id);
     }
     public class RoomfurnTemplateServices : IRoomfurnTemplateServices
@@ -48,11 +49,15 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<List<RoomfurnTemplate>> GetByRoomId(int roomId)
         {
-            return await _repository.GetByRoomId(roomId);
+            return await _repository.GetByTemplateId(roomId);
         }
         public async Task<List<RoomfurnTemplate>> GetByType(string typeName)
         {
             return await _repository.GetByType(typeName);
+        }
+        public async Task<List<RoomfurnTemplate>> GetByTemplate(int templateId)
+        {
+            return await _repository.GetByTemplate(templateId);
         }
         public async Task<RoomfurnTemplate> GetById(long id)
         {

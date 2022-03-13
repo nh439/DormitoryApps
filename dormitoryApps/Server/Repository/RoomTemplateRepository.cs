@@ -40,13 +40,13 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<RoomTemplate> GetByName(string name)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>(TableName,$"RoomName='{name}'");
+            var res = await _databases.Dorm.SelectEntitiesAsync<RoomTemplate>(TableName,$"TemplateName='{name}'");
             return res.FirstOrDefault();
         }
 
         public async Task<string[]> GetNames()
         {
-            var res = await _databases.Dorm.SelectDistinctAsync(TableName, "RoomName");
+            var res = await _databases.Dorm.SelectDistinctAsync(TableName, "TemplateName");
             return res;
         }
         public async Task<bool> AddTemplate(int roomId,string roomName)
