@@ -1,0 +1,22 @@
+﻿@page "/Customer";
+
+@code {
+    bool isCurrent = true;
+    private void SetMode(bool currentMode)
+    {
+        isCurrent = currentMode;
+        StateHasChanged();
+    }
+}
+<center>
+    <h1>ผู้เช่า</h1>
+</center>
+<button type="button" class="@( isCurrent ? "btn btn-primary btn-lg":"btn btn-secondary btn-lg")" @onclick="()=>SetMode(true)">ผู้เช่าปัจจุบัน</button>
+<button type="button" class="@( !isCurrent ? "btn btn-primary btn-lg":"btn btn-secondary btn-lg")" @onclick="()=>SetMode(false)">ผู้ที่เคยเช่า</button>
+@if(isCurrent)
+{
+    <dormitoryApps.Client.Pages.Customer.CurrentCustomer.CurrentCustomerList></dormitoryApps.Client.Pages.Customer.CurrentCustomer.CurrentCustomerList>
+}
+else{
+    <dormitoryApps.Client.Pages.Customer.PastCustomer.PastcustomerList></dormitoryApps.Client.Pages.Customer.PastCustomer.PastcustomerList>
+}

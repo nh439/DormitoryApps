@@ -12,13 +12,15 @@ namespace dormitoryApps.Shared.Model.Entity
 		public int RoomId { get; set; }
 		public string Firstname { get; set; }
 		public string Surname { get; set; }
-		public DateTime Stayed { get; set; }
-		public byte IsMain { get; set; }
+		public DateTime? Stayed { get; set; }
+		public bool IsMain { get; set; }
 		public string Address { get; set; }
 		public decimal Rental { get; set; }
 		public DateTime ContractDate { get; set; }
 		public DateTime StayUntil { get; set; }
 		public decimal Deposit { get; set; }
-		public byte Refunded { get; set; }
+		public decimal DamageFee { get; set; }
+		public bool Refunded { get; set; }
+		public bool IsStayed { get; set; }
 	}
 }

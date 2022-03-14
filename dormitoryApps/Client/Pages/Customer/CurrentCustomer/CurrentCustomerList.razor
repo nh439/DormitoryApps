@@ -1,0 +1,106 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject CurrentCustomerService _currentCustomerService;
+@implements IDisposable;
+@code {
+    List<CurrentCustomer> currentCustomers;
+    Timer timer = new Timer();
+    string remarkColor = "red";
+    protected override void OnInitialized()
+    {
+        Get();
+        timer = new Timer(1000);
+        timer.Elapsed += Tick;
+        timer.Enabled = true;
+
+    }
+    private async void Get()
+    {
+        await _currentCustomerService.Get().ContinueWith(response =>
+        {
+            currentCustomers = response.Result != null ? response.Result.OrderByDescending(x => x.ContractDate).ToList() : new List<CurrentCustomer>();
+        });
+    }
+    private void Tick(object sender, ElapsedEventArgs e)
+    {
+        remarkColor = remarkColor.Equals("red") ? "blue" : "red";
+        Get();
+        StateHasChanged();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+}
+<link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+<br />
+<center>
+    <h1>ผู้เช่าปัจจุบัน</h1>
+</center>
+<br />
+<br />
+<button class="btn btn-primary mx-1">ทำสัญญาเช่า</button>
+<button class="btn btn-success mx-1">จองห้องเช่า</button>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <td>Id</td>
+            <td>ชื่อ/รหัสห้อง</td>
+            <td>ชื่อ สกุล</td>
+            <td>วันที่เข้าพัก</td>
+            <td>ผู้เช่าหลัก</td>
+            <td>ค่าเช่า</td>
+            <td>วันทำสัญญา</td>
+            <td>วันที่ Check Out</td>
+            <td>ใบจอง</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody class="table-danger">
+        @if(currentCustomers == null)
+        {
+            <tr>
+                <td colspan="10">Fetching...</td>
+            </tr>
+        }
+        else if(currentCustomers?.Count==0)
+        {
+            <tr>
+                <td colspan="10">ไม่พบลูกค้า</td>
+            </tr>
+        }
+        else
+        {
+            @foreach(var customer in currentCustomers)
+            {
+                <tr>
+                    <td>@customer.Id</td>
+                    <td>@customer.RoomId</td>
+                    <td>@($"{customer.Firstname} {customer.Surname}")</td>
+                    <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>
+                    <td>
+                        @if(customer.IsMain)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>@customer.Rental บาท</td>
+                    <td>@customer.ContractDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                    <td>@(customer.StayUntil.HasValue ? customer.StayUntil.Value.ToString("dd MMMM yyyy HH:mm:ss") :"ยังไม่มีการแจ้งออก")</td>
+                     <td>
+                        @if(customer.Booking)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<br />
+<h2 style="color:@remarkColor">* ตรงวันที่เข้าพัก หมายถึงวันที่ใบจองหมดอายุ</h2>
