@@ -49,9 +49,8 @@
         <tr>
             <td>Id</td>
             <td>ชื่อ/รหัสห้อง</td>
-            <td>ชื่อ สกุล</td>
+            <td>จำนวนผู้พักอาศัย</td>
             <td>วันที่เข้าพัก</td>
-            <td>ผู้เช่าหลัก</td>
             <td>ค่าเช่า</td>
             <td>วันทำสัญญา</td>
             <td>วันที่ Check Out</td>
@@ -63,13 +62,13 @@
         @if(currentCustomers == null)
         {
             <tr>
-                <td colspan="10">Fetching...</td>
+                <td colspan="9">Fetching...</td>
             </tr>
         }
         else if(currentCustomers?.Count==0)
         {
             <tr>
-                <td colspan="10">ไม่พบลูกค้า</td>
+                <td colspan="9">ไม่พบลูกค้า</td>
             </tr>
         }
         else
@@ -79,14 +78,8 @@
                 <tr>
                     <td>@customer.Id</td>
                     <td>@customer.RoomId</td>
-                    <td>@($"{customer.Firstname} {customer.Surname}")</td>
-                    <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>
-                    <td>
-                        @if(customer.IsMain)
-                        {
-                            <i class="check icon"></i>
-                        }
-                    </td>
+                    <td>@(customer.Members != null ? customer.Members.Count :0)</td>
+                    <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>                   
                     <td>@customer.Rental บาท</td>
                     <td>@customer.ContractDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
                     <td>@(customer.StayUntil.HasValue ? customer.StayUntil.Value.ToString("dd MMMM yyyy HH:mm:ss") :"ยังไม่มีการแจ้งออก")</td>

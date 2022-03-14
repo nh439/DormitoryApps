@@ -1,0 +1,24 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject CurrentCustomerService _currentCustomerService;
+
+@code {
+    Modal e;
+}
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>จองห้อง</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary">ทำการจองห้อง</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>

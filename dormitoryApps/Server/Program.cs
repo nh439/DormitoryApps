@@ -40,6 +40,7 @@ builder.Services.AddScoped<RoomFurnHeaderValuesRepository>();
 builder.Services.AddScoped<RoomFurnHeaderRepository>();
 builder.Services.AddScoped<RoomfurnTemplateRepository>();
 builder.Services.AddScoped<RoomTemplateRepository>();
+builder.Services.AddScoped<MemberRepository>();
 #endregion
 
 #region Services
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IRoomFurnHeaderValuesServices, RoomFurnHeaderValuesSe
 builder.Services.AddScoped<IRoomFurnHeaderServices, RoomFurnHeaderServices>();
 builder.Services.AddScoped<IRoomfurnTemplateServices,RoomfurnTemplateServices>();
 builder.Services.AddScoped<IRoomTemplateServices,RoomTemplateServices>();
+builder.Services.AddScoped<IMemberServices,MemberServices>();
 #endregion
 
 var app = builder.Build();

@@ -10,10 +10,7 @@ namespace dormitoryApps.Shared.Model.Entity
     {
 		public string Id { get; set; }
 		public int RoomId { get; set; }
-		public string Firstname { get; set; }
-		public string Surname { get; set; }
 		public DateTime? Stayed { get; set; }
-		public bool IsMain { get; set; }
 		public string Address { get; set; }
 		public decimal Rental { get; set; }
 		public DateTime ContractDate { get; set; }
@@ -22,5 +19,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal DamageFee { get; set; }
 		public bool Refunded { get; set; }
 		public bool IsStayed { get; set; }
+		public string RentalType { get; set; }
+		public virtual List<RentalMember> Members { get; set; }
 	}
 }
