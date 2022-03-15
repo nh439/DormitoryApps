@@ -2,6 +2,7 @@
 @using dormitoryApps.Client.Services;
 @using System.Timers;
 @inject CurrentCustomerService _currentCustomerService;
+@inject SessionServices _sessionServices;
 @implements IDisposable;
 @code {
     List<CurrentCustomer> currentCustomers;
@@ -9,6 +10,7 @@
     string remarkColor = "red";
     protected override void OnInitialized()
     {
+        _sessionServices.RequiredPermission();
         Get();
         timer = new Timer(1000);
         timer.Elapsed += Tick;
@@ -41,7 +43,7 @@
 <br />
 <br />
 <button class="btn btn-primary mx-1">ทำสัญญาเช่า</button>
-<button class="btn btn-success mx-1">จองห้องเช่า</button>
+<button class="btn btn-success mx-1" @onclick="()=> booking.Open()">จองห้องเช่า</button>
 <br />
 <br />
 <table class="table" style="text-align:center">
@@ -97,3 +99,7 @@
 </table>
 <br />
 <h2 style="color:@remarkColor">* ตรงวันที่เข้าพัก หมายถึงวันที่ใบจองหมดอายุ</h2>
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking @ref="booking"/>
+@code{
+    private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking booking;
+}

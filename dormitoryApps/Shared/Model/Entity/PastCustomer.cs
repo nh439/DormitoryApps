@@ -20,6 +20,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public bool Refunded { get; set; }
 		public bool IsStayed { get; set; }
 		public string RentalType { get; set; }
+		public long EmployeeId { get; set; }
 		public virtual List<RentalMember> Members { get; set; }
 	}
 }

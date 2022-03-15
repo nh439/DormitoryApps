@@ -30,6 +30,7 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<bool> Create(CurrentCustomer item)
         {
+            item.Id = _repository.GenerateId();
             var res = await _repository.Create(item);
             if(item.Imgs != null)
             {
@@ -38,6 +39,7 @@ namespace dormitoryApps.Server.Services
             }
             if(item.Members != null)
             {
+                item.Members.ForEach(x => { x.RentalId=item.Id; });
                 await _rentalMemberServices.Create(item.Members);
             }
             return res;

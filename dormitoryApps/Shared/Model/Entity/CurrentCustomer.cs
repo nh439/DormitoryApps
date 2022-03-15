@@ -20,6 +20,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal ContractFee { get; set; } //ค่าทำสัญญาเช่า
 		public decimal DamageInsurance { get; set; } //ค่าประกันของเสียหาย
 		public string RentalType { get; set; } // ประเภทการเช่า
+		public long EmployeeId { get; set; }
 		public virtual List<RentalMember> Members { get; set; }
 		public virtual List<CustomerImg> Imgs { get; set; } 
 	}

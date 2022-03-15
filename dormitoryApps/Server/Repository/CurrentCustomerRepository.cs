@@ -50,6 +50,20 @@ namespace dormitoryApps.Server.Repository
             var currentCustomer = await _databases.Dorm.SelectEntitiesAsync<CurrentCustomer>(TableName,set);       
             return currentCustomer.FirstOrDefault();
         }
-
+        public string GenerateId()
+        {
+            var CustomerId = _databases.Dorm.SelectDistinct(TableName, "Id");
+            var year = DateTime.Now.Year;
+            CustomerId = CustomerId.Where(x => x.StartsWith(year.ToString())).ToArray();
+            if (CustomerId == null || CustomerId.Length == 0) return $"{year}-0000001";
+            List<int> list = new List<int>();
+            foreach(var i in CustomerId)
+            {
+                var x = i.Split('-');
+                list.Add(int.Parse(x[1]));
+            }
+            int maxId = list.OrderByDescending(x => x).FirstOrDefault();
+            return $"{year}-{(1 + maxId).ToString("0000000")}";
+        }
     }
 }

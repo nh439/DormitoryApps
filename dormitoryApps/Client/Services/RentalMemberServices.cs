@@ -38,7 +38,7 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Rental/{rentalId}");
             return res;
         }
-          public async Task<List<RentalMember>> GetByMemberId(long Id)
+        public async Task<List<RentalMember>> GetByMemberId(long Id)
         {
             var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Member/{Id}");
             return res;
