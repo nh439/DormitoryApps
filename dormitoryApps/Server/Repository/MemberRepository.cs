@@ -49,6 +49,21 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Member>(TableName, $"MemberId={id}");
             return res.FirstOrDefault();
         }
+        public long Autoincrement()
+        {
+            var res = _databases.Dorm.GenerateId(TableName, "MemberId");
+            return res;
+        }
+        public IEnumerable<long> Autoincrement(int rows)
+        {
+            var res = _databases.Dorm.GenerateId(TableName, "MemberId");
+            List<long> IdSet = new List<long>();
+            for(int i=0;i<rows;i++)
+            {
+                IdSet.Add(res + i);
+            }
+            return IdSet;
+        }
 
     }
 }

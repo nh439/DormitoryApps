@@ -8,19 +8,22 @@ namespace dormitoryApps.Server.Services
         Task<bool> Create(PastCustomer item);
         Task<int> Create(IEnumerable<PastCustomer> items);
         Task<bool> Update(PastCustomer item);
-        Task<bool> Delete(long Id);
+        Task<bool> Delete(string Id);
         Task<List<PastCustomer>> Getall();
-        Task<List<PastCustomer>> GetByRental(string RentalId);
         Task<List<PastCustomer>> GetUnRefund();
-        Task<PastCustomer> GetById(long Id);
+        Task<PastCustomer> GetById(string Id);
     }
     public class PastCustomerServices : IPastCustomerServices
     {
         private readonly PastCustomerRepository _repository;
+        private readonly IRentalMemberServices _rentalMemberServices;
 
-        public PastCustomerServices(PastCustomerRepository repository)
+        public PastCustomerServices(PastCustomerRepository repository, 
+            IRentalMemberServices rentalMemberServices)
         {
             _repository = repository;
+            _rentalMemberServices = rentalMemberServices;
+
         }
         public async Task<bool> Create(PastCustomer item)
         {
@@ -34,25 +37,33 @@ namespace dormitoryApps.Server.Services
         {
             return await _repository.Update(item);
         }
-        public async Task<bool> Delete(long Id)
+        public async Task<bool> Delete(string Id)
         {
             return await _repository.Delete(Id);
         }
         public async Task<List<PastCustomer>> Getall()
         {
-            return await _repository.Getall();
-        }
-        public async Task<List<PastCustomer>> GetByRental(string RentalId)
-        {
-            return await _repository.GetByRental(RentalId);
-        }
+            var res = await _repository.Getall();
+            res.ForEach(async x =>
+            {
+                x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
+            });
+            return res;
+        }     
         public async Task<List<PastCustomer>> GetUnRefund()
         {
-            return await _repository.GetUnRefund();
+            var res= await _repository.GetUnRefund();
+            res.ForEach(async x =>
+            {
+                x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
+            });
+            return res;
         }
-        public async Task<PastCustomer> GetById(long Id)
+        public async Task<PastCustomer> GetById(string Id)
         {
-            return await _repository.GetById(Id);
+            var res= await _repository.GetById(Id);
+            if (res != null) res.Members = await _rentalMemberServices.GetByRentalId(Id);
+            return res;
         }
 
 

@@ -27,19 +27,13 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>(ControllerName);
             return res;
         }
-        public async Task<List<PastCustomer>> GetByRental(string rentalId)
-        {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}/rental/{rentalId}");
-            return res;
-        }
         public async Task<List<PastCustomer>> GetUnRefund()
         {
             await _sessionServices.RequiredPermission();
             var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}/GetUnRefund");
             return res;
         }
-        public async Task<PastCustomer> GetById(long Id)
+        public async Task<PastCustomer> GetById(string Id)
         {
             await _sessionServices.RequiredPermission();
             var res = await _httpClient.GetFromJsonAsync<PastCustomer>($"{ControllerName}//Id/{Id}");
@@ -63,7 +57,7 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", entity);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
-         public async Task<bool> Delete(long Id)
+         public async Task<bool> Delete(string Id)
         {
             await _sessionServices.RequiredPermission();
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);

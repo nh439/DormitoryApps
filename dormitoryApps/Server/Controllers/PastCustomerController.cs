@@ -20,12 +20,6 @@ namespace dormitoryApps.Server.Controllers
             var res = await _pastCustomerServices.Getall();
             return Ok(res);
         }
-        [HttpGet(BaseUrl +"/Rental/{Id}")]
-        public async Task<ActionResult> GetByRental(string rentalId)
-        {
-            var res = await _pastCustomerServices.GetByRental(rentalId);
-            return Ok(res);
-        }
         [HttpGet(BaseUrl+ "/GetUnRefund")]
         public async Task<IActionResult> GetUnRefund()
         {
@@ -33,7 +27,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpGet(BaseUrl+"/Id/{Id}")]
-        public async Task<IActionResult> GetById(long Id)
+        public async Task<IActionResult> GetById(string Id)
         {
             var res = await _pastCustomerServices.GetById(Id);
             return Ok(res);
@@ -57,7 +51,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
          [HttpPost(BaseUrl + "/Delete")]
-        public async Task<IActionResult> Delete([FromBody]long Id)
+        public async Task<IActionResult> Delete([FromBody]string Id)
         {
             var res = await _pastCustomerServices.Delete(Id);
             return Ok(res);

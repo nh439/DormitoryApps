@@ -27,9 +27,9 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.UpdateEntityAsync<PastCustomer>(item,$"Id='{item.Id}'");
             return res==1;
         }
-        public async Task<bool>Delete (long Id)
+        public async Task<bool>Delete (string Id)
         {
-            var res = await _databases.Dorm.DeleteAsync(TableName, $"Id={Id}");
+            var res = await _databases.Dorm.DeleteAsync(TableName, $"Id='{Id}'");
             return res == 1;
         }
         public async Task<List<PastCustomer>> Getall()
@@ -37,19 +37,14 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>();
             return res.ToList();
         }
-        public async Task<List<PastCustomer>> GetByRental(string RentalId)
-        {
-            var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>(TableName, $"Rental='{RentalId}'");
-            return res.ToList();
-        }
         public async Task<List<PastCustomer>> GetUnRefund()
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>(TableName, "Refunded=0");
             return res.ToList();
         }
-        public async Task<PastCustomer> GetById(long Id)
+        public async Task<PastCustomer> GetById(string Id)
         {
-            var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>(TableName, $"Id={Id}");
+            var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>(TableName, $"Id='{Id}'");
             return res.FirstOrDefault();
         }
     }

@@ -17,11 +17,16 @@ namespace dormitoryApps.Server.Services
     {
         private readonly CurrentCustomerRepository _repository;
         private readonly CustomerImgRepository _customerImgRepository;
+        private readonly IRentalMemberServices _rentalMemberServices;
 
-        public CurrentCustomerServices(CurrentCustomerRepository repository, CustomerImgRepository customerImgRepository)
+        public CurrentCustomerServices(CurrentCustomerRepository repository,
+            CustomerImgRepository customerImgRepository, 
+            IRentalMemberServices rentalMemberServices)
         {
             _repository = repository;
             _customerImgRepository = customerImgRepository;
+            _rentalMemberServices = rentalMemberServices;
+
         }
         public async Task<bool> Create(CurrentCustomer item)
         {
@@ -30,6 +35,10 @@ namespace dormitoryApps.Server.Services
             {
                 item.Imgs.ForEach(x => x.RentalId = item.Id);
                 await _customerImgRepository.Create(item.Imgs);
+            }
+            if(item.Members != null)
+            {
+                await _rentalMemberServices.Create(item.Members);
             }
             return res;
         }
@@ -52,16 +61,36 @@ namespace dormitoryApps.Server.Services
         {
             var Imgs =await _customerImgRepository.Getall();
             var res =  await _repository.Getall();
-            res.ForEach(x => { x.Imgs = Imgs.Where(z => z.RentalId == x.Id).ToList(); });
+            res.ForEach(async x => 
+            {
+                x.Imgs = Imgs.Where(z => z.RentalId == x.Id).ToList();
+                x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
+            });
             return res;        
         }
         public async Task<List<CurrentCustomer>> GetByRoom(int roomId)
         {
-            return await _repository.GetByRoom(roomId);
+            List<CurrentCustomer> result =new List<CurrentCustomer>();
+            await _repository.GetByRoom(roomId).ContinueWith( async x =>
+            {
+                result = await x;
+                if(result != null)
+                {
+                    result.ForEach(async y =>
+                    {
+                        y.Members = await _rentalMemberServices.GetByRentalId(y.Id);
+                        y.Imgs = await _customerImgRepository.GetbyRentalId(y.Id);
+                    });
+                }
+            });
+            return result;
         }
         public async Task<CurrentCustomer> GetById(string Id)
         {
-            return await _repository.GetById(Id);
+            var res= await _repository.GetById(Id);
+            res.Members = await _rentalMemberServices.GetByRentalId(res.Id);
+            res.Imgs = await _customerImgRepository.GetbyRentalId(res.Id);
+            return res;
         }
     }
 }

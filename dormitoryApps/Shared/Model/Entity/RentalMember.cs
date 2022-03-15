@@ -9,8 +9,8 @@ namespace dormitoryApps.Shared.Model.Entity
     public class RentalMember
     {
         public string RentalId { get; set; }
-        public string MemberId { get; set; }
-        public byte IsMain { get; set; }
+        public long MemberId { get; set; }
+        public bool IsMain { get; set; }
         public virtual CurrentCustomer? CurrentCustomer { get; set; }
         public virtual PastCustomer? PastCustomer { get; set; }
         public virtual Member Member { get; set; }
