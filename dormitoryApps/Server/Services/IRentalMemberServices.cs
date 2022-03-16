@@ -31,32 +31,30 @@ namespace dormitoryApps.Server.Services
             item.MemberId = _memberRepository.Autoincrement();
             await _repository.Create(item).ContinueWith(async x =>
             {
-                if (await x) 
-                { 
-                    item.Member.MemberId=item.MemberId;
-                    await _memberRepository.Create(item.Member);
-                }
+              
                 res = await x;
             });
+            if (res)
+            {
+                item.Member.MemberId = item.MemberId;
+            }
+            await _memberRepository.Create(item.Member);
             return res;
         }
         public async Task<int> Create(IEnumerable<RentalMember> items)
-        {
-            int res = 0;
-            List<RentalMember> insertItem = items.ToList();
-            var idSet = _memberRepository.Autoincrement(insertItem.Count);
-            foreach(var (id,index) in idSet.Select((x,y)=>(x,y)))
-            {
-                insertItem[index].MemberId=id;
-                insertItem[index].Member.MemberId=id;
-            }
-            await _repository.Create(insertItem).ContinueWith(async x =>
-            {
-                var members = insertItem.Select(x=>x.Member);
-                await _memberRepository.Create(members);
-                res = await x;
-            });
-            return res;
+        {           
+                int res = 0;
+                List<RentalMember> insertItem = items.ToList();
+                var idSet = _memberRepository.Autoincrement(insertItem.Count);
+                foreach (var (id, index) in idSet.Select((x, y) => (x, y)))
+                {
+                    insertItem[index].MemberId = id;
+                    insertItem[index].Member.MemberId = id;
+                }
+                res = await _repository.Create(insertItem);
+                var member = items.Select(x => x.Member);
+                await _memberRepository.Create(member);
+                return res;     
         }
         public async Task<bool> SetnewRentalIsMain(RentalMember isMainitem)
         {

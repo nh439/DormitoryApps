@@ -47,11 +47,11 @@ namespace dormitoryApps.Client.Services
             var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}/Room/{Id}");
             return result;
         }
-        public async Task<bool> Create(CurrentCustomer customer)
+        public async Task<string?> Create(CurrentCustomer customer)
         {
             await _sessionServices.RequiredPermission();
             var result = await _httpClient.PostAsJsonAsync(ControllerName, customer);
-            return await result.Content.ReadFromJsonAsync<bool>();
+            return await result.Content.ReadAsStringAsync();
         }
         public async Task<bool> Update(CurrentCustomer customer)
         {

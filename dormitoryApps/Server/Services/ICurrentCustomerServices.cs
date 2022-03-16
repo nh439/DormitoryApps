@@ -5,7 +5,7 @@ namespace dormitoryApps.Server.Services
 {
     public interface ICurrentCustomerServices
     {
-        Task<bool> Create(CurrentCustomer item);
+        Task<string> Create(CurrentCustomer item);
         Task<bool> Update(CurrentCustomer item);
         Task<bool> UpdateWithImg(CurrentCustomer item);
         Task<bool> Delete(string Id);
@@ -28,10 +28,11 @@ namespace dormitoryApps.Server.Services
             _rentalMemberServices = rentalMemberServices;
 
         }
-        public async Task<bool> Create(CurrentCustomer item)
+        public async Task<string> Create(CurrentCustomer item)
         {
             item.Id = _repository.GenerateId();
             var res = await _repository.Create(item);
+            if(string.IsNullOrEmpty(res)) return string.Empty;
             if(item.Imgs != null)
             {
                 item.Imgs.ForEach(x => x.RentalId = item.Id);
@@ -63,11 +64,14 @@ namespace dormitoryApps.Server.Services
         {
             var Imgs =await _customerImgRepository.Getall();
             var res =  await _repository.Getall();
-            res.ForEach(async x => 
+            if(res!=null)
             {
-                x.Imgs = Imgs.Where(z => z.RentalId == x.Id).ToList();
-                x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
-            });
+                foreach(var x in res)
+                {
+                    x.Imgs = Imgs.Where(z => z.RentalId == x.Id).ToList();
+                    x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
+                }
+            }
             return res;        
         }
         public async Task<List<CurrentCustomer>> GetByRoom(int roomId)

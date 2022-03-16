@@ -8,8 +8,12 @@ namespace dormitoryApps.Shared.Model.Entity
 {
     public class InvoiceService
     {
-        public string InvoiceId { get; set; }
-        public long ServiceId { get; set; }
-        public decimal Price { get; set; }
-    }
+		public long Id { get; set; }
+		public string InvoiceId { get; set; }
+		public long? ServiceId { get; set; }
+		public decimal Price { get; set; }
+		public bool OtherService { get; set; } = false;
+		public string Specifiy { get; set; }
+	}
 }
+

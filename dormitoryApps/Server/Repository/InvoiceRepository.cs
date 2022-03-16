@@ -112,6 +112,21 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, set);
             return res.ToList();
         }
+        public string GenerateId()
+        {
+            var InvoiceId = _databases.Dorm.SelectDistinct(TableName, "Id");
+            var year = DateTime.Now.Year;
+            InvoiceId = InvoiceId.Where(x => x.StartsWith(year.ToString())).ToArray();
+            if (InvoiceId == null || InvoiceId.Length == 0) return $"{year}-0000001";
+            List<int> list = new List<int>();
+            foreach (var i in InvoiceId)
+            {
+                var x = i.Split('-');
+                list.Add(int.Parse(x[1]));
+            }
+            int maxId = list.OrderByDescending(x => x).FirstOrDefault();
+            return $"{year}-{(1 + maxId).ToString("0000000")}";
+        }
 
 
     }

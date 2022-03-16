@@ -13,10 +13,11 @@ namespace dormitoryApps.Server.Repository
         {
             _databases = databases;
         }
-        public async Task<bool> Create(CurrentCustomer item)
+        public async Task<string> Create(CurrentCustomer item)
         {
             var res = await _databases.Dorm.InsertEntitiesAsync<CurrentCustomer>(item);
-            return res;
+            if (!res) return string.Empty;
+            return item.Id;
         }
         public async Task<bool> Update(CurrentCustomer item)
         {

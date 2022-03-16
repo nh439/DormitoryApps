@@ -37,10 +37,14 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<bool> Create(Invoice item)
         {
-            
+            item.Id = _repository.GenerateId();
             var res =  await _repository.Create(item);
             if (item.Services != null)
             {
+                item.Services.ForEach(x =>
+                {
+                    x.InvoiceId = item.Id;
+                });
                 await _invoiceserviceRepository.Create(item.Services);
             }
             return res;
