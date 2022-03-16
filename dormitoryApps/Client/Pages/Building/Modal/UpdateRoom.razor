@@ -33,14 +33,14 @@
             {
                 success.NextRequired = false;
                 success.Header = "Complete";
-                success.Details = "เพิ่มสำเร็จ";
+                success.Details = "แก้ไขสำเร็จ";
                 success.Open();
                 await e.Hide();
                 await InvokeAsync(StateHasChanged);
                 return;
             }
             error.Header = "!Oops!";
-            error.Details="เพิ่มไม่สำเร็จ";
+            error.Details="แก้ไขไม่สำเร็จ";
             error.Open();
         }
         catch(Exception x)

@@ -29,6 +29,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public bool Ispaid { get; set; }
 		public decimal Tax { get; set; } = 0;	//ภาษี(บาท)
 		public decimal ServicePrice { get; set; }
+		public decimal RentalPrice { get; set; } = 0;
 		public virtual Electricity Electricity { get; set; }
 		public virtual Water Water { get; set; }
 		public virtual List<InvoiceService> Services { get; set; }

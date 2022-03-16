@@ -22,6 +22,14 @@
     Member[] members = new Member[0];
     int counter = 0;
     Member MainMember = new Member();
+    List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>();
+    int[] notAvaliablerooms = new int[0];
+    bool roomValidate = false;
+    bool savedisabled = true;
+    bool mainNameValidate = false;
+    bool mainSurnameValidate = false;
+    bool stayUntilValidate = false;
+    bool stayValidate = false;
     public async void Open()
     {
         await e.Show();
@@ -29,7 +37,10 @@
         buildings = await _buildingServices.Get();
         Currentofficer = await _sessionServices.GetCurrentLogin();
         rooms = await _roomServices.GetEnabled();
+        currentCustomer = await _currentCustomerService.Get();
+        if (currentCustomer == null) currentCustomer = new List<CurrentCustomer>();
         if (rooms == null) rooms = new List<Room>();
+        notAvaliablerooms = currentCustomer.Select(x => x.RoomId).ToArray();
         StateHasChanged();
     }
     void RentalChanged(ChangeEventArgs e)
@@ -63,6 +74,25 @@
             {
                 item.StayUntil = item.StayUntil.Value.AddHours(14);
             }
+            else
+            {
+                item.StayUntil = (DateTime?)null;
+            }
+            var unavailable = notAvaliablerooms.Where(x => x == item.RoomId).Count() > 0;
+            roomValidate = unavailable;
+            mainNameValidate = string.IsNullOrEmpty(MainMember.Firstname);
+            mainSurnameValidate = string.IsNullOrEmpty(MainMember.Surname);
+            stayValidate = (item.Stayed.Date < DateTime.Now.Date);
+            if (IsMonthly) stayUntilValidate = false;
+            else
+            {
+                stayUntilValidate = !item.StayUntil.HasValue || (item.StayUntil.Value.Date < DateTime.Now.Date || item.StayUntil.Value.Date < item.Stayed.Date);
+            }
+            if(unavailable || mainNameValidate || mainSurnameValidate || stayValidate || stayUntilValidate)
+            {
+                return;
+            }
+            
             item.EmployeeId = Currentofficer.Id;
             item.ContractDate = DateTime.Now;
             RentalMember mainRM = new RentalMember
@@ -116,20 +146,20 @@
             var invoiceResult = await _invoiceServices.Create(invoice);
             if(!invoiceResult)
             {
-                 error.Header = "!Oops";
+                error.Header = "!Oops";
                 error.Details = "บันทึกใบเสร็จไม่สำเร็จ";
                 error.Open();
                 await InvokeAsync(StateHasChanged);
                 return;
             }
             success.Header = "ยินดีด้วย";
-                success.Details = "บันทึกการจองสำเร็จ";
-                success.NextRequired = false;
-                success.Open();
-                await e.Hide();
-                item = new CurrentCustomer() { RentalType = "Monthly", Stayed = DateTime.Now,Booking=true };
-                await InvokeAsync(StateHasChanged);
-                return;
+            success.Details = "บันทึกการจองสำเร็จ";
+            success.NextRequired = false;
+            success.Open();
+            await e.Hide();
+            item = new CurrentCustomer() { RentalType = "Monthly", Stayed = DateTime.Now,Booking=true };
+            await InvokeAsync(StateHasChanged);
+            return;
         }
         catch(Exception x)
         {
@@ -139,6 +169,15 @@
             await InvokeAsync(StateHasChanged);
             return;
         }
+    }
+    void RoomChanges(ChangeEventArgs e)
+    {
+        item.RoomId = int.Parse(e.Value.ToString());
+        if(item.RentalType == Monthly)
+        {
+            item.Rental = rooms.Where(x => x.Id == item.RoomId).FirstOrDefault().Rental;
+        }
+        savedisabled = false;
     }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -161,21 +200,24 @@
                     <div class="form-group row">
                         <label for="select" class="col-4 col-form-label">ห้องเลขที่</label>
                         <div class="col-8">
-                            <select id="select" @bind="item.RoomId" class="custom-select">
+                            <select id="select" @onchange="RoomChanges" class="custom-select">  
+                                <option selected disabled>โปรดเลือก...</option>
                                 @if (rooms == null)
                                 {
                                     <option disabled>Loading...</option>
                                 }
                                 else
                                 {
-                                    foreach (var room in rooms.OrderBy(x=>x.RoomName))
+                                    foreach (var room in rooms.OrderBy(x=>x.RoomName).OrderBy(x=>x.Building))
                                     {
-                                        <option value="@room.Id">@($"{room.RoomName} ({buildings.Where(x=>x.Id==room.Building).FirstOrDefault().Name})")</option>
+                                        var notAvalible = notAvaliablerooms.Where(x=>x == room.Id).Count() > 0;
+                                        <option value="@room.Id" disabled="@notAvalible" class="@(notAvalible ? "table-secondary":"")"  >@($"{room.RoomName} ({buildings.Where(x=>x.Id==room.Building).FirstOrDefault().Name})")</option>
                                     }
                                 }
                             </select>
                         </div>
                     </div>
+                    <small style="display:@(roomValidate ? "block":"none")">Room Is Unavailable </small>
                 </Div>
                 <Div Class="col">
                     <div class="form-group row">
@@ -197,8 +239,9 @@
                     <Div Class="col">
                         <div class="form-group">
                             <label for="text">เข้าพักภายในวันที่</label>
-                            <input id="text" @bind-value="item.Stayed" type="date" class="form-control">
+                            <input id="text" @bind-value="item.Stayed" type="date" class="form-control @(stayValidate ? "is-invalid":"")">
                         </div>
+                        <small style="display:@(stayValidate ? "block":"none")">ห้ามเข้าพักก่อนวันปัจจุบัน</small>
                     </Div>
                     <Div Class="col">
                         <div class="form-group">
@@ -219,14 +262,16 @@
                     <Div Class="col">
                         <div class="form-group">
                             <label for="Day">เข้าพักวันที่</label>
-                            <input id="Day" @bind-value="item.Stayed" min="@DateTime.Now.Date" type="date" class="form-control">
+                            <input id="Day" @bind-value="item.Stayed" min="@DateTime.Now.Date" type="date" class="form-control @(stayValidate ? "is-invalid":"")">
                         </div>
+                         <small style="display:@(stayValidate ? "block":"none")">ห้ามเข้าพักก่อนวันปัจจุบัน</small>
                     </Div>
                     <Div Class="col">
                         <div class="form-group">
                             <label for="Day">ออกวันที่</label>
-                            <input id="Day" @bind-value="item.StayUntil" min="@item.Stayed.AddDays(1)" type="date" class="form-control">
+                            <input id="Day" @bind-value="item.StayUntil" min="@item.Stayed.AddDays(1)" type="date" class="form-control @(stayUntilValidate ? "is-invalid":"")">
                         </div>
+                         <small style="display:@(stayUntilValidate ? "block":"none")">ห้าม Check Out ก่อนวัน Check In</small>
                     </Div>
                 </Div>
                 <Div Class="row">
@@ -298,19 +343,19 @@
                     <div class="col">
                         <div class="form-group">
                             <label for="text1">ชื่อ</label>
-                            <input id="text1" @bind-value="MainMember.Firstname" type="text" class="form-control">
+                            <input id="text1" @bind-value="MainMember.Firstname" type="text" class="form-control @(mainNameValidate ? "is-invalid":"")">
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label for="text2">สกุล</label>
-                            <input id="text2" @bind-value="MainMember.Surname" type="text" class="form-control">
+                            <input id="text2" @bind-value="MainMember.Surname" type="text" class="form-control @(mainSurnameValidate ? "is-invalid":"")">
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label for="text3">โทรศัพท์</label>
-                            <input id="text3" @bind-value="MainMember.Tel" type="tel" class="form-control">
+                            <input id="text3" @bind-value="MainMember.Tel" type="tel" class="form-control " >
                         </div>
                     </div>
                 </div>
@@ -320,6 +365,7 @@
                             <label for="select2">ช่องทางติดต่อ</label>
                             <div>
                                 <select id="select2" @bind="MainMember.SocialType" class="custom-select">
+                                    <option value="NO">No SocialMedia</option>
                                     <option value="Facebook">Facebook</option>
                                     <option value="Line">Line</option>
                                     <option value="Telegram">Telegram</option>
@@ -412,7 +458,7 @@
             </div>
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary" @onclick="Savechanges">ทำการจองห้อง</Button>
+            <Button Class="btn btn-outline-primary" @onclick="Savechanges" disabled="@savedisabled">ทำการจองห้อง</Button>
             <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
         </ModalFooter>
     </ModalContent>
@@ -424,3 +470,8 @@
     private dormitoryApps.Client.Pages.Modal.Success success;
     private dormitoryApps.Client.Pages.Modal.Error error;
 }
+<style>
+    small{
+        color:red
+    }
+</style>

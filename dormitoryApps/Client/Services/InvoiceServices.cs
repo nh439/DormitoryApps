@@ -115,6 +115,48 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", invoiceId);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
+        public Invoice InvoiceCalculate(Invoice invoice)
+        {
+            var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
+            var waterprice = (invoice.Water != null ? invoice.Water.Price : 0);
+            var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
+            invoice.GrandTotal = serviceprice+waterprice + electricityprice+invoice.RentalPrice;
+            invoice.ServicePrice = serviceprice;
+            return invoice;
+        }
+        public Invoice InvoiceCalculate(Invoice invoice,decimal taxpercentage)
+        {
+            var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
+            var waterprice = (invoice.Water != null ? invoice.Water.Price : 0);
+            var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
+            var total = serviceprice + waterprice + electricityprice + invoice.RentalPrice;
+            invoice.Tax = (taxpercentage / 100) * total;
+            invoice.GrandTotal = total+invoice.Tax;
+            invoice.ServicePrice = serviceprice;
+            return invoice;
+        }
+        public Invoice InvoiceCalculate(Invoice invoice, decimal taxpercentage,decimal charge)
+        {
+            var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
+            var waterprice = (invoice.Water != null ? invoice.Water.Price : 0);
+            var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
+            var total = serviceprice + waterprice + electricityprice + invoice.RentalPrice+charge;
+            invoice.Tax = (taxpercentage / 100) * total;
+            invoice.GrandTotal = total + invoice.Tax;
+            invoice.ServicePrice = serviceprice;
+            return invoice;
+        }
+        public Invoice InvoiceCalculate(Invoice invoice, decimal taxpercentage,decimal charge,decimal discount)
+        {
+            var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
+            var waterprice = (invoice.Water != null ? invoice.Water.Price : 0);
+            var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
+            var total = (serviceprice + waterprice + electricityprice + invoice.RentalPrice+charge)-discount;
+            invoice.Tax = (taxpercentage / 100) * total;
+            invoice.GrandTotal = total + invoice.Tax;
+            invoice.ServicePrice = serviceprice;
+            return invoice;
+        }
 
 
     }

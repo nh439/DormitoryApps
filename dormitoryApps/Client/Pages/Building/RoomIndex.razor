@@ -6,6 +6,7 @@
 @inject BuildingServices _buildingServices;
 @inject RoomServices _roomServices;
 @inject NavigationManager _navigationManager;
+@inject CurrentCustomerService _currentCustomerService;
 
 @code {
     [Parameter]
@@ -13,6 +14,7 @@
     List<Room> rooms;
     Buildings myBuildings = new Buildings();
     Timer timer = new Timer();
+    List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>(); 
     protected override async void OnInitialized()
     {
 
@@ -25,6 +27,10 @@
     {
         rooms = await _roomServices.GetByBuilding(Id);
         if (rooms == null) rooms = new List<Room>();
+        await _currentCustomerService.Get().ContinueWith(x =>
+        {
+            currentCustomer = x.Result != null ? x.Result : new List<CurrentCustomer>();
+        });
         await InvokeAsync(StateHasChanged);
     }
     void IDisposable.Dispose()
@@ -78,6 +84,7 @@
             int count = 1;
             @foreach (var room in rooms.OrderBy(x => x.RoomName).OrderBy(x => x.Floor))
             {
+                var unavalible = currentCustomer.Where(x => x.RoomId == room.Id).FirstOrDefault();
                 <tr class="@(className ? "table-primary":"table-success")">
                     <td>@count</td>
                     <td>@room.RoomName</td>
@@ -123,9 +130,24 @@
                         }
                     </td>
                     <td>
-                        <div class="green label">
+                       @if(unavalible == null)
+                       {
+                        <div class="ui green label">
                             ว่าง
-                        </div>
+                            </div>
+                        }
+                        else if(unavalible.Booking)
+                        {
+                            <div class="ui orange label">
+                            ติดจอง
+                            </div>
+                        }
+                        else
+                        {
+                          <div class="ui red label">
+                            ไม่ว่าง
+                          </div>  
+                        }
                     </td>
                     <td>
                         <button class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title="แก้ไขรายละเอียด" @onclick="()=>updateRoom.open(room.Id)"><i class="edit outline icon"></i></button>
