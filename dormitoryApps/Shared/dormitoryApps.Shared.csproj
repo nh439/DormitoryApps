@@ -13,4 +13,8 @@
   <ItemGroup>
     <Folder Include="Model\View\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PagedList.Mvc" Version="4.5.0" />
+  </ItemGroup>
 </Project>

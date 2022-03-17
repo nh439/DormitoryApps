@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
+using PagedList;
 
 namespace dormitoryApps.Client.Services
 {
@@ -84,7 +85,16 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
-
+        public async Task<List<Room>> GetByPage(int buildingId,int page)
+        {
+            var Havepermission = _sessionServices.Permissioncheck();
+            if (await Havepermission)
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/building/{buildingId}?page={page}");
+                return res;
+            }
+            return new List<Room>();
+        }
 
     }
 }

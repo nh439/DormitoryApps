@@ -1,6 +1,8 @@
 ﻿using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
+using PagedList;
+using PagedList.Mvc;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -28,9 +30,14 @@ namespace dormitoryApps.Server.Controllers
             return Ok(res);
         }
         [HttpGet(BaseUrl+ "/building/{buildingId}")]
-        public async Task<IActionResult> GetByBuilding(int buildingId)
+        public async Task<IActionResult> GetByBuilding(int buildingId,int? page)
         {
             var res = await _roomServices.GetByBuilding(buildingId);
+            if(page.HasValue)
+            {
+                var pagedRes = res.OrderBy(x=>x.RoomName).OrderBy(x=>x.Floor).ToPagedList(page.Value, 20);
+                return Ok(pagedRes);
+            }
             return Ok(res);
         }
         [HttpGet(BaseUrl+"/air")]
@@ -62,7 +69,6 @@ namespace dormitoryApps.Server.Controllers
         {
             var res = await _roomServices.Delete(RoomId);
             return Ok(res);
-        }
-
+        }        
     }
 }

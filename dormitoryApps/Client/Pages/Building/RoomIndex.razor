@@ -2,6 +2,8 @@
 @using dormitoryApps.Shared.Model.Entity;
 @using dormitoryApps.Client.Services;
 @using System.Timers;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
 @implements IDisposable;
 @inject BuildingServices _buildingServices;
 @inject RoomServices _roomServices;
@@ -14,10 +16,24 @@
     List<Room> rooms;
     Buildings myBuildings = new Buildings();
     Timer timer = new Timer();
-    List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>(); 
+    List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>();
+    int page = 1;
+    int roomcount = 0;
+    string thisUrl;
     protected override async void OnInitialized()
     {
-
+        StringValues queryres;
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        thisUrl = uri.AbsoluteUri;
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("page", out queryres))
+        {
+            var x = int.TryParse(queryres, out page);
+            if (!x) page = 1;
+        }
+        else
+        {
+            page = 1;
+        }
         myBuildings = await _buildingServices.Get(Id);
         timer.Elapsed += OnTick;
         timer.Interval = 1000;
@@ -25,12 +41,13 @@
     }
     private async void OnTick(object sender, ElapsedEventArgs e)
     {
-        rooms = await _roomServices.GetByBuilding(Id);
+        rooms = await _roomServices.GetByPage(Id, page);
         if (rooms == null) rooms = new List<Room>();
         await _currentCustomerService.Get().ContinueWith(x =>
         {
             currentCustomer = x.Result != null ? x.Result : new List<CurrentCustomer>();
         });
+        roomcount = rooms.Count;
         await InvokeAsync(StateHasChanged);
     }
     void IDisposable.Dispose()
@@ -130,23 +147,23 @@
                         }
                     </td>
                     <td>
-                       @if(unavalible == null)
-                       {
-                        <div class="ui green label">
-                            ว่าง
+                        @if (unavalible == null)
+                        {
+                            <div class="ui green label">
+                                ว่าง
                             </div>
                         }
-                        else if(unavalible.Booking)
+                        else if (unavalible.Booking)
                         {
                             <div class="ui orange label">
-                            ติดจอง
+                                ติดจอง
                             </div>
                         }
                         else
                         {
-                          <div class="ui red label">
-                            ไม่ว่าง
-                          </div>  
+                            <div class="ui red label">
+                                ไม่ว่าง
+                            </div>
                         }
                     </td>
                     <td>
@@ -161,6 +178,40 @@
         }
     </tbody>
 </table>
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(page <=1 ? "disabled":"")">
+            <a class="page-link" href="@($"{thisUrl}?page={(page-1)}")">Previous</a>
+        </li>
+        @for (int i = -1; i <= 1; i++)
+        {
+            int destination = page + i;
+            var destinationPage = $"{thisUrl}?page={destination}";
+            string isCurrentPage = i == 0 ? "page-item active" : "page-item";
+            @if (destination >= 1)
+            {
+                if (roomcount >= 20 || destination <= page)
+                {
+                    <li class="@isCurrentPage">
+                        <button class="page-link " @onclick="()=>{
+                    page=destination;
+                    _navigationManager.NavigateTo(destinationPage);
+                    StateHasChanged();
+                }">
+                        @destination
+                    </button>
+                </li>
+                }
+            }
+        }
+        @if (roomcount >= 20)
+        {
+            <li class="page-item ">
+                <button class="page-link" >Next</button>
+            </li>
+        }
+    </ul>
+</nav>
 <dormitoryApps.Client.Pages.Building.Modal.CreateRoom @ref="createRoom" />
 <dormitoryApps.Client.Pages.Building.Modal.SaveTemplate @ref="saveTemplate" />
 <dormitoryApps.Client.Pages.Building.Modal.UpdateRoom @ref="updateRoom" />
