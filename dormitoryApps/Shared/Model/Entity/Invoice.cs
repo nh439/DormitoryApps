@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,11 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Tax { get; set; } = 0;	//ภาษี(บาท)
 		public decimal ServicePrice { get; set; }
 		public decimal RentalPrice { get; set; } = 0;
+		public byte[] Slip { get; set; }
+		public string Slipname { get; set; }
+		[StringLength(45)]
+		public string SlipType { get; set; }
+
 		public virtual Electricity Electricity { get; set; }
 		public virtual Water Water { get; set; }
 		public virtual List<InvoiceService> Services { get; set; }

@@ -1,0 +1,130 @@
+﻿@using Blazorise;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject InvoiceServices _invoiceServices;
+@inject MyServicesServices _myServices;
+@inject ElectricityService _electricityService;
+@inject WaterService _waterService;
+@inject CurrentCustomerService _currentCustomerService;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+
+@code {
+    Modal e;
+    Invoice item = new Invoice();
+    CurrentCustomer current = new CurrentCustomer()
+        {
+            Members = new List<RentalMember>()
+        };
+    Room thisroom = new Room();
+    Buildings building = new Buildings();
+    bool hasWater = false;
+    bool hasElectricity = false;
+    bool hasRental = false;
+    bool hasService = false;
+    public async void Open(string invoiceId)
+    {
+        await e.Show();
+        await _invoiceServices.GetById(invoiceId).ContinueWith(response =>
+        {
+
+            if (response.Result != null)
+            {
+                item = response.Result;
+                hasWater = item.Water != null && item.Water != new Water();
+                hasElectricity = item.Electricity != null && item.Electricity != new Electricity();
+                hasRental = item.RentalPrice > 0;
+                hasService = item.IsService;
+            }
+            else
+            {
+                e.Hide();
+            }
+        });
+        current = await _currentCustomerService.Get(item.RentalId);
+        thisroom = await _roomServices.GetRoom(current.RoomId);
+        building = await _buildingServices.Get(thisroom.Building);
+        StateHasChanged();
+    }
+
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<Modal @ref="e" Style="color:black">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>จ่ายเงิน</h1>
+            </center>
+            <br />
+            <br />
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text" class="col-4 col-form-label">รหัส</label>
+                        <div class="col-8">
+                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">รหัสการเช่า</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="item.RentalId" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">ห้อง</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="thisroom.RoomName" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">อาคาร</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            <h2>รายชื่อ</h2>
+            <hr />
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ชื่อ-สกุล</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var itm in current.Members)
+                    {
+                        <tr>
+                            <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
+                            <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary">บันทึกการจ่ายเงิน</Button>
+            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">ยกเลิก</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<style>
+    table {
+        text-align: center;
+    }
+</style>

@@ -88,7 +88,7 @@ namespace dormitoryApps.Client.Services
             List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/rental/{RentalId}");
             return invoices;
         }
-        public async Task<Invoice?> GetById(long Id)
+        public async Task<Invoice?> GetById(string Id)
         {
             var Havepermission = await _sessionServices.Permissioncheck();
             if (!Havepermission)

@@ -38,14 +38,14 @@ namespace dormitoryApps.Client.Services
             return result;
         }
 
-        public async Task<List<CurrentCustomer>> Get(string Id)
+        public async Task<CurrentCustomer> Get(string Id)
         {
             var havepermission = await _sessionServices.Permissioncheck();
             if (!havepermission)
             {
-                return new List<CurrentCustomer>();
+                return new CurrentCustomer();
             }
-            var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}/{Id}");
+            var result = await _httpClient.GetFromJsonAsync<CurrentCustomer>($"{ControllerName}/{Id}");
             return result;
         }
         public async Task<List<CurrentCustomer>> GetByRoom(int Id)

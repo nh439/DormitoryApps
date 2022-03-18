@@ -75,6 +75,7 @@
             <th>รหัสใบแจ้ง</th>
             <th>รหัสการเช่า</th>
             <th>งวด</th>
+            <th>ประเภทใบเสร็จ</th>
             <th>ยอดชำระ</th>
             <th>รับเงินมา</th>
             <th>ทอน</th>
@@ -105,10 +106,19 @@
         {
            @foreach(var invoice in invoiceList)
             {
+                bool rentalMode = invoice.RentalPrice > 0;
+                bool hasUtilty = invoice.Water != null || invoice.Electricity != null;
+                bool hasService = invoice.IsService;
+                string invoiceType=string.Empty;
+                if(rentalMode) invoiceType = "ค่าเช่า";
+                else if(hasUtilty)invoiceType = "ค่าสาธารณูปโภค";
+                if(hasService) invoiceType = string.IsNullOrEmpty(invoiceType) ? "ค่าบริการเพิ่มเติม" : $"{invoiceType},ค่าบริการเพิ่มเติม";
+                if (string.IsNullOrEmpty(invoiceType)) invoiceType = "อื่นๆ";
                 <tr>
                     <td>@invoice.Id</td>
                     <td>@invoice.RentalId</td>
                     <td>@($"{invoice.Month}/{invoice.Year}")</td>
+                    <td>@invoiceType</td>
                     <td>@invoice.GrandTotal.ToString("#,###") บาท</td>
                     <td>@invoice.Paid.ToString("#,###") บาท</td>
                     <td>@invoice.Changes.ToString("#,###") บาท</td>
@@ -130,7 +140,7 @@
                             <button class="btn btn-danger mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ยกเลิกใบชำระ">
                             <i class="trash icon"></i>
                         </button>
-                            <button class="btn btn-success mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ชำระเงิน">
+                            <button class="btn btn-success mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ชำระเงิน" @onclick="()=>paidInvoice.Open(invoice.Id)">
                                 <i class="money bill alternate outline icon"></i>
                             </button>
                         }
@@ -159,3 +169,7 @@
     </li>
   </ul>
 </nav>
+<dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice @ref="paidInvoice"></dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice>
+@code{
+    private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
+}
