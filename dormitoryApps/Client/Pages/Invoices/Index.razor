@@ -1,0 +1,161 @@
+﻿@page "/Invoices"
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@inject InvoiceServices _invoiceServices;
+@inject OfficerServices _officerServices;
+@inject NavigationManager navigationManager;
+@implements IDisposable;
+@code {
+    List<Invoice> invoiceList ;
+    List<Officer> officers = new List<Officer>();
+    Timer timer = new Timer();
+    int page = 1;
+    int count;
+    protected override void OnInitialized()
+    {
+        StringValues queryres;
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("page", out queryres))
+        {
+            var x = int.TryParse(queryres, out page);
+            if (!x) page = 1;
+        }
+        Get();
+        timer = new Timer(1000);
+        timer.Elapsed += Tick;
+        timer.Enabled=true;
+        StateHasChanged();
+    }
+    public async void Get()
+    {
+        invoiceList= await _invoiceServices.GetByPage(page);
+        if (invoiceList == null) invoiceList = new List<Invoice>();
+        officers= await _officerServices.GetEmployee();
+        count = invoiceList.Count;
+    }
+    public void Tick(object sender,ElapsedEventArgs e)
+    {
+        Get();
+        StateHasChanged();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+    string GetOfficerName(long? officerId)
+    {
+        if (!officerId.HasValue) return string.Empty;
+        var officer = officers.Where(x => x.Id == officerId).FirstOrDefault();
+        return officer != null ? $"{officer.Firstname} {officer.Surname}" : "";
+    }
+    void Changepage(int destinationPage)
+    {
+        page = destinationPage;
+        string destinationUrl = $"/Invoices?page={destinationPage}";
+        navigationManager.NavigateTo(destinationUrl);
+        StateHasChanged();
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+<h1>ใบแจ้งชำระเงิน</h1>
+</center>
+<br />
+<br />
+<button class="btn btn-primary mx-1"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
+<button class="btn btn-warning mx-1"><i class="search icon"></i>  Advanced Search</button>
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัสใบแจ้ง</th>
+            <th>รหัสการเช่า</th>
+            <th>งวด</th>
+            <th>ยอดชำระ</th>
+            <th>รับเงินมา</th>
+            <th>ทอน</th>
+            <th>ใบแจ้งค่าเช่า</th>
+            <th>ชำระแล้ว</th>
+            <th>โดนยกเลิก</th>
+            <th>วันที่ออก</th>
+            <th>วันที่ชำระ</th>
+            <th>ออกโดย</th>
+            <th>รับชำระโดย</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-success">
+        @if(invoiceList==null)
+        {
+            <tr>
+                <td colspan="14">Loading...</td>
+            </tr>
+        }
+        else if(invoiceList.Count==0)
+        {
+             <tr>
+                <td colspan="14">ไม่พบรายการชำระเงิน</td>
+            </tr>
+        }
+        else
+        {
+           @foreach(var invoice in invoiceList)
+            {
+                <tr>
+                    <td>@invoice.Id</td>
+                    <td>@invoice.RentalId</td>
+                    <td>@($"{invoice.Month}/{invoice.Year}")</td>
+                    <td>@invoice.GrandTotal.ToString("#,###") บาท</td>
+                    <td>@invoice.Paid.ToString("#,###") บาท</td>
+                    <td>@invoice.Changes.ToString("#,###") บาท</td>
+                    <td>@if (invoice.RentalPrice > 0) { <i class="check icon"></i>}</td>
+                    <td>@if (invoice.Ispaid) { <i class="check icon"></i>}</td>
+                    <td>@if (invoice.Iscancel) { <i class="check icon"></i>}</td>
+                    <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                    <td>@(invoice.PaidDate.HasValue ? invoice.PaidDate.Value.ToString("dd MMMM yyyy HH:mm:ss"):"")</td>                  
+                    <td>@GetOfficerName(invoice.InvoiceOfficer)</td>
+                    <td>@GetOfficerName(invoice.PaidOfficer)</td>
+                    <td>
+                        <button class="btn btn-info mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="รายละเอียด">
+                            <i class="book icon"></i>
+                        </button>
+                         
+
+                        @if(!invoice.Iscancel && !invoice.Ispaid)
+                        {
+                            <button class="btn btn-danger mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ยกเลิกใบชำระ">
+                            <i class="trash icon"></i>
+                        </button>
+                            <button class="btn btn-success mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ชำระเงิน">
+                                <i class="money bill alternate outline icon"></i>
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center">
+    <li class="page-item @(page <=1 ?  "disabled":"")">
+      <button class="page-link" @onclick="()=>Changepage(page-1)">Previous</button>
+    </li>
+    @for(int i =-1;i<=1;i++)
+        {
+            int destinationPage = page + i;
+            if(destinationPage >= 1 && (count < 20 && destinationPage > page)==false)
+            {
+                <li class="page-item @(destinationPage==page ? "active":"")"><button class="page-link" @onclick="()=>Changepage(destinationPage)">@destinationPage</button></li>
+            }
+        }
+        
+    <li class="page-item @(count < 20 ?  "disabled":"")">
+      <button class="page-link" @onclick="()=>Changepage(page+1)">Next</button>
+    </li>
+  </ul>
+</nav>

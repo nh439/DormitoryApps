@@ -6,10 +6,12 @@
 @inject RoomServices _roomServices;
 @implements IDisposable;
 @code {
+    int page = 1;
     List<CurrentCustomer> currentCustomers;
     Timer timer = new Timer();
     string remarkColor = "red";
     List<Room> rooms = new List<Room>();
+    int customerCount = 0;
     protected override void OnInitialized()
     {
         _sessionServices.RequiredPermission();
@@ -21,11 +23,12 @@
     }
     private async void Get()
     {
-        await _currentCustomerService.Get().ContinueWith(response =>
+        await _currentCustomerService.Get(page).ContinueWith(response =>
         {
             currentCustomers = response.Result != null ? response.Result.OrderByDescending(x => x.ContractDate).ToList() : new List<CurrentCustomer>();
         });
         rooms = await _roomServices.GetRooms();
+        customerCount = currentCustomers.Count;
     }
     private void Tick(object sender, ElapsedEventArgs e)
     {
@@ -64,13 +67,13 @@
         </tr>
     </thead>
     <tbody class="table-danger">
-        @if(currentCustomers == null)
+        @if (currentCustomers == null)
         {
             <tr>
                 <td colspan="9">Fetching...</td>
             </tr>
         }
-        else if(currentCustomers?.Count==0)
+        else if (currentCustomers?.Count == 0)
         {
             <tr>
                 <td colspan="9">ไม่พบลูกค้า</td>
@@ -78,18 +81,18 @@
         }
         else
         {
-            @foreach(var customer in currentCustomers)
+            @foreach (var customer in currentCustomers)
             {
                 <tr>
                     <td>@customer.Id</td>
                     <td>@rooms.Where(x=>x.Id== customer.RoomId).FirstOrDefault().RoomName</td>
                     <td>@(customer.Members != null ? customer.Members.Count :0)</td>
-                    <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>                   
+                    <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>
                     <td>@customer.Rental บาท</td>
                     <td>@customer.ContractDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
                     <td>@(customer.StayUntil.HasValue ? customer.StayUntil.Value.ToString("dd MMMM yyyy HH:mm:ss") :"ยังไม่มีการแจ้งออก")</td>
-                     <td>
-                        @if(customer.Booking)
+                    <td>
+                        @if (customer.Booking)
                         {
                             <i class="check icon"></i>
                         }
@@ -102,7 +105,7 @@
                         }
                         else
                         {
-                             <button class="btn btn-danger">แจ้งออก</button>
+                            <button class="btn btn-danger">แจ้งออก</button>
                         }
                     </td>
                 </tr>
@@ -110,9 +113,42 @@
         }
     </tbody>
 </table>
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(page <=1 ? "disabled":"")">
+            <button class="page-link" @onclick="()=>{
+page--;
+StateHasChanged();
+}">
+                Previous
+            </button>
+        </li>
+        @for (int i = -1; i <= 1; i++)
+        {
+            int destination = page + i;
+            if (destination >= 1 && (customerCount < 20 && destination > page) == false)
+            {
+                <li class="page-item @(destination==page ?"active":"") ">
+                    <button class="page-link"  @onclick="()=>{
+                    page=destination;
+                    StateHasChanged();
+                    }">@destination</button>
+                </li>
+            }
+        }
+        <li class="page-item @(customerCount < 20 ? "disabled":"")">
+            <button class="page-link " @onclick="()=>{
+page++;
+StateHasChanged();
+}">
+                Next
+            </button>
+        </li>
+    </ul>
+</nav>
 <br />
 <h2 style="color:@remarkColor">* ตรงวันที่เข้าพัก หมายถึงวันที่ใบจองหมดอายุ</h2>
-<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking @ref="booking"/>
-@code{
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking @ref="booking" />
+@code {
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking booking;
 }

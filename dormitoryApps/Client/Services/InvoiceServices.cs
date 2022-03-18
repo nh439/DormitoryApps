@@ -47,6 +47,37 @@ namespace dormitoryApps.Client.Services
             List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}");
             return invoices;
         }
+        public async Task<List<Invoice>?> GetByPage(int page)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetByPage(int page,int year)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetByPage(int page,int year,int month)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}");
+            return invoices;
+        }
+
         public async Task<List<Invoice>?> GetByRental(string RentalId)
         {
             var Havepermission = await _sessionServices.Permissioncheck();

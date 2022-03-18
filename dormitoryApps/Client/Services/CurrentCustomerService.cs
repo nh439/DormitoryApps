@@ -27,6 +27,17 @@ namespace dormitoryApps.Client.Services
             var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>(ControllerName);
             return result;
         }
+         public async Task<List<CurrentCustomer>> Get(int page)
+        {
+            var havepermission = await _sessionServices.Permissioncheck();
+            if(!havepermission)
+            {
+                return new List<CurrentCustomer>();
+            }
+            var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}?page={page}");
+            return result;
+        }
+
         public async Task<List<CurrentCustomer>> Get(string Id)
         {
             var havepermission = await _sessionServices.Permissioncheck();

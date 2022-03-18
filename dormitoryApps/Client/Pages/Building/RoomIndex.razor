@@ -54,6 +54,13 @@
     {
         timer?.Dispose();
     }
+    void DirectPage(int pageId)
+    {
+        page = pageId;
+        var destinationPage = $"{thisUrl}?page={page}";
+        _navigationManager.NavigateTo(destinationPage);
+        StateHasChanged();
+    }
 }
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
@@ -98,7 +105,7 @@
         else
         {
             bool className = false;
-            int count = 1;
+            int count = ((page-1)*20)+ 1;
             @foreach (var room in rooms.OrderBy(x => x.RoomName).OrderBy(x => x.Floor))
             {
                 var unavalible = currentCustomer.Where(x => x.RoomId == room.Id).FirstOrDefault();
@@ -180,7 +187,7 @@
 </table>
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
-        <li class="page-item @(page <=1 ? "disabled":"")">
+        <li class="page-item @(page <=1 ? "disabled":"")" @onclick="()=> DirectPage(page-1)">
             <a class="page-link" href="@($"{thisUrl}?page={(page-1)}")">Previous</a>
         </li>
         @for (int i = -1; i <= 1; i++)
@@ -198,16 +205,18 @@
                     _navigationManager.NavigateTo(destinationPage);
                     StateHasChanged();
                 }">
-                        @destination
-                    </button>
-                </li>
+                            @destination
+                        </button>
+                    </li>
                 }
             }
         }
         @if (roomcount >= 20)
         {
             <li class="page-item ">
-                <button class="page-link" >Next</button>
+                <button class="page-link" @onclick="()=> DirectPage(page+1)">
+                    Next
+                </button>
             </li>
         }
     </ul>

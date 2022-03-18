@@ -2,6 +2,7 @@
 using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
+using PagedList;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -20,11 +21,15 @@ namespace dormitoryApps.Server.Controllers
         }
 
         [HttpGet(BaseUrl)]
-        public async Task<IActionResult> Index()
-        {          
+        public async Task<IActionResult> Index(int? page)
+        {
             var result = await _currentCustomerServices.Getall();
+            if (page.HasValue)
+            {
+                return Ok( result.ToPagedList(page.Value, 20));
+            }
             return Ok(result);
-        }
+        }       
         [HttpGet(BaseUrl +"/{Id}")]
         public async Task<IActionResult> GetById(string Id)
         {

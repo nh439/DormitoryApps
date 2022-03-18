@@ -2,6 +2,7 @@
 using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
+using PagedList;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -17,20 +18,25 @@ namespace dormitoryApps.Server.Controllers
             _logger = logger;
         }
         [HttpGet(BaseUrl)]
-        public async Task< IActionResult> Index(int? year,int? month)
+        public async Task< IActionResult> Index(int? year,int? month,int? page)
         {
             List<Invoice> invoices;
-            if(year.HasValue)
+            if (year.HasValue)
             {
-                if(month.HasValue)
+                if (month.HasValue)
                 {
-                    invoices = await _invoiceServices.GetByMonth(Month:month.Value,year:year.Value);
-                    return Ok(invoices);
+                    invoices = await _invoiceServices.GetByMonth(Month: month.Value, year: year.Value);
                 }
                 invoices = await _invoiceServices.GetByYear(year.Value);
-                return Ok(invoices);
             }
-            invoices = await _invoiceServices.GetAll();
+            else
+            {
+                invoices = await _invoiceServices.GetAll();
+            }
+            if(page.HasValue)
+            {
+                return Ok(invoices.OrderByDescending(x=>x.InvoiceDate).ToPagedList(page.Value, 20));
+            }
             return Ok(invoices);
         }
         [HttpGet(BaseUrl+"/rental/{rentalId}")]
