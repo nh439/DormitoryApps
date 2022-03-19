@@ -116,6 +116,44 @@
                     }
                 </tbody>
             </table>
+            <h2>รายการ</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>รายละเอียด</th>
+                        <th>เลขครั้งก่อน</th>
+                        <th>เลขที่จด</th>
+                        <th>จำนวนหน่วย</th>
+                        <th>หน่วยละ</th>
+                        <th>รวม</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(hasRental)
+                    {
+                        <tr>
+                            <td>ค่าเช่าห้อง</td>
+                            <td></td>
+                            <td></td>
+                            <td>1</td>
+                            <td>@item.RentalPrice บาท</td>
+                            <td>@item.RentalPrice บาท</td>
+                        </tr>
+                    }
+                    @if(hasWater)
+                    {
+                        var water = item.Water;
+                        <tr>
+                             <td>ค่าน้ำ</td>
+                            <td>@water.BeforeUnit</td>
+                            <td>@water.CurrentUnit</td>
+                            <td>@(water.CurrentUnit-water.BeforeUnit)</td>
+                            <td>@water. บาท</td>
+                            <td>@item.RentalPrice บาท</td>
+                         </tr>
+                    }
+                </tbody>
+               </table>
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-outline-primary">บันทึกการจ่ายเงิน</Button>
