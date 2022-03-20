@@ -10,6 +10,7 @@
 @inject BuildingServices _buildingServices;
 @inject MyServicesServices _myServicesServices;
 @inject SessionServices _sessionServices
+@inject OfficerServices _officerServices;
 
 @code {
     Modal e;
@@ -21,13 +22,14 @@
     Room thisroom = new Room();
     Buildings building = new Buildings();
     List<MyServices> myServices = new List<MyServices>();
-    Officer officer = new Officer();
+    List<Officer> officers = new List<Officer>();
     bool hasWater = false;
     bool hasElectricity = false;
     bool hasRental = false;
     bool hasService = false;
     bool payValid = false;
     bool isCash = true;
+    string status;
     public async void Open(string invoiceId)
     {
         await e.Show();
@@ -53,59 +55,10 @@
         thisroom = await _roomServices.GetRoom(current.RoomId);
         building = await _buildingServices.Get(thisroom.Building);
         myServices = await _myServicesServices.GetMyServices();
-        officer = await _sessionServices.GetCurrentLogin();
+        officers = await _officerServices.GetEmployee();
+        status = item.Ispaid ? "ชำระเงินแล้ว" : "ยังไม่ชำระ";
+        status = item.Iscancel ? "ยกเลิก" : status;
         StateHasChanged();
-    }
-    public async void InputSlip(InputFileChangeEventArgs e)
-    {
-        var slip = e.File;
-
-        if (!slip.ContentType.Contains("image"))
-        {
-            return;
-        }
-        item.Slipname = slip.Name;
-        item.SlipType = slip.ContentType;
-        MemoryStream stream = new MemoryStream();
-        await slip.OpenReadStream().CopyToAsync(stream);
-        item.Slip = stream.ToArray();
-        stream.Close();
-        await InvokeAsync(StateHasChanged);
-    }
-    async void SaveChanges()
-    {
-        try
-        {
-            item.Ispaid = true;
-            item.Changes = item.Paid - item.GrandTotal;
-            item.Paidwith = isCash ? "เงินสด" : item.Paidwith;
-            item.PaidDate = DateTime.Now;
-            item.PaidOfficer = officer.Id;
-            payValid = item.Changes < 0;
-            if (payValid)
-            {
-                return;
-            }
-            var actionResult = await _invoiceServices.Update(item);
-            if (actionResult)
-            {
-                success.NextRequired = false;
-                success.Details = "ชำระเงินเรียบร้อย";
-                success.Open();
-                await e.Hide();
-                item = new Invoice(){Services = new List<InvoiceService>()};
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            error.Details = "Something Went Wrong";
-            error.Open();
-        }
-        catch (Exception x)
-        {
-            error.Details = x.Message;
-            error.Open();
-        }
-        await InvokeAsync(StateHasChanged);
     }
 
 }
@@ -114,12 +67,11 @@
 <Modal @ref="e" Style="color:black">
     <ModalContent Size="ModalSize.Large">
         <ModalHeader>
-            <ModalTitle>รายการชำระเงินที่ @item.Id</ModalTitle>
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
             <center>
-                <h1>จ่ายเงิน</h1>
+                <h1>บิลเลขที่ @item.Id</h1>
             </center>
             <br />
             <br />
@@ -157,6 +109,53 @@
                             <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
                         </div>
                     </div>
+                </Div>
+            </Div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">สถานะ</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="status" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">วันออกบิล</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="item.InvoiceDate" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">ชำระเมื่อ</label>
+                        <div class="col-8">
+                            <input id="text2" @bind-value="item.PaidDate" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="text2" class="col-4 col-form-label">ผู้ออกบิล</label>
+                        <div class="col-8">
+                            <input id="text2" value="@($"{officers.Where(x=>x.Id==item.InvoiceOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    @if (item.Ispaid)
+                    {
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">ผู้รับเงิน</label>
+                            <div class="col-8">
+                                <input id="text2" value="@($"{officers.Where(x=>x.Id==item.PaidOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    }
                 </Div>
             </Div>
             <h2>รายชื่อ</h2>
@@ -265,79 +264,56 @@
                         <td colspan="5" class="table-primary">ยอดรวม</td>
                         <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
                     </tr>
-                    <tr>
-                        <td colspan="5">รับเงินมา</td>
-                        <td>
-                            <input id="text2" @bind-value="item.Paid" type="number" class="form-control @(payValid ? "is-invalid":"")">
-                            <br />
-                            <small style="display:@(payValid ? "block":"none")">จำนวนเงินที่จ่ายต้องมากกว่า ราคารวม</small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">เงินทอน</td>
-                        <td>@(item.Paid-item.GrandTotal != 0 ? (item.Paid-item.GrandTotal).ToString("#,###") : "0") บาท</td>
-                    </tr>
+                    @if (item.Ispaid)
+                    {
+                        <tr>
+                            <td colspan="5">รับเงินมา</td>
+                            <td>
+                                @item.Paid.ToString("#,###") บาท
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">เงินทอน</td>
+                            <td>@(item.Changes != 0 ?$"{item.Changes.ToString("#,###")} บาท ":"0 บาท")</td>
+                        </tr>
+
+                    }
                 </tbody>
             </table>
-            <h2>จ่ายเงิน</h2>
-            <div class="form-group row">
-                <div class="col-4"></div>
-                <div class="col-8">
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="()=>{isCash=true; StateHasChanged();}" checked="@isCash">
-                        <label for="radio_0" class="custom-control-label">เงินสด</label>
-                    </div>
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="()=>{isCash=false; StateHasChanged();}" checked="@(!isCash)">
-                        <label for="radio_1" class="custom-control-label">โอนเงิน</label>
-                    </div>
-                </div>
-            </div>
-            @if (!isCash)
+            <br />
+            @if (item.Ispaid)
             {
-                <div class="form-group row">
-                    <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
-                    <div class="col-8">
-                        <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="text" class="col-4 col-form-label">References</label>
-                    <div class="col-8">
-                        <input id="text" @bind-value="item.TransactionId" type="text" class="form-control">
-                    </div>
-                </div>
-
-                <Div Class="container">
-                    <center>
-                    <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
-                    </center>
+                <Div Class="row">
+                    <Div class="col">
+                        <div class="form-group row">
+                            <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                            <div class="col-8">
+                                <input id="text" @bind-value="item.Paidwith" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                        </Div>
+                        <Div class="col">
+                            <div class="form-group row">
+                                <label for="text" class="col-4 col-form-label">References</label>
+                                <div class="col-8">
+                                    <input id="text" @bind-value="item.TransactionId" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </Div>             
                 </Div>
-                <br />
-                <div class="mb-3">
-                    <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
-                    <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
-                </div>
+                @if(item.Slip != null)
+                {
+                    <center>
+                        <h2>หลักฐานการโอนเงิน</h2>
+                        <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                    </center>
+                }
+
             }
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">บันทึกการจ่ายเงิน</Button>
-            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">ยกเลิก</Button>
+            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
-<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
-<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
-@code {
-    private dormitoryApps.Client.Pages.Modal.Error error;
-    private dormitoryApps.Client.Pages.Modal.Success success;
-}
-<style>
-    table {
-        text-align: center;
-    }
 
-    small {
-        color: red;
-    }
-</style>

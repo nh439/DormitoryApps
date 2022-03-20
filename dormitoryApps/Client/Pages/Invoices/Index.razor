@@ -93,13 +93,13 @@
         @if(invoiceList==null)
         {
             <tr>
-                <td colspan="14">Loading...</td>
+                <td colspan="15">Loading...</td>
             </tr>
         }
         else if(invoiceList.Count==0)
         {
              <tr>
-                <td colspan="14">ไม่พบรายการชำระเงิน</td>
+                <td colspan="15">ไม่พบรายการชำระเงิน</td>
             </tr>
         }
         else
@@ -130,7 +130,7 @@
                     <td>@GetOfficerName(invoice.InvoiceOfficer)</td>
                     <td>@GetOfficerName(invoice.PaidOfficer)</td>
                     <td>
-                        <button class="btn btn-info mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="รายละเอียด">
+                        <button class="btn btn-info mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="รายละเอียด" @onclick="()=>Details.Open(invoice.Id)">
                             <i class="book icon"></i>
                         </button>
                          
@@ -170,6 +170,17 @@
   </ul>
 </nav>
 <dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice @ref="paidInvoice"></dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice>
+<dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
 @code{
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
+    dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
 }
+<style>
+    table {
+        text-align: center;
+    }
+
+    small {
+        color: red;
+    }
+</style>
