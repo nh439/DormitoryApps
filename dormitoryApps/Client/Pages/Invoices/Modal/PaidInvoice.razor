@@ -9,16 +9,20 @@
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
 @inject MyServicesServices _myServicesServices;
+@inject SessionServices _sessionServices;
 
 @code {
     Modal e;
-    Invoice item = new Invoice();
+    Invoice item = new Invoice() {
+            Services = new List<InvoiceService>();
+    };
     CurrentCustomer current = new CurrentCustomer()
         {
             Members = new List<RentalMember>()
         };
     Room thisroom = new Room();
     Buildings building = new Buildings();
+    Officer officer = new Officer();
     List<MyServices> myServices = new List<MyServices>();
     bool hasWater = false;
     bool hasElectricity = false;
@@ -51,6 +55,7 @@
         thisroom = await _roomServices.GetRoom(current.RoomId);
         building = await _buildingServices.Get(thisroom.Building);
         myServices = await _myServicesServices.GetMyServices();
+        officer = await _sessionServices.GetCurrentLogin();
         StateHasChanged();
     }
     public async void InputSlip(InputFileChangeEventArgs e)
@@ -67,6 +72,41 @@
         await slip.OpenReadStream().CopyToAsync(stream);
         item.Slip = stream.ToArray();
         stream.Close();
+        await InvokeAsync(StateHasChanged);
+    }
+    async void SaveChanges()
+    {
+        try
+        {
+            item.Ispaid = true;
+            item.Changes = item.Paid - item.GrandTotal;
+            item.Paidwith = isCash ? "เงินสด" : item.Paidwith;
+            item.PaidDate = DateTime.Now;
+            item.PaidOfficer = officer.Id;
+            payValid = item.Changes < 0;
+            if (payValid)
+            {
+                return;
+            }
+            var actionResult = await _invoiceServices.Update(item);
+            if (actionResult)
+            {
+                success.NextRequired = false;
+                success.Details = "ชำระเงินเรียบร้อย";
+                success.Open();
+                await e.Hide();
+                item = new Invoice();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            error.Details = "Something Went Wrong";
+            error.Open();
+        }
+        catch (Exception x)
+        {
+            error.Details = x.Message;
+            error.Open();
+        }
         await InvokeAsync(StateHasChanged);
     }
 
@@ -256,18 +296,26 @@
             </div>
             @if (!isCash)
             {
+                <div class="form-group row">
+                    <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                    <div class="col-8">
+                        <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
+                    </div>
+                </div>
                 <Div Class="container">
+                    <center>
                     <img height="300" width="200" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                    </center>
                 </Div>
                 <br />
                 <div class="mb-3">
                     <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
-                    <InputFile OnChange="InputSlip" class="form-control"  id="formFile"/>
+                    <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
                 </div>
             }
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary">บันทึกการจ่ายเงิน</Button>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">บันทึกการจ่ายเงิน</Button>
             <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">ยกเลิก</Button>
         </ModalFooter>
     </ModalContent>
@@ -281,3 +329,9 @@
         color: red;
     }
 </style>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Error error;
+    dormitoryApps.Client.Pages.Modal.Success success;
+}
