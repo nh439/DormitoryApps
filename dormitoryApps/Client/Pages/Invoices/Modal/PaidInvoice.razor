@@ -93,7 +93,7 @@
                 success.Details = "ชำระเงินเรียบร้อย";
                 success.Open();
                 await e.Hide();
-                item = new Invoice();
+                item = new Invoice(){Services = new List<InvoiceService>()};
                 await InvokeAsync(StateHasChanged);
                 return;
             }
