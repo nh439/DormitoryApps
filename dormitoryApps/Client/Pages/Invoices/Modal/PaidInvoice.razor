@@ -13,7 +13,7 @@
 
 @code {
     Modal e;
-    Invoice item = new Invoice(){Services = new List<InvoiceService>()};
+    Invoice item = new Invoice() { Services = new List<InvoiceService>() };
     CurrentCustomer current = new CurrentCustomer()
         {
             Members = new List<RentalMember>()
@@ -294,13 +294,28 @@
             </div>
             @if (!isCash)
             {
+                <div class="form-group row">
+                    <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                    <div class="col-8">
+                        <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="text" class="col-4 col-form-label">References</label>
+                    <div class="col-8">
+                        <input id="text" @bind-value="item.TransactionId" type="text" class="form-control">
+                    </div>
+                </div>
+
                 <Div Class="container">
-                    <img height="300" width="200" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                    <center>
+                    <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                    </center>
                 </Div>
                 <br />
                 <div class="mb-3">
                     <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
-                    <InputFile OnChange="InputSlip" class="form-control"  id="formFile"/>
+                    <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
                 </div>
             }
         </ModalBody>
@@ -315,7 +330,7 @@
 @code {
     private dormitoryApps.Client.Pages.Modal.Error error;
     private dormitoryApps.Client.Pages.Modal.Success success;
-} 
+}
 <style>
     table {
         text-align: center;
