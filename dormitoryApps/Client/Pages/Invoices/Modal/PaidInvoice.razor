@@ -93,7 +93,7 @@
                 success.Details = "ชำระเงินเรียบร้อย";
                 success.Open();
                 await e.Hide();
-                item = new Invoice();
+                item = new Invoice(){Services = new List<InvoiceService>()};
                 await InvokeAsync(StateHasChanged);
                 return;
             }
@@ -305,7 +305,7 @@
             }
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary">บันทึกการจ่ายเงิน</Button>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">บันทึกการจ่ายเงิน</Button>
             <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">ยกเลิก</Button>
         </ModalFooter>
     </ModalContent>
