@@ -20,7 +20,7 @@ namespace dormitoryApps.Server.Repository
         }
         public async Task<bool> Update(Invoice item)
         {
-            var res = await _databases.Dorm.UpdateEntityAsync<Invoice>(item,$"Id={item.Id}");
+            var res = await _databases.Dorm.UpdateEntityAsync<Invoice>(item,$"Id='{item.Id}'");
             return res==1;
         }
         public async Task<bool> Delete(string InvoiceId)
