@@ -8,8 +8,6 @@
 @inject CurrentCustomerService _currentCustomerService;
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
-@inject MyServicesServices _myServicesServices;
-@inject SessionServices _sessionServices;
 
 @code {
     Modal e;
@@ -22,14 +20,10 @@
         };
     Room thisroom = new Room();
     Buildings building = new Buildings();
-    Officer officer = new Officer();
-    List<MyServices> myServices = new List<MyServices>();
     bool hasWater = false;
     bool hasElectricity = false;
     bool hasRental = false;
     bool hasService = false;
-    bool payValid = false;
-    bool isCash = true;
     public async void Open(string invoiceId)
     {
         await e.Show();
@@ -43,71 +37,16 @@
                 hasElectricity = item.Electricity != null && item.Electricity != new Electricity();
                 hasRental = item.RentalPrice > 0;
                 hasService = item.IsService;
-
             }
             else
             {
                 e.Hide();
-                return;
             }
         });
         current = await _currentCustomerService.Get(item.RentalId);
         thisroom = await _roomServices.GetRoom(current.RoomId);
         building = await _buildingServices.Get(thisroom.Building);
-        myServices = await _myServicesServices.GetMyServices();
-        officer = await _sessionServices.GetCurrentLogin();
         StateHasChanged();
-    }
-    public async void InputSlip(InputFileChangeEventArgs e)
-    {
-        var slip = e.File;
-
-        if (!slip.ContentType.Contains("image"))
-        {
-            return;
-        }
-        item.Slipname = slip.Name;
-        item.SlipType = slip.ContentType;
-        MemoryStream stream = new MemoryStream();
-        await slip.OpenReadStream().CopyToAsync(stream);
-        item.Slip = stream.ToArray();
-        stream.Close();
-        await InvokeAsync(StateHasChanged);
-    }
-    async void SaveChanges()
-    {
-        try
-        {
-            item.Ispaid = true;
-            item.Changes = item.Paid - item.GrandTotal;
-            item.Paidwith = isCash ? "เงินสด" : item.Paidwith;
-            item.PaidDate = DateTime.Now;
-            item.PaidOfficer = officer.Id;
-            payValid = item.Changes < 0;
-            if (payValid)
-            {
-                return;
-            }
-            var actionResult = await _invoiceServices.Update(item);
-            if (actionResult)
-            {
-                success.NextRequired = false;
-                success.Details = "ชำระเงินเรียบร้อย";
-                success.Open();
-                await e.Hide();
-                item = new Invoice();
-                await InvokeAsync(StateHasChanged);
-                return;
-            }
-            error.Details = "Something Went Wrong";
-            error.Open();
-        }
-        catch (Exception x)
-        {
-            error.Details = x.Message;
-            error.Open();
-        }
-        await InvokeAsync(StateHasChanged);
     }
 
 }
@@ -180,7 +119,7 @@
                 </tbody>
             </table>
             <h2>รายการ</h2>
-            <table class="table table-bordered border-primary">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>รายละเอียด</th>
@@ -192,7 +131,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (hasRental)
+                    @if(hasRental)
                     {
                         <tr>
                             <td>ค่าเช่าห้อง</td>
@@ -203,116 +142,20 @@
                             <td>@item.RentalPrice บาท</td>
                         </tr>
                     }
-                    @if (hasWater)
+                    @if(hasWater)
                     {
                         var water = item.Water;
                         <tr>
-                            <td>ค่าน้ำ</td>
+                             <td>ค่าน้ำ</td>
                             <td>@water.BeforeUnit</td>
                             <td>@water.CurrentUnit</td>
                             <td>@(water.CurrentUnit-water.BeforeUnit)</td>
-                            <td>@water.Price.ToString("#,###") บาท</td>
-                            <td>@water.Total.ToString("#,###") บาท</td>
-                        </tr>
+                            <td>@water. บาท</td>
+                            <td>@item.RentalPrice บาท</td>
+                         </tr>
                     }
-                    @if (hasElectricity)
-                    {
-                        var electricity = item.Electricity;
-                        <tr>
-                            <td>ค่าน้ำ</td>
-                            <td>@electricity.BeforeUnit</td>
-                            <td>@electricity.CurrentUnit</td>
-                            <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
-                            <td>@electricity.Price.ToString("#,###") บาท</td>
-                            <td>@electricity.Total.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (hasService)
-                    {
-                        <tr>
-                            <td colspan="6" class="table-primary">บริการเพิ่มเติม</td>
-                        </tr>
-                        @foreach (var serv in item.Services)
-                        {
-                            string serviceName = serv.ServiceId.HasValue ? myServices.Where(x => x.Id == serv.ServiceId.Value).FirstOrDefault().Name : serv.Specifiy;
-                            <tr>
-                                <td colspan="5">@serviceName</td>
-                                <td>@serv.Price.ToString("#,###") บาท</td>
-                            </tr>
-                        }
-                    }
-                    @if (item.Fee > 0)
-                    {
-                        <tr>
-                            <td colspan="5" class="table-danger">ค่าธรรมเนียม</td>
-                            <td class="table-danger">@item.Fee.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (item.Discount.HasValue)
-                    {
-                        <tr>
-                            <td colspan="5" class="table-success">ส่วนลด</td>
-                            <td class="table-success">-@item.Discount.Value.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (item.Tax > 0)
-                    {
-                        <tr>
-                            <td colspan="5" class="table-danger">ภาษี</td>
-                            <td class="table-danger">@item.Tax.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    <tr>
-                        <td colspan="5" class="table-primary">ยอดรวม</td>
-                        <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">รับเงินมา</td>
-                        <td>
-                            <input id="text2" @bind-value="item.Paid" type="number" class="form-control @(payValid ? "is-invalid":"")">
-                            <br />
-                            <small style="display:@(payValid ? "block":"none")">จำนวนเงินที่จ่ายต้องมากกว่า ราคารวม</small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">เงินทอน</td>
-                        <td>@(item.Paid-item.GrandTotal != 0 ? (item.Paid-item.GrandTotal).ToString("#,###") : "0") บาท</td>
-                    </tr>
                 </tbody>
-            </table>
-            <h2>จ่ายเงิน</h2>
-            <div class="form-group row">
-                <div class="col-4"></div>
-                <div class="col-8">
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="()=>{isCash=true; StateHasChanged();}" checked="@isCash">
-                        <label for="radio_0" class="custom-control-label">เงินสด</label>
-                    </div>
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="()=>{isCash=false; StateHasChanged();}" checked="@(!isCash)">
-                        <label for="radio_1" class="custom-control-label">โอนเงิน</label>
-                    </div>
-                </div>
-            </div>
-            @if (!isCash)
-            {
-                <div class="form-group row">
-                    <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
-                    <div class="col-8">
-                        <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
-                    </div>
-                </div>
-                <Div Class="container">
-                    <center>
-                    <img height="300" width="200" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
-                    </center>
-                </Div>
-                <br />
-                <div class="mb-3">
-                    <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
-                    <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
-                </div>
-            }
+               </table>
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-outline-primary" @onclick="SaveChanges">บันทึกการจ่ายเงิน</Button>
@@ -324,14 +167,4 @@
     table {
         text-align: center;
     }
-
-    small {
-        color: red;
-    }
 </style>
-<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
-<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
-@code {
-    dormitoryApps.Client.Pages.Modal.Error error;
-    dormitoryApps.Client.Pages.Modal.Success success;
-}
