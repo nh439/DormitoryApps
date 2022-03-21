@@ -1,0 +1,38 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject CurrentCustomerService _currentCustomerService;
+@inject RoomServices _roomServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceServices;
+@code {
+    Modal e;
+    CurrentCustomer current = new CurrentCustomer
+        {
+            Members = new List<RentalMember>()
+        };
+    Officer officer = new Officer();
+    Room room = new Room();
+    Buildings buildings = new Buildings();
+    Invoice bookingInvoice = new Invoice(){Services = new List<InvoiceService>()};
+
+}
+
+<Modal @ref="e" Style="color:black">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+       <ModalBody>
+           <center>
+               <h1>ทำสัญญาเข้าพัก</h1>
+           </center>
+       </ModalBody>
+       <ModalFooter>
+
+       </ModalFooter>
+    </ModalContent>
+</Modal>
