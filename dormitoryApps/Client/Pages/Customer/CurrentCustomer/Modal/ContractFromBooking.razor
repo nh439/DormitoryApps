@@ -19,31 +19,35 @@
     Buildings buildings = new Buildings();
     Invoice bookingInvoice = new Invoice() { Services = new List<InvoiceService>() };
     Officer bookingOfficer = new Officer();
+    decimal firstRental;
     string rentalmode;
     bool isloading = true;
     bool isMonthly = true;
     public async void Open(string rentalId)
     {
         await e.Show();
-        bool isMonthly = true;
         item = await _currentCustomerService.Get(rentalId);
         room = await _roomServices.GetRoom(item.RoomId);
         buildings = await _buildingServices.Get(room.Building);
         bookingOfficer = await _officerServices.GetById(item.EmployeeId);
         currentOfficer = await _sessionServices.GetCurrentLogin();
         isloading = false;
-        if (item.RentalType.Equals("Monthly")) rentalmode = "เช่าแบบรายเดือน";
-        else if (item.RentalType.Equals("Monthly"))
-        { 
-            rentalmode = "เช่าแบบรายวัน"; 
-            isMonthly = false; 
+        if (item.RentalType.Equals("Monthly")) {
+            rentalmode = "เช่าแบบรายเดือน";
+            isMonthly = true;
+        }
+        else if (item.RentalType.Equals("Daily"))
+        {
+            rentalmode = "เช่าแบบรายวัน";
+            isMonthly = false;
         }
         else
         {
             rentalmode = "ไม่ระบุวิธีการเช่า";
             isMonthly = false;
         }
-        StateHasChanged();
+        firstRental = item.Rental;
+        await InvokeAsync( StateHasChanged);
 
     }
 
@@ -109,6 +113,29 @@
   </div> 
                     </Div>
                         </Div>
+                        @if(isMonthly)
+                        {
+                            <Div Class="row">
+                                <Div Class="col">
+                                    <div class="form-group">
+    <label for="text1">ค่าเช่าเดือนแรก</label> 
+    <div class="input-group">
+      <input id="text1" @bind-value="firstRental" type="number" class="form-control"> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div> 
+                                </Div>
+                                <Div Class="col">
+                                   
+   <div class="form-group">
+    <label for="text">ผู้รัยจอง</label> 
+    <input id="text" value="@($"{bookingOfficer.Firstname} {bookingOfficer.Surname}")" type="text" class="form-control" readonly>
+  </div>
+                            </Div>
+                            </Div>
+                        }
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-outline-primary" Disabled="isloading">Save Changes</Button>
