@@ -105,7 +105,7 @@
                        <div class="form-group">
     <label for="text1">ค่าทำสัญญา</label> 
     <div class="input-group">
-      <input id="text1" @bind-value="item.BookingFee" type="text" class="form-control"> 
+      <input id="text1" @bind-value="item.BookingFee" type="text" class="form-control" readonly> 
       <div class="input-group-append">
         <div class="input-group-text">บาท</div>
       </div>
@@ -134,8 +134,63 @@
     <input id="text" value="@($"{bookingOfficer.Firstname} {bookingOfficer.Surname}")" type="text" class="form-control" readonly>
   </div>
                             </Div>
-                            </Div>
-                        }
+                </Div>
+            }
+            else
+            {
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+    <label for="text1">ค่าเข้าพัก</label> 
+    <div class="input-group">
+      <input id="text1" @bind-value="firstRental" type="text" class="form-control"> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div> 
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+    <label for="text">เข้าพักถึง</label> 
+    <input id="text" @bind-value="item.StayUntil" type="text" class="form-control" readonly>
+  </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+    <label for="text">จำนวนวันเข้าพัก</label> 
+    <input id="text" value="@(item.StayUntil.HasValue ? item.StayUntil.Value.Subtract(item.Stayed).Days : null)" type="text" class="form-control" readonly>
+  </div>
+                        </Div>
+                        <Div Class="col">
+                            <div class="form-group">
+    <label for="text">ผู้รัยจอง</label> 
+    <input id="text" value="@($"{bookingOfficer.Firstname} {bookingOfficer.Surname}")" type="text" class="form-control" readonly>
+  </div>
+                        </Div>
+                        </Div>
+            }
+             <h2>รายชื่อ</h2>
+            <hr />
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ชื่อ-สกุล</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var itm in item.Members)
+                    {
+                        <tr>
+                            <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
+                            <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-outline-primary" Disabled="isloading">Save Changes</Button>
@@ -144,3 +199,8 @@
         </ModalFooter>
     </ModalContent>
 </Modal>
+<style>
+table{
+    text-align:center;
+}
+</style>
