@@ -101,7 +101,7 @@
                         <button class="btn btn-info">รายละเอียด</button>
                         @if (customer.Booking)
                         {
-                            <button class="btn btn-success">ทำสัญญา</button>
+                            <button class="btn btn-success" @onclick="()=>CFB.Open(customer.Id)">ทำสัญญา</button>
                         }
                         else
                         {
@@ -149,6 +149,8 @@ StateHasChanged();
 <br />
 <h2 style="color:@remarkColor">* ตรงวันที่เข้าพัก หมายถึงวันที่ใบจองหมดอายุ</h2>
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking @ref="booking" />
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking @ref="CFB"/>
 @code {
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking booking;
+    private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking CFB;
 }
