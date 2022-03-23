@@ -17,7 +17,6 @@
     Officer currentOfficer = new Officer();
     Room room = new Room();
     Buildings buildings = new Buildings();
-    Invoice bookingInvoice = new Invoice() { Services = new List<InvoiceService>() };
     Officer bookingOfficer = new Officer();
     decimal firstRental;
     string rentalmode;
@@ -49,6 +48,59 @@
         firstRental = item.Rental;
         await InvokeAsync( StateHasChanged);
 
+    }
+    async void SaveChanges()
+    {
+        try
+        {
+            item.Booking=false;
+            item.EmployeeId = currentOfficer.Id;
+            var actionResult = await _currentCustomerService.Update(item);
+            if(!actionResult)
+            {
+                error.Details = "อัพเดทไม่สำเร็จ";
+                error.Open();
+                StateHasChanged();
+                return;
+            }
+            Invoice invoice = new Invoice()
+            {
+                Services = new List<InvoiceService>(),
+                IsService=true,
+                RentalId=item.Id,
+                Year=DateTime.Now.Year,
+                Month=DateTime.Now.Month,
+                InvoiceDate=DateTime.Now,
+                InvoiceOfficer=currentOfficer.Id,
+                RentalPrice=firstRental
+            };
+            invoice.Services.Add(new InvoiceService
+                {
+                    OtherService = true,
+                    Price = item.ContractFee,
+                    Specifiy = "ค่าทำสัญญา"
+                });
+            invoice.Services.Add(new InvoiceService
+                {
+                    OtherService = true,
+                    Price = item.DamageInsurance,
+                    Specifiy = "ค่าประกันของเสียหาย"
+                });
+            invoice = _invoiceServices.InvoiceCalculate(invoice);
+            await _invoiceServices.Create(invoice);
+            success.NextRequired = false;
+            success.Details="ทำสัญญาสำเร็จ โปรดชำระเงิน";
+            success.Open();
+            await e.Hide();
+
+
+        }
+        catch(Exception x)
+        {
+            error.Details = x.Message;
+            error.Open();
+        }
+        StateHasChanged();
     }
 
 }
@@ -191,14 +243,46 @@
                     }
                 </tbody>
             </table>
+            <br />
+            <br />
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+    <label for="text">ค่าทำสัญญา</label> 
+    <div class="input-group">
+      <input id="text" @bind-value="item.ContractFee" type="number" class="form-control"> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+    </div>
+                </Div>
+                <Div Class="col">
+                       <div class="form-group">
+    <label for="text">ค่าประกันความเสียหาย</label> 
+    <div class="input-group">
+      <input id="text" @bind-value="item.DamageInsurance" type="number" class="form-control"> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+    </div>
+                </Div>
+            </Div>         
         </ModalBody>
         <ModalFooter>
-            <Button Class="btn btn-outline-primary" Disabled="isloading">Save Changes</Button>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges" Disabled="@(isloading)">Save Changes</Button>
             <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">Discard</Button>
 
         </ModalFooter>
     </ModalContent>
 </Modal>
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+}
 <style>
 table{
     text-align:center;

@@ -151,7 +151,7 @@ namespace dormitoryApps.Client.Services
             var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
             var waterprice = (invoice.Water != null ? invoice.Water.Price : 0);
             var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
-            invoice.GrandTotal = serviceprice+waterprice + electricityprice+invoice.RentalPrice;
+            invoice.GrandTotal = serviceprice+waterprice + electricityprice+invoice.RentalPrice+invoice.Fee-(invoice.Discount.HasValue ? invoice.Discount.Value:0);
             invoice.ServicePrice = serviceprice;
             return invoice;
         }
