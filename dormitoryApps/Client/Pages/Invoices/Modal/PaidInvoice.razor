@@ -81,6 +81,15 @@
             item.Paidwith = isCash ? "เงินสด" : item.Paidwith;
             item.PaidDate = DateTime.Now;
             item.PaidOfficer = officer.Id;
+            if(item.Electricity != null && item.Electricity != new Electricity())
+            {
+                item.Electricity.Paid = true;
+            }
+             if(item.Water != null && item.Water != new Water())
+            {
+                item.Water.Paid = true;
+            }
+
             payValid = item.Changes < 0;
             if (payValid)
             {
