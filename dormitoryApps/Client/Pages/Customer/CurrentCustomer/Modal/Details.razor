@@ -1,0 +1,308 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject CurrentCustomerService _currentCustomerService;
+@inject RoomServices _roomServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceServices;
+
+@code {
+    Modal e;
+    CurrentCustomer item = new CurrentCustomer()
+        {
+            Members = new List<RentalMember>()
+        };
+    Officer officer = new Officer();
+    Room room = new Room();
+    Buildings buildings = new Buildings();
+    List<Invoice> relatedInvoices = new List<Invoice>();
+    List<Water> waterUsed = new List<Water>();
+    List<Electricity> electricityUsed = new List<Electricity>();
+    string rentalmode;
+    string status = string.Empty;
+    bool isMonthly;
+    public async void Open(string RentalId)
+    {
+        await e.Show();
+        item = await _currentCustomerService.Get(RentalId);
+        officer = await _officerServices.GetById(item.EmployeeId);
+        room = await _roomServices.GetRoom(item.RoomId);
+        buildings = await _buildingServices.Get(room.Building);
+        if (item.RentalType.Equals("Monthly"))
+        {
+            rentalmode = "เช่าแบบรายเดือน";
+            isMonthly = true;
+            status = item.Booking ? "ใบจอง" : (item.StayUntil.HasValue ? $"สัญญาเช่า (ออกวันที่ {item.StayUntil.Value})":"สัญญาเช่า");
+        }
+        else if (item.RentalType.Equals("Daily"))
+        {
+            rentalmode = "เช่าแบบรายวัน";
+            isMonthly = false;
+            status = item.Booking ? "ใบจอง" : "สัญญาเช่า";
+        }
+        else
+        {
+            rentalmode = "ไม่ระบุวิธีการเช่า";
+            isMonthly = false;
+            status = item.Booking ? "ใบจอง" : "สัญญาเช่า";
+        }
+        relatedInvoices = await _invoiceServices.GetByRental(item.Id);
+        electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        await InvokeAsync(StateHasChanged);
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<Modal Style="color:black" @ref="e">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>การเช่าที่ @item.Id</h1>
+            </center>
+            <br />
+            <br />
+           <Div Class="row">
+    <Div Class="col">
+        <div class="form-group">
+            <label for="text">รหัสการเช่า</label>
+            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+        </div>
+    </Div>
+    <Div Class="col">
+        <div class="form-group">
+            <label for="text">ห้อง</label>
+            <input id="text" @bind-value="room.RoomName" type="text" class="form-control" readonly>
+        </div>
+    </Div>
+</Div>
+<Div Class="row">
+    <Div Class="col">
+        <div class="form-group">
+            <label for="text">อาคาร</label>
+            <input id="text" @bind-value="buildings.Name" type="text" class="form-control" readonly>
+        </div>
+    </Div>
+    <Div Class="col">
+        <div class="form-group">
+            <label for="text">รูปแบบการเช่า</label>
+            <input id="text" @bind-value="rentalmode" type="text" class="form-control" readonly>
+        </div>
+    </Div>
+</Div>
+<Div Class="row">
+    <Div Class="col">
+        <div class="form-group">
+            <div class="form-group">
+                <label for="text">เข้าอยู่เมื่อ</label>
+                <input id="text" @bind-value="item.Stayed" type="text" class="form-control" readonly>
+            </div>
+        </Div>
+    </Div>
+    <Div Class="col">
+        <div class="form-group">
+            <label for="text1">ค่าทำสัญญา</label>
+            <div class="input-group">
+                <input id="text1" @bind-value="item.BookingFee" type="text" class="form-control" readonly>
+                <div class="input-group-append">
+                    <div class="input-group-text">บาท</div>
+                </div>
+            </div>
+        </div>
+    </Div>
+</Div>
+@if(isMonthly)
+            {
+                <Div Class="row">
+                    <Div Class="col">
+                         <div class="form-group">
+    <label for="text">ค่าเช่าต่อเดือน</label> 
+    <div class="input-group">
+      <input id="text" @bind-value="item.Rental" type="text" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div> 
+                    </Div>
+                    <Div Class="col">
+                         <div class="form-group">
+    <label for="text1">สถานะ</label> 
+    <input id="text1" @bind-value="status" type="text" class="form-control" readonly>
+  </div> 
+                    </Div>
+                </Div>
+            }
+            else
+            {
+                DateTime dt = item.StayUntil.HasValue ? item.StayUntil.Value : new DateTime();
+                <Div Class="row">
+                    <Div Class="col">
+                         <div class="form-group">
+    <label for="text">ค่าเช่า</label> 
+    <div class="input-group">
+      <input id="text" @bind-value="item.Rental" type="text" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div> 
+                    </Div>
+                    <Div Class="col">
+                         <div class="form-group">
+    <label for="text1">สถานะ</label> 
+    <input id="text1" @bind-value="status" type="text" class="form-control" readonly>
+  </div> 
+                    </Div>
+                </Div>
+                <Div Class="row">
+                     <Div Class="col">
+                         <div class="form-group">
+    <label for="text1">อยู่ถึง</label> 
+    <input id="text1" @bind-value="item.StayUntil" type="text" class="form-control" readonly>
+  </div> 
+                     </Div>
+                     <Div Class="col">
+                         <div class="form-group">
+    <label for="text">จำนวนวันที่อยู่</label> 
+    <div class="input-group">
+      <input id="text" name="text" value="@(item.StayUntil.HasValue ? dt.Subtract(item.Stayed).Days : "NaN")" type="text" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">วัน</div>
+      </div>
+    </div>
+  </div>
+                     </Div>
+                    </Div>
+
+            }
+            <h2>สมาชิก</h2>
+             <table class="table">
+                <thead>
+                    <tr>
+                        <th>ชื่อ-สกุล</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var itm in item.Members)
+                    {
+                        <tr>
+                            <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
+                            <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <br />
+            <br />
+            <h2>บิลจ่ายเงิน</h2>
+            <br />
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>เลขที่</th> @*1*@
+                    <th>งวด</th>  @*2*@
+                    <th>ค่าน้ำ</th> @*3*@
+                    <th>ค่าไฟ</th> @*4*@
+                    <th>ค่าบริการ</th>  @*5*@
+                    <th>ค่าเช่า</th>    @*6*@
+                    <th>รวม</th>     @*7*@
+                    <th>เป็นค่าเช่า</th> @*8*@
+                    <th>การชำระเงิน</th>@*9*@
+                    <th>วันที่ออก</th>   @*10*@
+                    <th>วันที่ชำระเงิน</th>@*11*@
+                </tr>
+                </thead>
+                <tbody>
+                    @foreach(var invoice in relatedInvoices.OrderByDescending(x=>x.InvoiceDate))
+                    {
+                        string statusColor = invoice.Iscancel ? "orange" : ( invoice.Ispaid ? "green" : "red");
+                        string invoiceStatus = invoice.Iscancel ? "ยกเลิก" : (invoice.PaidDate.HasValue ?$"ชำระแล้วเมื่อ {invoice.PaidDate.Value.ToString("dd MMMM yyyy HH:mm:ss")}":"ยังไม่ได้ชำระเงิน");
+                        <tr>
+                        @*1*@    <td>@invoice.Id</td>
+                        @*2*@    <td>@($"{invoice.Month}/{invoice.Year}")</td>
+                        @*3*@    <td>@(invoice.Water != null ?  $"{invoice.Water.Total.ToString("#,###")} บาท":"")</td>
+                        @*4*@    <td>@(invoice.Electricity != null ?  $"{invoice.Electricity.Total.ToString("#,###")} บาท":"")</td>
+                        @*5*@    <td>@(invoice.ServicePrice >  0 ?  $"{invoice.ServicePrice.ToString("#,###")} บาท":"")</td>                       
+                        @*6*@    <td>@(invoice.RentalPrice >  0 ?  $"{invoice.RentalPrice.ToString("#,###")} บาท":"")</td>
+                        @*7*@    <td>@($"{invoice.GrandTotal.ToString("#,###")} บาท")</td>
+                        @*8*@    <td>@if (invoice.RentalPrice > 0) { <i class="check icon"></i>}</td>
+                        @*9*@    <td>@if (invoice.Ispaid) { <i class="check icon"></i>}</td>
+                        @*10*@    <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                        @*11*@    <td style="color:@statusColor;font-weight:bold">@invoiceStatus</td>
+                        </tr>
+                    }
+                    @if ((waterUsed != null && waterUsed.Count >0) || (electricityUsed != null && electricityUsed.Count >0))
+                    {
+                    <tr>
+                            <td colspan="11" class="table-success">ไฟฟ้า และ น้ำประปา</td>
+                    </tr>
+                    <tr style="font-weight:bold">
+                        <td colspan="9">Description</td>
+                        <td colspan="2">Value</td>
+                    </tr>
+                    @if(waterUsed != null && waterUsed.Count >0)
+                        {
+                            <tr>
+                                <td colspan="9">ใช้น้ำประปารวม</td>
+                                <td colspan="2">@waterUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                            </tr>
+                            <tr>
+                                <td colspan="9">คิดเป็น</td>
+                                <td colspan="2">@waterUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                    @if(electricityUsed != null && electricityUsed.Count >0)
+                        {
+                            <tr>
+                                <td colspan="9">ใช้ไฟฟ้ารวม</td>
+                                <td colspan="2">@electricityUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                            </tr>
+                            <tr>
+                                <td colspan="9">คิดเป็น</td>
+                                <td colspan="2">@electricityUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                            </tr>
+                        }
+
+                    }
+                    <tr>
+                        <td colspan="11" class="table-success">สรุปการชำระ</td>
+                    </tr>
+                     <tr style="font-weight:bold">
+                        <td colspan="9">Description</td>
+                        <td colspan="2">Value</td>
+                    </tr>
+                    <tr>
+                        <td colspan="9">ยอดทั้งหมด</td>
+                        <td colspan="2">@relatedInvoices.Where(x=>!x.Iscancel).Select(x=>x.GrandTotal).Sum().ToString("#,###") บาท</td>
+                    </tr>
+                     <tr>
+                        <td colspan="9">ชำระแล้ว</td>
+                        <td colspan="2" style="color:green">@(relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum() > 0 ? relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###"):"0") บาท</td>
+                    </tr>
+                    <tr>
+                        <td colspan="9">ค้างชำระ</td>
+                        <td colspan="2" style="color:red">@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###"): "0" ) บาท</td>
+                    </tr>
+
+                </tbody>
+                </table>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<style>
+    table{
+        text-align:center;
+    }
+</style>

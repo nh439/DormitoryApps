@@ -51,6 +51,15 @@ namespace dormitoryApps.Server.Services
         }
         public async Task<bool> Update(Invoice item)
         {
+            if (item.Water != null && item.Water != new Water())
+            {
+                await _waterRepository.Update(item.Water);
+            }
+            if (item.Electricity != null && item.Electricity != new Electricity())
+            {
+                await _electricityRepository.Update(item.Electricity);
+            }
+
             return await _repository.Update(item);
         }
         public async Task<bool> Delete(string InvoiceId)
