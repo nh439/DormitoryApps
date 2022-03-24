@@ -48,7 +48,7 @@
 </center>
 <br />
 <br />
-<button class="btn btn-primary mx-1">ทำสัญญาเช่า</button>
+<button class="btn btn-primary mx-1" @onclick="()=>contract.Open()">ทำสัญญาเช่า</button>
 <button class="btn btn-success mx-1" @onclick="()=> booking.Open()">จองห้องเช่า</button>
 <br />
 <br />
@@ -151,8 +151,10 @@ StateHasChanged();
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking @ref="booking" />
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking @ref="CFB"/>
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Details @ref ="details"/>
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateContract @ref="contract"/>
 @code {
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking booking;
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking CFB;
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Details details;
+    private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateContract contract;
 }

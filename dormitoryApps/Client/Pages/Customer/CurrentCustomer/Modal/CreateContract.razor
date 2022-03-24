@@ -1,0 +1,510 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject CurrentCustomerService _currentCustomerService;
+@inject RoomServices _roomServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceServices;
+
+
+@code {
+    Modal e;
+    Officer Currentofficer = new Officer();
+    List<Room> rooms = new List<Room>();
+    List<Buildings> buildings = new List<Buildings>();
+    string Monthly = "Monthly";
+    CurrentCustomer item = new CurrentCustomer() { RentalType = "Monthly", Stayed = DateTime.Now, Booking = false };
+    bool IsMonthly = true;
+    string[] RentalType = { "Daily", "Monthly" };
+    Member[] members = new Member[0];
+    int counter = 0;
+    Member MainMember = new Member();
+    List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>();
+    int[] notAvaliablerooms = new int[0];
+    decimal firstRental;
+    bool roomValidate = false;
+    bool savedisabled = true;
+    bool mainNameValidate = false;
+    bool mainSurnameValidate = false;
+    bool stayUntilValidate = false;
+    bool stayValidate = false;
+    public async void Open()
+    {
+        await e.Show();
+        members = new Member[counter];
+        buildings = await _buildingServices.Get();
+        Currentofficer = await _sessionServices.GetCurrentLogin();
+        rooms = await _roomServices.GetEnabled();
+        currentCustomer = await _currentCustomerService.Get();
+        if (currentCustomer == null) currentCustomer = new List<CurrentCustomer>();
+        if (rooms == null) rooms = new List<Room>();
+        notAvaliablerooms = currentCustomer.Select(x => x.RoomId).ToArray();
+        StateHasChanged();
+    }
+    void RentalChanged(ChangeEventArgs e)
+    {
+        item.RentalType = e.Value.ToString();
+        IsMonthly = item.RentalType.ToLower() == Monthly.ToLower();
+        StateHasChanged();
+    }
+    void DeleteMember(int index)
+    {
+        members = members.Where((x, y) => y != index).ToArray();
+        counter = members.Length;
+        StateHasChanged();
+    }
+    void AddMember()
+    {
+        var oldMember = members;
+        counter++;
+        members = new Member[counter];
+        foreach (var (x, y) in members.Select((value, index) => (value, index)))
+        {
+            members[y] = x;
+        }
+        StateHasChanged();
+    }
+    async void Savechanges()
+    {
+        try
+        {
+            item.Booking = false;
+            if (!IsMonthly && item.StayUntil.HasValue)
+            {
+                item.StayUntil = item.StayUntil.Value.AddHours(14);
+            }
+            else
+            {
+                item.StayUntil = (DateTime?)null;
+            }
+            var unavailable = notAvaliablerooms.Where(x => x == item.RoomId).Count() > 0;
+            roomValidate = unavailable;
+            mainNameValidate = string.IsNullOrEmpty(MainMember.Firstname);
+            mainSurnameValidate = string.IsNullOrEmpty(MainMember.Surname);
+            stayValidate = (item.Stayed.Date < DateTime.Now.Date);
+            if (IsMonthly) stayUntilValidate = false;
+            else
+            {
+                stayUntilValidate = !item.StayUntil.HasValue || (item.StayUntil.Value.Date < DateTime.Now.Date || item.StayUntil.Value.Date < item.Stayed.Date);
+            }
+            if (unavailable || mainNameValidate || mainSurnameValidate || stayValidate || stayUntilValidate)
+            {
+                return;
+            }
+
+            item.EmployeeId = Currentofficer.Id;
+            item.ContractDate = DateTime.Now;
+            RentalMember mainRM = new RentalMember
+                {
+                    IsMain = true,
+                    Member = MainMember
+
+                };
+            List<RentalMember> rM = new List<RentalMember>();
+            foreach (var i in members)
+            {
+                if (!string.IsNullOrEmpty(i.Firstname) && !string.IsNullOrEmpty(i.Surname))
+                {
+                    rM.Add(new RentalMember
+                        {
+                            IsMain = false,
+                            Member = i
+                        });
+                }
+            }
+            rM.Add(mainRM);
+            item.Members = rM;
+            var actionResult = await _currentCustomerService.Create(item);
+            if (string.IsNullOrEmpty(actionResult))
+            {
+                error.Header = "!Oops";
+                error.Details = "บันทึกการจองไม่สำเร็จ";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            Invoice invoice = new Invoice
+                {
+                    IsService = true,
+                    Ispaid = false,
+                    Month = DateTime.Now.Month,
+                    RentalId = actionResult,
+                    Year = DateTime.Now.Year,
+                    InvoiceOfficer = Currentofficer.Id,
+                    InvoiceDate = DateTime.Now,
+                    RentalPrice=firstRental
+
+                };
+            invoice.Services = new List<InvoiceService>();
+               invoice.Services.Add(new InvoiceService{
+                   Price=item.ContractFee,
+                   Specifiy="ค่าทำสัญญา",
+                   OtherService=true
+               });
+               invoice.Services.Add(new InvoiceService{
+                   Price=item.DamageInsurance,
+                   Specifiy="ค่าประกันของเสียหาย",
+                   OtherService=true
+               });
+
+            invoice = _invoiceServices.InvoiceCalculate(invoice);
+            var invoiceResult = await _invoiceServices.Create(invoice);
+            if (!invoiceResult)
+            {
+                error.Header = "!Oops";
+                error.Details = "บันทึกใบเสร็จไม่สำเร็จ";
+                error.Open();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            success.Header = "ยินดีด้วย";
+            success.Details = "บันทึกการจองสำเร็จ";
+            success.NextRequired = false;
+            success.Open();
+            await e.Hide();
+            item = new CurrentCustomer() { RentalType = "Monthly", Stayed = DateTime.Now, Booking = true };
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        catch (Exception x)
+        {
+            error.Header = "!Oops";
+            error.Details = x.Message;
+            error.Open();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+    }
+    void RoomChanges(ChangeEventArgs e)
+    {
+        item.RoomId = int.Parse(e.Value.ToString());
+        if (item.RentalType == Monthly)
+        {
+            item.Rental = rooms.Where(x => x.Id == item.RoomId).FirstOrDefault().Rental;
+            firstRental = item.Rental;
+        }
+        savedisabled = false;
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<Modal Style="color:black" @ref="e">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>ทำสัญญาเช่าห้อง</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>ทำสัญญาเช่าห้อง</h1>
+            </center>
+            <br />
+            <br />
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="select" class="col-4 col-form-label">ห้องเลขที่</label>
+                        <div class="col-8">
+                            <select id="select" @onchange="RoomChanges" class="custom-select">
+                                <option selected disabled>โปรดเลือก...</option>
+                                @if (rooms == null)
+                                {
+                                    <option disabled>Loading...</option>
+                                }
+                                else
+                                {
+                                    foreach (var room in rooms.OrderBy(x => x.RoomName).OrderBy(x => x.Building))
+                                    {
+                                        var notAvalible = notAvaliablerooms.Where(x => x == room.Id).Count() > 0;
+                                        <option value="@room.Id" disabled="@notAvalible" class="@(notAvalible ? "table-secondary":"")">@($"{room.RoomName} ({buildings.Where(x=>x.Id==room.Building).FirstOrDefault().Name})")</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <small style="display:@(roomValidate ? "block":"none")">Room Is Unavailable </small>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group row">
+                        <label for="RentalType" class="col-4 col-form-label">ประเภทการเข้าพัก</label>
+                        <div class="col-8">
+                            <select id="RentalType" @onchange="RentalChanged" class="custom-select">
+                                @foreach (var i in RentalType)
+                                {
+                                    <option value="@i" selected="@(i==Monthly)">@i</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            @if (IsMonthly)
+            {
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เข้าพักภายในวันที่</label>
+                            <input id="text" @bind-value="item.Stayed" type="date" class="form-control @(stayValidate ? "is-invalid":"")">
+                        </div>
+                        <small style="display:@(stayValidate ? "block":"none")">ห้ามเข้าพักก่อนวันปัจจุบัน</small>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="price">ค่าเข้าพัก(ต่อเดือน)</label>
+                            <div class="input-group">
+                                <input id="price" @bind-value="item.Rental" type="number" step="0.01" min="1" class="form-control">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+            }
+            else
+            {
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="Day">เข้าพักวันที่</label>
+                            <input id="Day" @bind-value="item.Stayed" min="@DateTime.Now.Date" type="date" class="form-control @(stayValidate ? "is-invalid":"")">
+                        </div>
+                        <small style="display:@(stayValidate ? "block":"none")">ห้ามเข้าพักก่อนวันปัจจุบัน</small>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="Day">ออกวันที่</label>
+                            <input id="Day" @bind-value="item.StayUntil" min="@item.Stayed.AddDays(1)" type="date" class="form-control @(stayUntilValidate ? "is-invalid":"")">
+                        </div>
+                        <small style="display:@(stayUntilValidate ? "block":"none")">ห้าม Check Out ก่อนวัน Check In</small>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="price">ค่าเข้าพัก(รวม)</label>
+                            <div class="input-group">
+                                <input id="price" @bind-value="item.Rental" type="number" step="0.01" min="1" class="form-control">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="day">จำนวนวันเข้าพัก</label>
+                            <div class="input-group">
+                                <input id="day" value="@(item.StayUntil.HasValue ? item.StayUntil.Value.Date.Subtract(item.Stayed.Date).Days : 0)" class="form-control" readonly>
+                                <div class="input-group-append">
+                                    <div class="input-group-text">วัน</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+            }
+            <div class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">รหัสพนักงาน</label>
+                        <input id="text" name="text" type="text" class="form-control" readonly @bind-value="Currentofficer.Id">
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">พนักงานผู้รับ</label>
+                        <input id="text" name="text" type="text" class="form-control" readonly value="@($"{Currentofficer.Firstname} {Currentofficer.Surname}")">
+                    </div>
+                </Div>
+            </div>
+            <div class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ค่าทำสัญญา</label>
+                        <div class="input-group">
+                            <input id="text" @bind-value="item.ContractFee" type="number" class="form-control">
+                            <div class="input-group-append">
+                                <div class="input-group-text">บาท</div>
+                            </div>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ค่าประกันทรัพย์สิน</label>
+                        <div class="input-group">
+                            <input id="text" @bind-value="item.DamageInsurance" type="number" class="form-control">
+                            <div class="input-group-append">
+                                <div class="input-group-text">บาท</div>
+                            </div>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ค่าเช่าเดือนนี้</label>
+                        <div class="input-group">
+                            <input id="text" @bind-value="firstRental" type="number" class="form-control">
+                            <div class="input-group-append">
+                                <div class="input-group-text">บาท</div>
+                            </div>
+                        </div>
+                    </div>
+                </Div>
+            </div>
+            <h1>ผู้พักอาศัย</h1>
+            <Div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="select">คำนำหน้า</label>
+                            <div>
+                                <select id="select" @bind="MainMember.Prefix" class="custom-select">
+                                    <option value="นาย">นาย</option>
+                                    <option value="นาง">นาง</option>
+                                    <option value="นางสาว">นางสาว</option>
+                                    <option value="อื่นๆ">อื่นๆ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="text1">ชื่อ</label>
+                            <input id="text1" @bind-value="MainMember.Firstname" type="text" class="form-control @(mainNameValidate ? "is-invalid":"")">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="text2">สกุล</label>
+                            <input id="text2" @bind-value="MainMember.Surname" type="text" class="form-control @(mainSurnameValidate ? "is-invalid":"")">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="text3">โทรศัพท์</label>
+                            <input id="text3" @bind-value="MainMember.Tel" type="tel" class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="select2">ช่องทางติดต่อ</label>
+                            <div>
+                                <select id="select2" @bind="MainMember.SocialType" class="custom-select">
+                                    <option value="NO">No SocialMedia</option>
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Line">Line</option>
+                                    <option value="Telegram">Telegram</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="text4">ชื่อ</label>
+                                <input id="text4" @bind-value="MainMember.SocialId" type="text" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+            </Div>
+            @for (int i = 0; i < members.Length; i++)
+            {
+                int j = i;
+                if (members[j] == null) members[j] = new Member();
+                <Div>
+                    <h2>คนที่ @(j+1)</h2>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="select">คำนำหน้า</label>
+                                <div>
+                                    <select id="select" @bind="members[j].Prefix" class="custom-select">
+                                        <option value="นาย">นาย</option>
+                                        <option value="นาง">นาง</option>
+                                        <option value="นางสาว">นางสาว</option>
+                                        <option value="อื่นๆ">อื่นๆ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="text1">ชื่อ</label>
+                                <input id="text1" @bind-value="members[j].Firstname" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="text2">สกุล</label>
+                                <input id="text2" @bind-value="members[j].Surname" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="text3">โทรศัพท์</label>
+                                <input id="text3" @bind-value="members[j].Tel" type="tel" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="select2">ช่องทางติดต่อ</label>
+                                <div>
+                                    <select id="select2" @bind="members[j].SocialType" class="custom-select">
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Line">Line</option>
+                                        <option value="Telegram">Telegram</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="text4">ชื่อ</label>
+                                <input id="text4" @bind-value="members[j].SocialId" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <br>
+                                <Button Class="btn btn-danger" @onclick="()=>DeleteMember(j)"><i class="trash icon"></i></Button>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                </Div>
+            }
+            <div class="form-group">
+                <button name="submit" @onclick="AddMember" class="btn btn-primary"><i class="plus icon"></i> เพิ่มผู้พักอาศัย</button>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="Savechanges" disabled="@savedisabled">ทำการจองห้อง</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">ยกเลิก</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+@code
+{
+    private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+}
+<style>
+    small {
+        color: red
+    }
+</style>
