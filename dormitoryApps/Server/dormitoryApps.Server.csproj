@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hangfire" Version="1.7.28" />
+    <PackageReference Include="Hangfire.SQLite.Core" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.3" />
     <PackageReference Include="PagedList.Mvc" Version="4.5.0" />
     <PackageReference Include="RocketSQL" Version="1.1.9" />
@@ -15,6 +17,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Client\dormitoryApps.Client.csproj" />
     <ProjectReference Include="..\Shared\dormitoryApps.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Job\" />
   </ItemGroup>
 
 

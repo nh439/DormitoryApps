@@ -1,12 +1,20 @@
-using Microsoft.AspNetCore.ResponseCompression;
 using dormitoryApps.Server.Databases;
 using dormitoryApps.Server.Repository;
 using dormitoryApps.Server.Services;
 using dormitoryApps.Server.Securites;
+using Hangfire;
+using Hangfire.SQLite;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Hangfire.Server;
+using Hangfire.Client;
+using Hangfire.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+ConfigurationManager configuration = builder.Configuration;
+IWebHostEnvironment environment = builder.Environment;
+var conString = configuration.GetConnectionString("Hangfire");
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -73,6 +81,8 @@ builder.Services.AddScoped<IRoomTemplateServices,RoomTemplateServices>();
 builder.Services.AddScoped<IMemberServices,MemberServices>();
 builder.Services.AddScoped<IRentalMemberServices,RentalMemberServices>();
 #endregion
+builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
