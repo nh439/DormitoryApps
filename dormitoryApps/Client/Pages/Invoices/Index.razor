@@ -24,7 +24,7 @@
             if (!x) page = 1;
         }
         Get();
-        timer = new Timer(1000);
+        timer = new Timer(2000);
         timer.Elapsed += Tick;
         timer.Enabled=true;
         StateHasChanged();

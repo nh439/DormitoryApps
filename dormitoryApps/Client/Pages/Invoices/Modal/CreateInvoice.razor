@@ -11,6 +11,8 @@
 @inject MyServicesServices _myServicesServices;
 @inject SessionServices _sessionServices
 @inject OfficerServices _officerServices;
+@inject ElectricityService _electricityService;
+@inject WaterService _waterService;
 
 @code {
     Modal e;
@@ -18,14 +20,22 @@
     CurrentCustomer selectedCustomer = new CurrentCustomer();
     Room room = new Room();
     Buildings buildings = new Buildings();
+    List<Water> waters = new List<Water>();
+    List<Electricity> electricities = new List<Electricity>();
+    Water selectedwater = new Water();
+    Electricity selectedelectricity = new Electricity();
     bool selectedRental = false;
+    bool isNotRental = false;
+    bool isNotElectricity = false;
+    bool isNotWater = false;
     Invoice item = new Invoice()
         {
             Ispaid = false
         };
     public async void Open()
     {
-        currentCustomers =  new string[0];
+        currentCustomers = new string[0];
+        StateHasChanged();
         selectedCustomer = new CurrentCustomer();
         room = new Room();
         buildings = new Buildings();
@@ -38,6 +48,24 @@
         selectedCustomer = await _currentCustomerService.Get(e.Value.ToString());
         room = await _roomServices.GetRoom(selectedCustomer.RoomId);
         buildings = await _buildingServices.Get(room.Building);
+        var oldInv = await _invoiceServices.GetByRental(selectedCustomer.Id);
+        isNotRental = oldInv.Where(x => x.Month == DateTime.Now.Month
+            && x.Year == DateTime.Now.Year
+            && x.RentalPrice > 0
+            && !x.Iscancel).Count() > 0;
+        await _electricityService.GetByRental(selectedCustomer.Id).ContinueWith(x =>
+        {
+            electricities = x.Result.Where(x => x.Paid).ToList();
+            if (electricities == null) electricities = new List<Electricity>();
+            isNotElectricity = electricities.Count == 0;
+        });
+        await _waterService.GetByRental(selectedCustomer.Id).ContinueWith(x =>
+        {
+            waters = x.Result.Where(x => x.Paid).ToList();
+            if (waters == null) electricities = new List<Electricity>();
+            isNotWater = waters.Count == 0;
+        });
+        item.RentalPrice = !isNotRental ? selectedCustomer.Rental : 0;
         StateHasChanged();
     }
 }
@@ -62,7 +90,7 @@
                         <div>
                             <select id="rentalId" @onchange="IdChanges" class="custom-select">
                                 <option selected disabled>โปรดเลือก</option>
-                                @foreach(var itm in currentCustomers.OrderByDescending(x=>x))
+                                @foreach (var itm in currentCustomers.OrderByDescending(x => x))
                                 {
                                     <option value="@itm">@itm</option>
                                 }
@@ -126,7 +154,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(var itm in selectedCustomer.Members)
+                        @foreach (var itm in selectedCustomer.Members)
                         {
                             <tr>
                                 <td>@($"{itm.Member.Firstname} {itm.Member.Surname}")</td>
@@ -136,13 +164,48 @@
                     </tbody>
                 </table>
             }
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ค่าเช่า</label>
+                        <div class="input-group">
+                            <input id="text" @bind-value="item.RentalPrice" type="text" class="form-control" readonly="@isNotRental">
+                            <div class="input-group-append">
+                                <div class="input-group-text">บาท</div>
+                            </div>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col"></Div>
+            </Div>
+            @if (!isNotWater)
+            {
+                <h2>ค่าน้ำ</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">งวด(เดือน/ปี)</label>
+                            <div>
+                                <select id="select" name="select" class="custom-select">
+                                   <option selected disabled>โปรดเลือก...</option>
+                                   @foreach(var itm in waters.Select(x=>$"{x.month}/{x.Year}"))
+                                    {
+                                        <option value="@itm">@itm</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col"></Div>
+                </Div>
+            }
         </ModalBody>
         <ModalFooter></ModalFooter>
     </ModalContent>
 </Modal>
 
 <style>
-table{
-    text-align:center;
-}
+    table {
+        text-align: center;
+    }
 </style>
