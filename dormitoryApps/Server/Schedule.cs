@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using Hangfire;
+using dormitoryApps.Server.Services.Job;
 
 namespace dormitoryApps.Server
 {
@@ -9,8 +11,9 @@ namespace dormitoryApps.Server
     {
         private readonly RequestDelegate _next;
 
-        public Schedule(RequestDelegate next)
+        public Schedule(RequestDelegate next, IJobServices jobServices)
         {
+            RecurringJob.AddOrUpdate(() => jobServices.Run(), Cron.Minutely);
             _next = next;
         }
 

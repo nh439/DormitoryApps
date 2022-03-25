@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Hangfire.Server;
 using Hangfire.Client;
 using Hangfire.Common;
+using dormitoryApps.Server.Services.Job;
+using dormitoryApps.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +82,7 @@ builder.Services.AddScoped<IRoomfurnTemplateServices,RoomfurnTemplateServices>()
 builder.Services.AddScoped<IRoomTemplateServices,RoomTemplateServices>();
 builder.Services.AddScoped<IMemberServices,MemberServices>();
 builder.Services.AddScoped<IRentalMemberServices,RentalMemberServices>();
+builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
 builder.Services.AddHangfireServer();
@@ -111,4 +114,6 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 app.UseAuthentication();
+app.UseSchedule();
+
 app.Run();

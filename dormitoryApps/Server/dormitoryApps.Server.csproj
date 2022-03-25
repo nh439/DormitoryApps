@@ -19,9 +19,5 @@
     <ProjectReference Include="..\Shared\dormitoryApps.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\Job\" />
-  </ItemGroup>
-
 
 </Project>
