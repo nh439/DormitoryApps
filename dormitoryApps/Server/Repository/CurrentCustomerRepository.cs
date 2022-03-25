@@ -51,6 +51,12 @@ namespace dormitoryApps.Server.Repository
             var currentCustomer = await _databases.Dorm.SelectEntitiesAsync<CurrentCustomer>(TableName,set);       
             return currentCustomer.FirstOrDefault();
         }
+        
+        public async Task<string[]> GetIdList()
+        {
+            var res = await _databases.Dorm.SelectDistinctAsync(TableName, "Id");
+            return res;
+        }
         public string GenerateId()
         {
             var currentCustomerId = _databases.Dorm.SelectDistinct(TableName, "Id");

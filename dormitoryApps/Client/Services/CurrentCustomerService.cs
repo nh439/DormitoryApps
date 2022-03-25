@@ -77,8 +77,11 @@ namespace dormitoryApps.Client.Services
             return await result.Content.ReadFromJsonAsync<bool>();
         }
 
-
-
-
+        public async Task<string[]> GetIdList()
+        {
+            await _sessionServices.RequiredPermission();
+            var result = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/idlist");
+            return result;
+        }
     }
 }
