@@ -1,0 +1,75 @@
+﻿@using Blazorise;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject InvoiceServices _invoiceServices;
+
+
+@code {
+    Modal e;
+    Invoice item = new Invoice();
+    bool commentValidate = false;
+    public async void Open(string invoiceId)
+    {
+        item = await _invoiceServices.GetById(invoiceId);
+        await e.Show();     
+    }
+    async void SaveChanges()
+    {
+        try{
+            commentValidate = string.IsNullOrEmpty(item.CancellationComment);
+            if(commentValidate)return;
+            item.Iscancel = true;
+            var actionResult = await _invoiceServices.Update(item);
+            if(actionResult)
+            {
+                success.NextRequired = false;
+                success.Details = "ยกเลิกสำเร็จ";
+                await e.Hide();
+                success.Open();
+                StateHasChanged();
+                return;
+            }
+             error.Details="ยกเลิกไม่สำเร็จ";
+            error.Open();
+        }
+        catch(Exception x)
+        {
+            error.Details=x.Message;
+            error.Open();
+        }
+        StateHasChanged();
+    }
+}
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>ยกเลิกบิล</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>คุณต้องการยกเลิก รายการชำระเงินที่ @item.Id</h1>
+            </center>
+
+            <button class="btn btn-outline-info" @onclick="()=>detail.Open(item.Id)">คลิกที่นี่เพื่อดูรายละเอียด</button>
+            <br />
+            <br />
+            <div class="form-group">
+                <label for="textarea">เหตุผลในการยกเลิก*</label>
+                <textarea id="textarea" @bind="item.CancellationComment" cols="40" rows="5" class="form-control @(commentValidate ? "is-invalid":"")"></textarea>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="SaveChanges">ยืนยันการยกเลิก</Button>
+            <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">ปิดหน้าต่าง</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<Detail @ref="detail" />
+<dormitoryApps.Client.Pages.Modal.Error @ref="error" />
+<dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+@code {
+    Detail detail;
+    private dormitoryApps.Client.Pages.Modal.Error error;
+    private dormitoryApps.Client.Pages.Modal.Success success;
+}

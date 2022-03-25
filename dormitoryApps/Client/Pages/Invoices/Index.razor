@@ -65,7 +65,7 @@
 </center>
 <br />
 <br />
-<button class="btn btn-primary mx-1"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
+<button class="btn btn-primary mx-1" @onclick="()=>create.Open()"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
 <button class="btn btn-warning mx-1"><i class="search icon"></i>  Advanced Search</button>
 <br />
 <br />
@@ -137,7 +137,7 @@
 
                         @if(!invoice.Iscancel && !invoice.Ispaid)
                         {
-                            <button class="btn btn-danger mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ยกเลิกใบชำระ">
+                            <button class="btn btn-danger mx-1" data-bs-toggle="tooltip" @onclick="()=>cancellation.Open(invoice.Id)" data-bs-placement="bottom" title="ยกเลิกใบชำระ">
                             <i class="trash icon"></i>
                         </button>
                             <button class="btn btn-success mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ชำระเงิน" @onclick="()=>paidInvoice.Open(invoice.Id)">
@@ -171,9 +171,13 @@
 </nav>
 <dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice @ref="paidInvoice"></dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice>
 <dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
+<dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation"/>
+<dormitoryApps.Client.Pages.Invoices.Modal.CreateInvoice @ref="create"/>
 @code{
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
+    dormitoryApps.Client.Pages.Invoices.Modal.Cancellation cancellation;
+    dormitoryApps.Client.Pages.Invoices.Modal.CreateInvoice create;
 }
 <style>
     table {

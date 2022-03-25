@@ -35,7 +35,7 @@ namespace dormitoryApps.Server.Controllers
             }
             if(page.HasValue)
             {
-                return Ok(invoices.OrderByDescending(x=>x.InvoiceDate).OrderBy(x=>x.Ispaid).ToPagedList(page.Value, 20));
+                return Ok(invoices.OrderByDescending(x=>x.InvoiceDate).OrderBy(x=>x.Ispaid).OrderBy(x=>x.Iscancel).ToPagedList(page.Value, 20));
             }
             return Ok(invoices);
         }

@@ -35,6 +35,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string Slipname { get; set; }
 		[StringLength(45)]
 		public string SlipType { get; set; }
+		public string? CancellationComment { get; set; }
 
 		public virtual Electricity Electricity { get; set; }
 		public virtual Water Water { get; set; }

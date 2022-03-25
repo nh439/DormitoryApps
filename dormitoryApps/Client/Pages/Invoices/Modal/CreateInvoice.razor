@@ -1,0 +1,28 @@
+﻿@using Blazorise;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject InvoiceServices _invoiceServices;
+@inject MyServicesServices _myServices;
+@inject ElectricityService _electricityService;
+@inject WaterService _waterService;
+@inject CurrentCustomerService _currentCustomerService;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+@inject MyServicesServices _myServicesServices;
+@inject SessionServices _sessionServices
+@inject OfficerServices _officerServices;
+
+@code {
+    Modal e;
+    public void Open()
+    {
+        e.Show();
+    }
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader></ModalHeader>
+        <ModalBody></ModalBody>
+        <ModalFooter></ModalFooter>
+    </ModalContent>
+</Modal>

@@ -291,17 +291,17 @@
                                 <input id="text" @bind-value="item.Paidwith" type="text" class="form-control" readonly>
                             </div>
                         </div>
-                        </Div>
-                        <Div class="col">
-                            <div class="form-group row">
-                                <label for="text" class="col-4 col-form-label">References</label>
-                                <div class="col-8">
-                                    <input id="text" @bind-value="item.TransactionId" type="text" class="form-control" readonly>
-                                </div>
+                    </Div>
+                    <Div class="col">
+                        <div class="form-group row">
+                            <label for="text" class="col-4 col-form-label">References</label>
+                            <div class="col-8">
+                                <input id="text" @bind-value="item.TransactionId" type="text" class="form-control" readonly>
                             </div>
-                        </Div>             
+                        </div>
+                    </Div>
                 </Div>
-                @if(item.Slip != null)
+                @if (item.Slip != null)
                 {
                     <center>
                         <h2>หลักฐานการโอนเงิน</h2>
@@ -309,6 +309,15 @@
                     </center>
                 }
 
+            }
+            @if (item.Iscancel)
+            {
+                <div class="form-group">
+                    <label for="textarea">เหตุผลในการยกเลิก*</label>
+                    <textarea id="textarea" readonly cols="40" rows="5" class="form-control">
+                        @item.CancellationComment
+                    </textarea>
+                </div>
             }
         </ModalBody>
         <ModalFooter>
