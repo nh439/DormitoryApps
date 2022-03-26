@@ -17,6 +17,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Electricity>> GetByYear(int year);
         Task<List<Electricity>> GetByMonth(int year, int month);
         Task<Electricity> Getone(string RentalId, int month, int year);
+        Task<Electricity> GetByInvoiceId(string invoiceId);
         Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria criteria);
     }
     public class ElectricityServices : IElectricityServices
@@ -69,6 +70,10 @@ namespace dormitoryApps.Server.Services
         public async Task<Electricity> Getone(string RentalId, int month, int year)
         {
             return await _repository.Getone(RentalId, month, year); 
+        }
+        public async Task<Electricity> GetByInvoiceId(string invoiceId)
+        {
+            return await _repository.GetByInvoiceId(invoiceId);
         }
         public async Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria criteria)
         {
