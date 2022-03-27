@@ -19,8 +19,8 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Room>> GetRooms()
         {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            var Havepermission = true;
+            if (Havepermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>(ControllerName);
                 return res;
@@ -29,8 +29,8 @@ namespace dormitoryApps.Client.Services
         }
          public async Task<Room> GetRoom(int Id)
         {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            var Havepermission = true;
+            if (Havepermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<Room>($"{ControllerName}?id={Id}");
                 return res;
@@ -39,8 +39,8 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Room>> GetByBuilding(int buildingId)
         {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            var Havepermission = true;
+            if ( Havepermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/building/{buildingId}");
                 return res;
@@ -49,8 +49,8 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Room>> GetHasAircondition()
         {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            var Havepermission = true;
+            if (Havepermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/air");
                 return res;
@@ -59,8 +59,8 @@ namespace dormitoryApps.Client.Services
         }
          public async Task<List<Room>> GetEnabled()
         {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            var Havepermission = true;
+            if ( Havepermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/Enabled");
                 return res;

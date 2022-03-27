@@ -21,7 +21,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetElectricity()
         {
-            var havePermission = await  _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>(ControllerName);
@@ -31,7 +31,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetByYear(int Year)
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>($"{ControllerName}?Year={Year}");
@@ -41,7 +41,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetByMonth(int Year,int Month)
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>($"{ControllerName}?Year={Year}&Month={Month}");
@@ -51,7 +51,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetByRental(string RentalId)
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>($"{ControllerName}/Rental/{RentalId}");
@@ -61,7 +61,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetPaidList()
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>($"{ControllerName}/Paid");
@@ -71,7 +71,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>> GetUnPaidList()
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Electricity>>($"{ControllerName}/UnPaid");
@@ -81,7 +81,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Electricity>?> GetAdvancedSearch(ElectricityAndWaterAdvancedSearchCriteria criteria)
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.PostAsJsonAsync(ControllerName,criteria);
@@ -91,7 +91,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<Electricity> GetOne(int Year,int Month,string RentalId)
         {
-            var havePermission = await _sessionServices.Permissioncheck();
+            var havePermission = true;
             if (havePermission)
             {
                 var res = await _httpClient.GetFromJsonAsync<Electricity>($"{ControllerName}?Year={Year}&Month={Month}&RentalId={RentalId}");

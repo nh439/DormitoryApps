@@ -69,7 +69,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Invoice>?> GetByPage(int page,int year,int month)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new List<Invoice>();
@@ -80,7 +80,7 @@ namespace dormitoryApps.Client.Services
 
         public async Task<List<Invoice>?> GetByRental(string RentalId)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new List<Invoice>();
@@ -90,7 +90,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<Invoice?> GetById(string Id)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new Invoice();
@@ -100,7 +100,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Invoice>?> GetPaid()
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new List<Invoice>();
@@ -110,7 +110,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Invoice>?> GetUnPaid()
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new List<Invoice>();
@@ -120,7 +120,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Invoice>?> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
+            var Havepermission = true;
             if (!Havepermission)
             {
                 return new List<Invoice>();

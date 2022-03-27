@@ -26,25 +26,29 @@
     Water selectedwater = new Water();
     Electricity selectedelectricity = new Electricity();
     List<MyServices> services = new List<MyServices>();
-    InvoiceService[] invoiceServices = new InvoiceService[1];
+    InvoiceService[] invoiceServices = new InvoiceService[0];
     bool selectedRental = false;
     bool isNotRental = true;
     bool isNotElectricity = true;
     bool isNotWater = true;
     bool rentalLoading = false;
+    string status = string.Empty;
+    int serviceCounter = 0;
     Invoice item = new Invoice()
         {
             Ispaid = false
         };
     protected override async void OnInitialized()
     {
+        await _sessionServices.RequiredPermission();
         rentalLoading = true;
-        await Task.Delay(1);
+        await Task.Delay(1);     
         currentCustomers = new string[0];
         selectedCustomer = new CurrentCustomer();
         room = new Room();
         buildings = new Buildings();
         currentCustomers = await _currentCustomerService.GetIdList();
+        currentCustomers = currentCustomers.OrderByDescending(x => x).ToArray();
         services = await _myServicesServices.GetMyServices();
         if (services == null) services = new List<MyServices>();
         rentalLoading = false;
@@ -79,9 +83,11 @@
             isNotWater = waters.Count == 0;
         });
         item.RentalPrice = !isNotRental ? selectedCustomer.Rental : 0;
+        InvoiceService[] invoiceServices = new InvoiceService[0];
+        serviceCounter = 0;
         rentalLoading = false;
         await Task.Delay(1);
-        Console.WriteLine($"Fetching Time : {DateTime.Now.Subtract(start).Milliseconds} ms");
+        Console.WriteLine($"Fetching Time : {DateTime.Now.Subtract(start).TotalSeconds} s");
         StateHasChanged();
     }
     void WaterChange(ChangeEventArgs e)
@@ -108,6 +114,24 @@
         int year = int.Parse(monthYear.Split('/')[1]);
         selectedelectricity = electricities.Where(x => x.month == month && x.Year == year).FirstOrDefault();
     }
+    void AddServices()
+    {
+        serviceCounter++;
+        var oldValue = invoiceServices;
+        invoiceServices = new InvoiceService[serviceCounter];
+        for(int i = 0;i<oldValue.Length;i++)
+        {
+            invoiceServices[i] = oldValue[i];
+
+        }
+        StateHasChanged();
+    }
+    void RemoveRow(int index)
+    {
+        invoiceServices = invoiceServices.Where((x, y) => y != index).ToArray();
+        serviceCounter = invoiceServices.Length;
+        StateHasChanged();
+    }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -125,7 +149,7 @@
             <div>
                 <select id="rentalId" @onchange="IdChanges" class="custom-select">
                     <option selected disabled>โปรดเลือก</option>
-                    @foreach (var itm in currentCustomers.OrderByDescending(x => x))
+                    @foreach (var itm in currentCustomers)
                     {
                         <option value="@itm">@itm</option>
                     }
@@ -146,7 +170,7 @@
         <Div Class="loader">
         </Div>
         <br>
-        <h1>กำลังโหลด</h1>
+        <h1>กำลังเตรียมข้อมูล</h1>
     </center>
 }
 else
@@ -387,14 +411,20 @@ else
                             0 บาท
                         </td>
                         <td>
-                            <Button Class="btn btn-danger"><i class="trash alternate outline icon"></i></Button>
+                            <Button Class="btn btn-danger" @onclick="()=>RemoveRow(j)"><i class="trash alternate outline icon"></i></Button>
                         </td>
                     </tr>
                 }
             }
+            else
+            {
+                <tr>
+                    <th colspan="4">ไม่มีบริการ</th>
+                </tr>
+            }
         </tbody>
     </table>
-    <Button Class="btn btn-primary"><i class="plus icon"></i></Button>
+    <Button Class="btn btn-primary" @onclick="AddServices"><i class="plus icon"></i></Button>
 }
 
 <style>

@@ -6,6 +6,7 @@
 @using Microsoft.Extensions.Primitives;
 @inject InvoiceServices _invoiceServices;
 @inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
 @inject NavigationManager navigationManager;
 @inject IJSRuntime jsRuntime;
 @implements IDisposable;
@@ -15,7 +16,7 @@
     Timer timer = new Timer();
     int page = 1;
     int count;
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         StringValues queryres;
         var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
@@ -23,6 +24,12 @@
         {
             var x = int.TryParse(queryres, out page);
             if (!x) page = 1;
+        }
+        var permissioncheck = await _sessionServices.Permissioncheck();
+        if(!permissioncheck)
+        {
+            invoiceList = new List<Invoice>();
+            return;
         }
         Get();
         timer = new Timer(1000);

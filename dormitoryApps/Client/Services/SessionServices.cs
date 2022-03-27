@@ -63,6 +63,13 @@ namespace dormitoryApps.Client.Services
             var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Permissioncheck", sessionId);
             return result.IsSuccessStatusCode;
         }
+        public async Task<bool> ExpiredCheck()
+        {
+            var sessionId = await _localStorageService.GetItemAsync<string>("Id");
+            if (string.IsNullOrEmpty(sessionId)) return false;
+            var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Permissioncheck", sessionId);
+            return !result.IsSuccessStatusCode;
+        }
         public async Task RequiredPermission()
         {
             var res = await Permissioncheck();
