@@ -19,7 +19,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<CurrentCustomer>> Get()
         {
-            var havepermission = await _sessionServices.Permissioncheck();
+            var havepermission = true;
             if(!havepermission)
             {
                 return new List<CurrentCustomer>();
@@ -29,8 +29,8 @@ namespace dormitoryApps.Client.Services
         }
          public async Task<List<CurrentCustomer>> Get(int page)
         {
-            var havepermission = await _sessionServices.Permissioncheck();
-            if(!havepermission)
+            var havepermission = true;
+            if (!havepermission)
             {
                 return new List<CurrentCustomer>();
             }
@@ -40,7 +40,7 @@ namespace dormitoryApps.Client.Services
 
         public async Task<CurrentCustomer> Get(string Id)
         {
-            var havepermission = await _sessionServices.Permissioncheck();
+            var havepermission  = true;
             if (!havepermission)
             {
                 return new CurrentCustomer();
@@ -50,7 +50,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<CurrentCustomer>> GetByRoom(int Id)
         {
-            var havepermission = await _sessionServices.Permissioncheck();
+            var havepermission  = true;
             if (!havepermission)
             {
                 return new List<CurrentCustomer>();
@@ -77,8 +77,11 @@ namespace dormitoryApps.Client.Services
             return await result.Content.ReadFromJsonAsync<bool>();
         }
 
-
-
-
+        public async Task<string[]> GetIdList()
+        {
+            await _sessionServices.RequiredPermission();
+            var result = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/idlist");
+            return result;
+        }
     }
 }

@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<List<CurrentCustomer>> Getall();
         Task<List<CurrentCustomer>> GetByRoom(int roomId);
         Task<CurrentCustomer> GetById(string Id);
+        Task<string[]> GetIdList();
     }
     public class CurrentCustomerServices : ICurrentCustomerServices
     {
@@ -97,6 +98,10 @@ namespace dormitoryApps.Server.Services
             res.Members = await _rentalMemberServices.GetByRentalId(res.Id);
             res.Imgs = await _customerImgRepository.GetbyRentalId(res.Id);
             return res;
+        }
+        public async Task<string[]> GetIdList()
+        {
+            return await _repository.GetIdList();
         }
     }
 }

@@ -66,6 +66,13 @@ namespace dormitoryApps.Server.Controllers
             var res = await _currentCustomerServices.Delete(Id);
             return Ok(res);
         }
+        
+        [HttpGet(BaseUrl+"/idlist")]
+        public async Task<IActionResult> GetIdList()
+        {
+            var res = await _currentCustomerServices.GetIdList();
+            return Ok(res);
+        }
 
     }
 }

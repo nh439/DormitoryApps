@@ -29,10 +29,14 @@
     bool hasService = false;
     bool payValid = false;
     bool isCash = true;
+    bool isLoading = true;
     string status;
     public async void Open(string invoiceId)
     {
         await e.Show();
+        isLoading = true;
+        StateHasChanged();
+        await Task.Delay(1);
         await _invoiceServices.GetById(invoiceId).ContinueWith(response =>
         {
 
@@ -58,6 +62,8 @@
         officers = await _officerServices.GetEmployee();
         status = item.Ispaid ? "ชำระเงินแล้ว" : "ยังไม่ชำระ";
         status = item.Iscancel ? "ยกเลิก" : status;
+        isLoading = false;
+        await Task.Delay(1);
         StateHasChanged();
     }
 
@@ -70,254 +76,265 @@
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
-            <center>
-                <h1>บิลเลขที่ @item.Id</h1>
-            </center>
-            <br />
-            <br />
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text" class="col-4 col-form-label">รหัส</label>
-                        <div class="col-8">
-                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">รหัสการเช่า</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="item.RentalId" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-            </Div>
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">ห้อง</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="thisroom.RoomName" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">อาคาร</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-            </Div>
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">สถานะ</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="status" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">วันออกบิล</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="item.InvoiceDate" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">ชำระเมื่อ</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="item.PaidDate" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-            </Div>
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">ผู้ออกบิล</label>
-                        <div class="col-8">
-                            <input id="text2" value="@($"{officers.Where(x=>x.Id==item.InvoiceOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
-                        </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    @if (item.Ispaid)
-                    {
+            @if (isLoading)
+            {
+                <center>
+                    <Div Class="loader"></Div>
+                    <h1>Loading...</h1>
+                </center>
+                
+            }
+            else
+            {
+                <center>
+                    <h1>บิลเลขที่ @item.Id</h1>
+                </center>
+                <br />
+                <br />
+                <Div Class="row">
+                    <Div Class="col">
                         <div class="form-group row">
-                            <label for="text2" class="col-4 col-form-label">ผู้รับเงิน</label>
+                            <label for="text" class="col-4 col-form-label">รหัส</label>
                             <div class="col-8">
-                                <input id="text2" value="@($"{officers.Where(x=>x.Id==item.PaidOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
+                                <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
                             </div>
                         </div>
-                    }
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">รหัสการเช่า</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="item.RentalId" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
                 </Div>
-            </Div>
-            <h2>รายชื่อ</h2>
-            <hr />
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ชื่อ-สกุล</th>
-                        <th>สถานะ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var itm in current.Members)
-                    {
-                        <tr>
-                            <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
-                            <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <h2>รายการ</h2>
-            <table class="table table-bordered border-primary">
-                <thead>
-                    <tr>
-                        <th>รายละเอียด</th>
-                        <th>เลขครั้งก่อน</th>
-                        <th>เลขที่จด</th>
-                        <th>จำนวนหน่วย</th>
-                        <th>หน่วยละ</th>
-                        <th>รวม</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (hasRental)
-                    {
-                        <tr>
-                            <td>ค่าเช่าห้อง</td>
-                            <td></td>
-                            <td></td>
-                            <td>1</td>
-                            <td>@item.RentalPrice บาท</td>
-                            <td>@item.RentalPrice บาท</td>
-                        </tr>
-                    }
-                    @if (hasWater)
-                    {
-                        var water = item.Water;
-                        <tr>
-                            <td>ค่าน้ำ</td>
-                            <td>@water.BeforeUnit</td>
-                            <td>@water.CurrentUnit</td>
-                            <td>@(water.CurrentUnit-water.BeforeUnit)</td>
-                            <td>@water.Price.ToString("#,###") บาท</td>
-                            <td>@water.Total.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (hasElectricity)
-                    {
-                        var electricity = item.Electricity;
-                        <tr>
-                            <td>ค่าน้ำ</td>
-                            <td>@electricity.BeforeUnit</td>
-                            <td>@electricity.CurrentUnit</td>
-                            <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
-                            <td>@electricity.Price.ToString("#,###") บาท</td>
-                            <td>@electricity.Total.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (hasService)
-                    {
-                        <tr>
-                            <td colspan="6" class="table-primary">บริการเพิ่มเติม</td>
-                        </tr>
-                        @foreach (var serv in item.Services)
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">ห้อง</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="thisroom.RoomName" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">อาคาร</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">สถานะ</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="status" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">วันออกบิล</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="item.InvoiceDate" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">ชำระเมื่อ</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="item.PaidDate" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">ผู้ออกบิล</label>
+                            <div class="col-8">
+                                <input id="text2" value="@($"{officers.Where(x=>x.Id==item.InvoiceOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        @if (item.Ispaid)
                         {
-                            string serviceName = serv.ServiceId.HasValue ? myServices.Where(x => x.Id == serv.ServiceId.Value).FirstOrDefault().Name : serv.Specifiy;
+                            <div class="form-group row">
+                                <label for="text2" class="col-4 col-form-label">ผู้รับเงิน</label>
+                                <div class="col-8">
+                                    <input id="text2" value="@($"{officers.Where(x=>x.Id==item.PaidOfficer).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()}")" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                        }
+                    </Div>
+                </Div>
+                <h2>รายชื่อ</h2>
+                <hr />
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ชื่อ-สกุล</th>
+                            <th>สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var itm in current.Members)
+                        {
                             <tr>
-                                <td colspan="5">@serviceName</td>
-                                <td>@serv.Price.ToString("#,###") บาท</td>
+                                <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
+                                <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
                             </tr>
                         }
-                    }
-                    @if (item.Fee > 0)
-                    {
+                    </tbody>
+                </table>
+                <h2>รายการ</h2>
+                <table class="table table-bordered border-primary">
+                    <thead>
                         <tr>
-                            <td colspan="5" class="table-danger">ค่าธรรมเนียม</td>
-                            <td class="table-danger">@item.Fee.ToString("#,###") บาท</td>
+                            <th>รายละเอียด</th>
+                            <th>เลขครั้งก่อน</th>
+                            <th>เลขที่จด</th>
+                            <th>จำนวนหน่วย</th>
+                            <th>หน่วยละ</th>
+                            <th>รวม</th>
                         </tr>
-                    }
-                    @if (item.Discount.HasValue)
-                    {
+                    </thead>
+                    <tbody>
+                        @if (hasRental)
+                        {
+                            <tr>
+                                <td>ค่าเช่าห้อง</td>
+                                <td></td>
+                                <td></td>
+                                <td>1</td>
+                                <td>@item.RentalPrice บาท</td>
+                                <td>@item.RentalPrice บาท</td>
+                            </tr>
+                        }
+                        @if (hasWater)
+                        {
+                            var water = item.Water;
+                            <tr>
+                                <td>ค่าน้ำ</td>
+                                <td>@water.BeforeUnit</td>
+                                <td>@water.CurrentUnit</td>
+                                <td>@(water.CurrentUnit-water.BeforeUnit)</td>
+                                <td>@water.Price.ToString("#,###") บาท</td>
+                                <td>@water.Total.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (hasElectricity)
+                        {
+                            var electricity = item.Electricity;
+                            <tr>
+                                <td>ค่าน้ำ</td>
+                                <td>@electricity.BeforeUnit</td>
+                                <td>@electricity.CurrentUnit</td>
+                                <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
+                                <td>@electricity.Price.ToString("#,###") บาท</td>
+                                <td>@electricity.Total.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (hasService)
+                        {
+                            <tr>
+                                <td colspan="6" class="table-primary">บริการเพิ่มเติม</td>
+                            </tr>
+                            @foreach (var serv in item.Services)
+                            {
+                                string serviceName = serv.ServiceId.HasValue ? myServices.Where(x => x.Id == serv.ServiceId.Value).FirstOrDefault().Name : serv.Specifiy;
+                                <tr>
+                                    <td colspan="5">@serviceName</td>
+                                    <td>@serv.Price.ToString("#,###") บาท</td>
+                                </tr>
+                            }
+                        }
+                        @if (item.Fee > 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-danger">ค่าธรรมเนียม</td>
+                                <td class="table-danger">@item.Fee.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (item.Discount.HasValue)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-success">ส่วนลด</td>
+                                <td class="table-success">-@item.Discount.Value.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (item.Tax > 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-danger">ภาษี</td>
+                                <td class="table-danger">@item.Tax.ToString("#,###") บาท</td>
+                            </tr>
+                        }
                         <tr>
-                            <td colspan="5" class="table-success">ส่วนลด</td>
-                            <td class="table-success">-@item.Discount.Value.ToString("#,###") บาท</td>
+                            <td colspan="5" class="table-primary">ยอดรวม</td>
+                            <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
                         </tr>
-                    }
-                    @if (item.Tax > 0)
-                    {
-                        <tr>
-                            <td colspan="5" class="table-danger">ภาษี</td>
-                            <td class="table-danger">@item.Tax.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    <tr>
-                        <td colspan="5" class="table-primary">ยอดรวม</td>
-                        <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
-                    </tr>
-                    @if (item.Ispaid)
-                    {
-                        <tr>
-                            <td colspan="5">รับเงินมา</td>
-                            <td>
-                                @item.Paid.ToString("#,###") บาท
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="5">เงินทอน</td>
-                            <td>@(item.Changes != 0 ?$"{item.Changes.ToString("#,###")} บาท ":"0 บาท")</td>
-                        </tr>
+                        @if (item.Ispaid)
+                        {
+                            <tr>
+                                <td colspan="5">รับเงินมา</td>
+                                <td>
+                                    @item.Paid.ToString("#,###") บาท
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5">เงินทอน</td>
+                                <td>@(item.Changes != 0 ?$"{item.Changes.ToString("#,###")} บาท ":"0 บาท")</td>
+                            </tr>
 
-                    }
-                </tbody>
-            </table>
-            <br />
-            @if (item.Ispaid)
-            {
-                <Div Class="row">
-                    <Div class="col">
-                        <div class="form-group row">
-                            <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
-                            <div class="col-8">
-                                <input id="text" @bind-value="item.Paidwith" type="text" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </Div>
-                    <Div class="col">
-                        <div class="form-group row">
-                            <label for="text" class="col-4 col-form-label">References</label>
-                            <div class="col-8">
-                                <input id="text" @bind-value="item.TransactionId" type="text" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </Div>
-                </Div>
-                @if (item.Slip != null)
+                        }
+                    </tbody>
+                </table>
+                <br />
+                @if (item.Ispaid)
                 {
-                    <center>
-                        <h2>หลักฐานการโอนเงิน</h2>
-                        <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
-                    </center>
-                }
+                    <Div Class="row">
+                        <Div class="col">
+                            <div class="form-group row">
+                                <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                                <div class="col-8">
+                                    <input id="text" @bind-value="item.Paidwith" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </Div>
+                        <Div class="col">
+                            <div class="form-group row">
+                                <label for="text" class="col-4 col-form-label">References</label>
+                                <div class="col-8">
+                                    <input id="text" @bind-value="item.TransactionId" type="text" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </Div>
+                    </Div>
+                    @if (item.Slip != null)
+                    {
+                        <center>
+                            <h2>หลักฐานการโอนเงิน</h2>
+                            <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                        </center>
+                    }
 
-            }
-            @if (item.Iscancel)
-            {
-                <div class="form-group">
-                    <label for="textarea">เหตุผลในการยกเลิก*</label>
-                    <textarea id="textarea" readonly cols="40" rows="5" class="form-control">
-                        @item.CancellationComment
-                    </textarea>
-                </div>
+                }
+                @if (item.Iscancel)
+                {
+                    <div class="form-group">
+                        <label for="textarea">เหตุผลในการยกเลิก*</label>
+                        <textarea id="textarea" readonly cols="40" rows="5" class="form-control">
+                            @item.CancellationComment
+                            </textarea>
+                    </div>
+                }
             }
         </ModalBody>
         <ModalFooter>

@@ -1,0 +1,31 @@
+﻿@using Blazorise;
+@code {
+    public string Detail { get; set; } = "Processing";
+    Modal e;
+    public async void Open()
+    {
+        await e.Show();
+    }
+    public async void Close()
+    {
+        await e.Hide();
+    }
+
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+
+        </ModalHeader>
+        <ModalBody>
+            <center>
+            <Div Class="loader">
+
+            </Div>
+            <br />
+            <h2>@Detail</h2>
+            </center>
+        </ModalBody>
+        <ModalFooter></ModalFooter>
+    </ModalContent>
+</Modal>

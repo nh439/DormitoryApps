@@ -69,11 +69,13 @@ namespace dormitoryApps.Server.Services
         public async Task<List<Invoice>> GetAll()
         {
             var res = await _repository.GetAll();
+            var waters = await _waterRepository.Getall();
+            var electricites = await _electricityRepository.Getall();
             res.ForEach(async x =>
             {
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = waters.Where(y => y.InvoiceId == x.Id).FirstOrDefault();
+                x.Electricity = electricites.Where(y => y.InvoiceId == x.Id).FirstOrDefault();
             });
             return res;
         }
@@ -83,8 +85,8 @@ namespace dormitoryApps.Server.Services
             res.ForEach(async x =>
             {
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
         }
@@ -94,8 +96,8 @@ namespace dormitoryApps.Server.Services
             res.ForEach(async x =>
             { 
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
         }
@@ -104,8 +106,8 @@ namespace dormitoryApps.Server.Services
             var res = await _repository.GetByYear(year);
             res.ForEach(async x => { 
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
         }
@@ -114,8 +116,8 @@ namespace dormitoryApps.Server.Services
             var res = await _repository.GetByMonth(Month, year);
             res.ForEach(async x => { 
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
          }
@@ -124,8 +126,8 @@ namespace dormitoryApps.Server.Services
             var res = await _repository.GetByRental(RentalId);
             res.ForEach(async x => {
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
         }
@@ -135,8 +137,8 @@ namespace dormitoryApps.Server.Services
             if(res != null)
             {
                 res.Services = await _invoiceserviceRepository.GetByInvoice(InvoiceId);
-                res.Water = await _waterRepository.Getone(res.RentalId, res.Month, res.Year); 
-                res.Electricity = await _electricityRepository.Getone(res.RentalId, res.Month, res.Year); 
+                res.Water = await _waterRepository.GetByInvoiceId(res.Id);
+                res.Electricity = await _electricityRepository.GetByInvoiceId(res.Id);
             }
             return res;
         }
@@ -145,8 +147,8 @@ namespace dormitoryApps.Server.Services
             var res = await _repository.GetWithAdvancesearch(criteria);
             res.ForEach(async x => { 
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
-                x.Water = await _waterRepository.Getone(x.RentalId, x.Month, x.Year);
-                x.Electricity = await _electricityRepository.Getone(x.RentalId, x.Month, x.Year);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
             return res;
         }

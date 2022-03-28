@@ -73,6 +73,11 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"RentalId='{RentalId}' and year={year} and month={month}");
             return res.FirstOrDefault();
         }
+        public async Task<Electricity> GetByInvoiceId(string invoiceId)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<Electricity>(TableName, $"InvoiceId='{invoiceId}'");
+            return res.FirstOrDefault();
+        }
         public async Task<List<Electricity>> GetWithAdvanceSearch(ElectricityAndWaterAdvancedSearchCriteria  criteria)
         {
             ConditionSet set = new ConditionSet();

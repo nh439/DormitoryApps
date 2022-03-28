@@ -16,6 +16,8 @@ namespace dormitoryApps.Shared.Model.Entity
 		public decimal Price { get; set; }
 		public decimal Total { get; set; }
 		public DateTime Notedate { get; set; }
-		public bool Paid { get; set; }		
-    }
+		public bool Paid { get; set; }	
+		public string InvoiceId { get; set; }
+
+	}
 }

@@ -67,6 +67,7 @@
 @code {
     ElementReference Logging;
     private dormitoryApps.Client.Pages.Officer.Modal.Incomplete modal{ get; set; }
+    dormitoryApps.Client.Pages.Modal.Processing processing;
     public string Username { get; set; }
     public string Password { get; set; }
     string Logclass = "display:none";
@@ -74,6 +75,7 @@
     bool userrequired = false;
     private async void Usersubmit()
     {
+        processing.Detail = "Logging In";
         Logclass = "display:block";
         userrequired = string.IsNullOrEmpty(Username);
         passrequired = string.IsNullOrEmpty(Password);
@@ -82,10 +84,14 @@
             await InvokeAsync(StateHasChanged);
             return;
         }
+        processing.Open();
+        await Task.Delay(1);
         var res = await officerServices.GetLogin(username: Username, password: Password);
         Console.WriteLine(res);
         if(!res)
         {
+            processing.Close();
+             await Task.Delay(1);
             modal.IsExpired = false;
             modal.Open();
             return;
@@ -93,6 +99,8 @@
         var currentUser = await officerServices.GetByUsername(Username);
         if(currentUser.Expired && !currentUser.Issuper)
         {
+            processing.Close();
+            await Task.Delay(1);
             modal.IsExpired = true;
             modal.Open();
             return;
@@ -100,7 +108,8 @@
         string sessionId = await sessionServices.CreateLogin(currentUser.Id);
         await sessionStorageService.SetItemAsStringAsync("Id", sessionId);
         await _localStorageService.SetItemAsStringAsync("Id", sessionId);
-        Console.WriteLine("Login Successful");
+        processing.Close();
+        await Task.Delay(1);
         navigationManager.NavigateTo("/",true);
 
     }
@@ -110,4 +119,5 @@
             await Swal.FireAsync("Hello world!");
     }
 }
+<dormitoryApps.Client.Pages.Modal.Processing @ref="processing"></dormitoryApps.Client.Pages.Modal.Processing>
 

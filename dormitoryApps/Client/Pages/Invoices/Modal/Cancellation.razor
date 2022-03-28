@@ -2,6 +2,8 @@
 @using dormitoryApps.Client.Services;
 @using dormitoryApps.Shared.Model.Entity;
 @inject InvoiceServices _invoiceServices;
+@inject ElectricityService _electricityServices;
+@inject WaterService _waterServices;
 
 
 @code {
@@ -18,6 +20,17 @@
         try{
             commentValidate = string.IsNullOrEmpty(item.CancellationComment);
             if(commentValidate)return;
+            if(item.Water != null && item.Water != new Water())
+            {
+                item.Water.InvoiceId = null;
+                await _waterServices.Update(item.Water);
+            }
+            if(item.Electricity != null && item.Electricity != new Electricity())
+            {
+                item.Electricity.InvoiceId = null;
+                await _electricityServices.Update(item.Electricity);
+            }
+
             item.Iscancel = true;
             var actionResult = await _invoiceServices.Update(item);
             if(actionResult)

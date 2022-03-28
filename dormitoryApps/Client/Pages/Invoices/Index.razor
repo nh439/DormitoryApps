@@ -6,7 +6,9 @@
 @using Microsoft.Extensions.Primitives;
 @inject InvoiceServices _invoiceServices;
 @inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
 @inject NavigationManager navigationManager;
+@inject IJSRuntime jsRuntime;
 @implements IDisposable;
 @code {
     List<Invoice> invoiceList ;
@@ -14,7 +16,7 @@
     Timer timer = new Timer();
     int page = 1;
     int count;
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         StringValues queryres;
         var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
@@ -22,6 +24,12 @@
         {
             var x = int.TryParse(queryres, out page);
             if (!x) page = 1;
+        }
+        var permissioncheck = await _sessionServices.Permissioncheck();
+        if(!permissioncheck)
+        {
+            invoiceList = new List<Invoice>();
+            return;
         }
         Get();
         timer = new Timer(1000);
@@ -58,6 +66,11 @@
         navigationManager.NavigateTo(destinationUrl);
         StateHasChanged();
     }
+    async void Create()
+    {
+        string url ="/Invoices/Create";
+        await jsRuntime.InvokeAsync<object>("open", url);
+    }
 }
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
@@ -65,7 +78,7 @@
 </center>
 <br />
 <br />
-<button class="btn btn-primary mx-1" @onclick="()=>create.Open()"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
+<button class="btn btn-primary mx-1" @onclick="()=> Create()"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
 <button class="btn btn-warning mx-1"><i class="search icon"></i>  Advanced Search</button>
 <br />
 <br />
@@ -172,12 +185,10 @@
 <dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice @ref="paidInvoice"></dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice>
 <dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
 <dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation"/>
-<dormitoryApps.Client.Pages.Invoices.Modal.CreateInvoice @ref="create"/>
 @code{
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
     dormitoryApps.Client.Pages.Invoices.Modal.Cancellation cancellation;
-    dormitoryApps.Client.Pages.Invoices.Modal.CreateInvoice create;
 }
 <style>
     table {
