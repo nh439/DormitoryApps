@@ -153,6 +153,7 @@ namespace dormitoryApps.Client.Services
             var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Price : 0);
             invoice.GrandTotal = serviceprice+waterprice + electricityprice+invoice.RentalPrice+invoice.Fee-(invoice.Discount.HasValue ? invoice.Discount.Value:0);
             invoice.ServicePrice = serviceprice;
+            invoice.IsService = invoice.Services != null && invoice.Services.Count > 0;
             return invoice;
         }
         public Invoice InvoiceCalculate(Invoice invoice,decimal taxpercentage)
@@ -164,6 +165,7 @@ namespace dormitoryApps.Client.Services
             invoice.Tax = (taxpercentage / 100) * total;
             invoice.GrandTotal = total+invoice.Tax;
             invoice.ServicePrice = serviceprice;
+            invoice.IsService = invoice.Services != null && invoice.Services.Count > 0;
             return invoice;
         }
         public Invoice InvoiceCalculate(Invoice invoice, decimal taxpercentage,decimal charge)
@@ -175,6 +177,7 @@ namespace dormitoryApps.Client.Services
             invoice.Tax = (taxpercentage / 100) * total;
             invoice.GrandTotal = total + invoice.Tax;
             invoice.ServicePrice = serviceprice;
+            invoice.IsService = invoice.Services != null && invoice.Services.Count > 0;
             return invoice;
         }
         public Invoice InvoiceCalculate(Invoice invoice, decimal taxpercentage,decimal charge,decimal discount)
@@ -186,6 +189,7 @@ namespace dormitoryApps.Client.Services
             invoice.Tax = (taxpercentage / 100) * total;
             invoice.GrandTotal = total + invoice.Tax;
             invoice.ServicePrice = serviceprice;
+            invoice.IsService = invoice.Services != null && invoice.Services.Count > 0;
             return invoice;
         }
 
