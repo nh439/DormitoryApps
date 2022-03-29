@@ -47,6 +47,16 @@ namespace dormitoryApps.Server.Services
                 });
                 await _invoiceserviceRepository.Create(item.Services);
             }
+            if(item.Water != null && !string.IsNullOrEmpty( item.Water.RentalId))
+            {
+                item.Water.InvoiceId = item.Id;
+                await _waterRepository.Update(item.Water);
+            }
+            if(item.Electricity != null && !string.IsNullOrEmpty( item.Electricity.RentalId))
+            {
+                item.Electricity.InvoiceId = item.Id;
+                await _electricityRepository.Update(item.Electricity);
+            }
             return res;
         }
         public async Task<bool> Update(Invoice item)

@@ -5,10 +5,12 @@
     public async void Open()
     {
         await e.Show();
+        StateHasChanged();
     }
     public async void Close()
     {
         await e.Hide();
+        StateHasChanged();
     }
 
 }
@@ -19,11 +21,10 @@
         </ModalHeader>
         <ModalBody>
             <center>
-            <Div Class="loader">
-
-            </Div>
-            <br />
-            <h2>@Detail</h2>
+                <Div Class="loader">
+                </Div>
+                <br />
+                <h2>@Detail</h2>
             </center>
         </ModalBody>
         <ModalFooter></ModalFooter>

@@ -2,6 +2,7 @@
 using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
+using PagedList;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -16,8 +17,9 @@ namespace dormitoryApps.Server.Controllers
             _logger = logger;
         }
         [HttpGet(BaseUrl)]
-        public async Task<IActionResult> Index(string? RentalId, int? Year, int? Month)
+        public async Task<IActionResult> Index(string? RentalId, int? Year, int? Month,int? page)
         {
+            List<Water> result = new List<Water>();
             if (Year.HasValue)
             {
                 if (Month.HasValue)
@@ -26,12 +28,16 @@ namespace dormitoryApps.Server.Controllers
                     {
                         return Ok(await _waterServices.Getone(RentalId, Month.Value, Year.GetValueOrDefault()));
                     }
-                    return Ok(await _waterServices.GetByMonth(month: Month.GetValueOrDefault(), year: Year.GetValueOrDefault()));
+                    result = await _waterServices.GetByMonth(month: Month.GetValueOrDefault(), year: Year.GetValueOrDefault());
                 }
-                return Ok(await _waterServices.GetByYear(year: Year.GetValueOrDefault()));
+                result = await _waterServices.GetByYear(year: Year.GetValueOrDefault());
             }
-            var res = await _waterServices.Getall();
-            return Ok(res);
+            result = await _waterServices.Getall();
+            if(page.HasValue)
+            {
+                return Ok(result.ToPagedList(page.Value, 20));
+            }
+            return Ok(result);
         }
         [HttpGet(BaseUrl + "/Rental/{Id}")]
         public async Task<IActionResult> GetRental(string Id)

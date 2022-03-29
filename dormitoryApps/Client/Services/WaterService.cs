@@ -27,6 +27,16 @@ namespace dormitoryApps.Client.Services
             }
             return new List<Water>();
         }
+        public async Task<List<Water>> GetWater(int page)
+        {
+            var havePermission = true;
+            if (havePermission)
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?page={page}");
+                return res;
+            }
+            return new List<Water>();
+        }
         public async Task<List<Water>> GetByYear(int Year)
         {
             var havePermission = true;
@@ -117,6 +127,12 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
             if (!res.IsSuccessStatusCode) return false;
             return await res.Content.ReadFromJsonAsync<bool>();
+        }
+        public Water Calculate(Water item,out decimal? Usage)
+        {
+            Usage = item.CurrentUnit - item.BeforeUnit;
+            item.Total = item.Price * (Usage??0);
+            return item;
         }
     }
 }
