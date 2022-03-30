@@ -84,35 +84,28 @@
     }
     async void SaveChanges()
     {
-        submitting = true;
-        await Task.Delay(1);
+        auto.Open("Submitting");
+        await Task.Delay(10);
         try
         {
-
             item.Notedate = DateTime.Now;
             item.RentalId = selectedCustomer.Id;
-            var actionResult = await _waterService.Create(item);
-            submitting = false;
-            await Task.Delay(1);
+            var actionResult = await _waterService.Create(item);            
             if (actionResult)
             {
+                auto.Success("Water Add Successful","Congratulations");
+                await Task.Delay(1);
                 await e.Hide();
-                success.Details = "Completed";
-                success.NextRequired = false;
-                success.Open();
                 StateHasChanged();
                 return;
-            }           
-            error.Details = "Something Went Wrong";
-            error.Open();
-
+            }
+            auto.Failed("Something Went Wrong");
+            await Task.Delay(10);
         }
         catch (Exception x)
         {
-            submitting = false;
-            await Task.Delay(1);
-            error.Details = x.Message;
-            error.Open();
+            auto.Failed(x.Message);
+            await Task.Delay(10);
         }
         StateHasChanged();
 
@@ -288,7 +281,9 @@
 </Modal>
 <dormitoryApps.Client.Pages.Modal.Error @ref="error" />
 <dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
 @code {
     private dormitoryApps.Client.Pages.Modal.Error error;
     private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Auto auto;
 }

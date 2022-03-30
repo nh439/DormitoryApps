@@ -59,7 +59,7 @@
             <th>ราคารวม</th>
             <th>รายการชำระเงินที่เกี่ยวข้อง</th>
             <th>จ่ายเงินแล้ว</th>
-            <th>วันที่จด</th>
+            <th>วันที่บันทึก</th>
             <th></th>
         </tr>
     </thead>
@@ -92,7 +92,7 @@
                     <td>@if (w.Paid) { <i class="check icon"></i>}</td>
                     <td>@w.Notedate.ToString("dd MMMM yyyy HH:mm:ss")</td>
                     <th>
-                        <button class="btn btn-danger"><i class="trash alternate outline icon"></i></button>
+                        <button class="btn btn-danger" disabled="@w.Paid"><i class="trash alternate outline icon"></i></button>
                     </th>
                 </tr>
             }

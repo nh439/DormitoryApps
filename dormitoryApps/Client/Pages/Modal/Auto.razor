@@ -1,0 +1,197 @@
+﻿@using Blazorise;
+@inject NavigationManager navigationManager;
+
+@code {
+    private Modal e;
+    public string ProcessingWord { get; set; } = "Processing";
+    //Success
+    public string SuccessHeader { get; set; } = "Good Job";
+    public string SuccessDetail { get; set; } = "Processing Success";
+    //Error
+    public string ErrorHeader { get; set; } = "!Oops!";
+    public string ErrorDetail { get; set; } = "Something Went Wrong";
+
+    //Img
+    private const string ErrorImg = "/Img/Close-2-icon.png";
+    private const string SuccessImg = "/Img/Checked.png";
+
+    public bool NextRequired { get; set; } = false;
+    public bool ForceLoad { get; set; } = false;
+    public string NextLink { get; set; } = "/";
+
+    bool IsProcessing;
+    bool IsSuccess;
+
+    public async void Open()
+    {
+        IsProcessing = true;
+        await e.Show();
+        StateHasChanged();
+    }
+    public async void Open(string ProcessDetail)
+    {
+        IsProcessing = true;
+        ProcessingWord = ProcessDetail;
+        await e.Show();
+        StateHasChanged();
+    }
+    //Open Success
+    public async void OpenSuccess()
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        await e.Show();
+        StateHasChanged();
+    }
+    public async void OpenSuccess(string Detail)
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        SuccessDetail = Detail;
+        await e.Show();
+        StateHasChanged();
+    }
+    public async void OpenSuccess(string Detail, string Header)
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        SuccessDetail = Detail;
+        SuccessHeader = Header;
+        await e.Show();
+        StateHasChanged();
+    }
+    //Open Failed
+    public async void OpenFailed()
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        await e.Show();
+        StateHasChanged();
+    }
+    public async void OpenFailed(string Detail)
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        SuccessDetail = Detail;
+        await e.Show();
+        StateHasChanged();
+    }
+    public async void OpenFailed(string Detail, string Header)
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        ErrorDetail = Detail;
+        ErrorHeader = Header;
+        await e.Show();
+        StateHasChanged();
+    }
+    //SET
+    public void Processing()
+    {
+        IsProcessing = true;
+        StateHasChanged();
+    }
+    public void Processing(string ProcessDetail)
+    {
+        IsProcessing = true;
+        ProcessingWord = ProcessDetail;
+        StateHasChanged();
+    }
+
+    public void Success()
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        StateHasChanged();
+    }
+    public void Success(string Detail)
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        SuccessDetail = Detail;
+        StateHasChanged();
+    }
+    public void Success(string Detail, string Header)
+    {
+        IsProcessing = false;
+        IsSuccess = true;
+        SuccessDetail = Detail;
+        SuccessHeader = Header;
+        StateHasChanged();
+    }
+    public void Failed()
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        StateHasChanged();
+    }
+    public void Failed(string Detail)
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        SuccessDetail = Detail;
+        StateHasChanged();
+    }
+    public void Failed(string Detail, string Header)
+    {
+        IsProcessing = false;
+        IsSuccess = false;
+        ErrorDetail = Detail;
+        ErrorHeader = Header;
+        StateHasChanged();
+    }
+
+    private async void Close()
+    {
+        await e.Hide();
+        if (NextRequired)
+        {
+            navigationManager.NavigateTo(NextLink, forceLoad: ForceLoad);
+        }
+        StateHasChanged();
+
+    }
+
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalBody>
+            @if (IsProcessing)
+            {
+                <center>
+                    <Div Class="loader">
+                    </Div>
+                    <br />
+                    <h2>@ProcessingWord</h2>
+                </center>
+            }
+            else
+            {
+                @if (IsSuccess)
+                {
+                    <center>
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                        <img src="@SuccessImg" style="width:200px;height:200px;" />
+                        <h1>@SuccessHeader</h1>
+                        <h2>@SuccessDetail</h2>
+                    </center>
+                }
+                else
+                {
+                    <center>
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                        <img src="/Img/Close-2-icon.png" style="width:200px;height:200px;" />
+                        <h1>@ErrorHeader</h1>
+                        <h2>@ErrorDetail</h2>
+                    </center>
+                }
+            }
+        </ModalBody>
+        <ModalFooter>
+            @if (!IsProcessing)
+            {
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+            }
+        </ModalFooter>
+    </ModalContent>
+</Modal>
