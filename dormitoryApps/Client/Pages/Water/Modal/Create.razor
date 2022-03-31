@@ -2,6 +2,7 @@
 @using System.Threading;
 @using dormitoryApps.Client.Services;
 @using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json
 @using Blazorise;
 @inject WaterService _waterService;
 @inject SessionServices _sessionServices;
@@ -9,6 +10,7 @@
 @inject OfficerServices _officerServices;
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
+@inject ClientdataServices _clientdataServices
 
 @code {
     Modal e;
@@ -19,6 +21,7 @@
     CurrentCustomer selectedCustomer = new CurrentCustomer();
     Room room = new Room();
     Buildings buildings = new Buildings();
+    Utilities utilities = new Utilities();
     decimal pastUsage = new decimal();
     int currentMonth = DateTime.Now.Month;
     int currentYear = DateTime.Now.Year;
@@ -44,6 +47,8 @@
         isLoading = false;
         item.Year = currentYear;
         item.month = currentMonth;
+        utilities = await _clientdataServices.GetUtilities();
+        item.Price = utilities.WaterPrice;
         await Task.Delay(1);
         StateHasChanged();
     }
@@ -244,7 +249,7 @@
                                 <div class="form-group">
                                     <label for="text1">ราคาต่อหน่วย</label>
                                     <div class="input-group">
-                                        <input id="text1" @bind-value="item.Price" type="text" class="form-control">
+                                        <input id="text1" @bind-value="item.Price" type="text" class="form-control" readonly="@utilities.Readonly">
                                         <div class="input-group-append">
                                             <div class="input-group-text">บาท</div>
                                         </div>
@@ -267,6 +272,9 @@
                             <Div Class="p-2">
                                 <Button Class="btn btn-outline-info" @onclick="Calculate">Calculate</Button>
                             </Div>
+                        </Div>
+                        <Div Style="color:red">
+                            **โปรดตรวจสอบข้อมูลให้เรียบร้อยก่อนกด SaveChanges หากสร้างแล้วรายการเกิดผิดพลาด ให้ลบรายการนั้นออก และสร้างใหม่**
                         </Div>
                     }
                 }

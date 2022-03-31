@@ -92,7 +92,7 @@
                     <td>@if (w.Paid) { <i class="check icon"></i>}</td>
                     <td>@w.Notedate.ToString("dd MMMM yyyy HH:mm:ss")</td>
                     <th>
-                        <button class="btn btn-danger" disabled="@w.Paid"><i class="trash alternate outline icon"></i></button>
+                        <button class="btn btn-danger" disabled="@w.Paid" @onclick="()=>delete.Open(w.RentalId,w.month,w.Year)"><i class="trash alternate outline icon"></i></button>
                     </th>
                 </tr>
             }
@@ -101,6 +101,8 @@
 </table>
 
 <dormitoryApps.Client.Pages.Water.Modal.Create @ref="create" />
+<dormitoryApps.Client.Pages.Water.Modal.Delete @ref="delete" />
 @code{
     dormitoryApps.Client.Pages.Water.Modal.Create create;
+    dormitoryApps.Client.Pages.Water.Modal.Delete delete;
 }

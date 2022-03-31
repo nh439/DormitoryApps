@@ -1,0 +1,68 @@
+﻿@using System;
+@using System.Threading;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using Blazorise;
+@inject WaterService _waterService;
+@inject SessionServices _sessionServices;
+@inject CurrentCustomerService _currentCustomerService;
+@inject OfficerServices _officerServices;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+
+@code {
+    Modal e;
+    Water thisWater = new Water();
+    public async void Open(string rentalId,int month,int year)
+    {
+        await e.Show();
+        thisWater = await _waterService.GetOne(year, month, rentalId);
+        StateHasChanged();
+    }
+    async void AcceptDelete()
+    {
+        auto.Open("Deleting");
+        await Task.Delay(1);
+        try
+        {
+            var actionResult = await _waterService.Delete(thisWater);
+            if(actionResult)
+            {
+                await e.Hide();
+                auto.Success("Water Deleted", "Congratulations");
+                await Task.Delay(1);
+                StateHasChanged();
+                return;
+            }
+            auto.Failed();
+            await Task.Delay(1);
+        }
+        catch(Exception x)
+        {
+            auto.Failed(x.Message);
+            await Task.Delay(1);
+        }
+        StateHasChanged();
+    }
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>ยกเลิกรายการใช้น้ำประปา</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>คุณแน่ใจว่าจะลบราการใช้น้ำประปา งวดที่ @($"{thisWater.month}/{thisWater.Year} ของการเช่าที่ {thisWater.RentalId}")  </h1>
+            </center>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-danger" @onclick="AcceptDelete">Yes</Button>
+            <Button Class="btn btn-outline-success" @onclick="()=>e.Hide()">No</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
+@code{
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}
