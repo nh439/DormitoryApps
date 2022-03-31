@@ -53,4 +53,5 @@ builder.Services.AddScoped<RoomfurnTemplateServices>();
 builder.Services.AddScoped<RoomTemplateServices>();
 builder.Services.AddScoped<MemberServices>();
 builder.Services.AddScoped<RentalMemberServices>();
+builder.Services.AddScoped<ClientdataServices>();
 await builder.Build().RunAsync();

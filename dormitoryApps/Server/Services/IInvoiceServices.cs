@@ -47,6 +47,16 @@ namespace dormitoryApps.Server.Services
                 });
                 await _invoiceserviceRepository.Create(item.Services);
             }
+            if(item.Water != null && !string.IsNullOrEmpty( item.Water.RentalId))
+            {
+                item.Water.InvoiceId = item.Id;
+                await _waterRepository.Update(item.Water);
+            }
+            if(item.Electricity != null && !string.IsNullOrEmpty( item.Electricity.RentalId))
+            {
+                item.Electricity.InvoiceId = item.Id;
+                await _electricityRepository.Update(item.Electricity);
+            }
             return res;
         }
         public async Task<bool> Update(Invoice item)
@@ -77,6 +87,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = waters.Where(y => y.InvoiceId == x.Id).FirstOrDefault();
                 x.Electricity = electricites.Where(y => y.InvoiceId == x.Id).FirstOrDefault();
             });
+            await Task.Delay(10);
             return res;
         }
         public async Task<List<Invoice>> GetPaid()
@@ -88,6 +99,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
+            await Task.Delay(10);
             return res;
         }
         public async Task<List<Invoice>> GetUnPaid()
@@ -99,6 +111,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
+            await Task.Delay(10);
             return res;
         }
         public async Task<List<Invoice>> GetByYear(int year)
@@ -109,6 +122,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
+            await Task.Delay(10);
             return res;
         }
         public async Task<List<Invoice>> GetByMonth(int Month, int year)
@@ -119,6 +133,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
+            await Task.Delay(10);
             return res;
          }
         public async Task<List<Invoice>> GetByRental(string RentalId)
@@ -129,6 +144,7 @@ namespace dormitoryApps.Server.Services
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
             });
+            await Task.Delay(10);
             return res;
         }
         public async Task<Invoice> GetById(string InvoiceId)

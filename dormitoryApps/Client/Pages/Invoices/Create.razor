@@ -225,6 +225,8 @@
             item.InvoiceDate = DateTime.Now;
             item.Month = DateTime.Now.Month;
             item.Year = DateTime.Now.Year;
+            if(selectedwater != null && !string.IsNullOrEmpty( selectedwater.RentalId)) item.Water=selectedwater;
+            if(selectedelectricity != null && !string.IsNullOrEmpty( selectedelectricity.RentalId)) item.Electricity=selectedelectricity;
             var actionResult = await _invoiceServices.Create(item);
             if(actionResult)
             {

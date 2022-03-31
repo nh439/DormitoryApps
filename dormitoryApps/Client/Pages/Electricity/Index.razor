@@ -1,0 +1,108 @@
+﻿@page "/Electricity";
+@using System;
+@using System.Timers;
+@using System.Threading ;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject ElectricityService _electricityService;
+@inject SessionServices _sessionServices;
+@implements IDisposable
+@code {
+    System.Timers.Timer timer = new System.Timers.Timer();
+    List<Electricity> electricity;
+    protected override async void OnInitialized()
+    {
+        await _sessionServices.RequiredPermission();
+        Get();
+        timer = new System.Timers.Timer(1000);
+        timer.Elapsed += OnTick;
+        timer.Enabled = true;
+    }
+    void OnTick(object sender, ElapsedEventArgs e)
+    {
+        Get();
+        StateHasChanged();
+    }
+    async void Get()
+    {
+        await _electricityService.GetElectricity().ContinueWith(w =>
+       {
+           electricity = w.Result != null ? w.Result : new List<Electricity>();
+       });
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"> 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<center>
+    <h1>ข้อมูลการใช้ไฟฟ้า</h1>
+</center>
+<br />
+<br />
+<br />
+<button class="btn btn-primary" @onclick="()=>create.Open()"> <i class="plus icon"></i> เพิ่มข้อมูลการใช้ไฟฟ้า</button>
+<br />
+<br />
+<table class="table table-bordered" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัสการเช่า</th>
+            <th>งวด</th>
+            <th>หน่วยครั้งก่อน</th>
+            <th>หน่วยตอนจด</th>
+            <th>ใช้ไป</th>
+            <th>หน่วยละ</th>
+            <th>ราคารวม</th>
+            <th>รายการชำระเงินที่เกี่ยวข้อง</th>
+            <th>จ่ายเงินแล้ว</th>
+            <th>วันที่บันทึก</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-success">
+        @if (electricity == null)
+        {
+            <tr>
+                <td colspan="11">Loading...</td>
+            </tr>
+        }
+        else if (electricity.Count == 0)
+        {
+            <tr>
+                <td colspan="11">ไม่พบรายการ</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var e in electricity)
+            {
+                <tr>
+                    <td>@e.RentalId</td>
+                    <td>@($"{e.month}/{e.Year}")</td>
+                    <td>@e.BeforeUnit</td>
+                    <td>@e.CurrentUnit</td>
+                    <td>@(e.CurrentUnit-e.BeforeUnit)</td>
+                    <td>@e.Price</td>
+                    <td>@e.Total</td>
+                    <td>@e.InvoiceId</td>
+                    <td>@if (e.Paid) { <i class="check icon"></i>}</td>
+                    <td>@e.Notedate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                    <th>
+                        <button class="btn btn-danger" disabled="@e.Paid" @onclick="()=>delete.Open(e.RentalId,e.month,e.Year)"><i class="trash alternate outline icon"></i></button>
+                    </th>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<dormitoryApps.Client.Pages.Electricity.Modal.Create @ref="create" />
+<dormitoryApps.Client.Pages.Electricity.Modal.Delete @ref="delete" />
+@code{
+    dormitoryApps.Client.Pages.Electricity.Modal.Create create;
+    dormitoryApps.Client.Pages.Electricity.Modal.Delete delete;
+}

@@ -213,7 +213,7 @@
                     }
                     @if (hasWater)
                     {
-                        var water = item.Water;
+                        var water = item.Water != null ? item.Water : new Water();
                         <tr>
                             <td>ค่าน้ำ</td>
                             <td>@water.BeforeUnit</td>
@@ -225,7 +225,7 @@
                     }
                     @if (hasElectricity)
                     {
-                        var electricity = item.Electricity;
+                        var electricity = item.Electricity != null ? item.Electricity : new Electricity();
                         <tr>
                             <td>ค่าน้ำ</td>
                             <td>@electricity.BeforeUnit</td>
