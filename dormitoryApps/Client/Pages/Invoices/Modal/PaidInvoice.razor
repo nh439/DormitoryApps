@@ -225,7 +225,7 @@
                     }
                     @if (hasElectricity)
                     {
-                        var electricity = item.Electricity;
+                        var electricity = item.Electricity != null ? item.Electricity : new Electricity();
                         <tr>
                             <td>ค่าน้ำ</td>
                             <td>@electricity.BeforeUnit</td>

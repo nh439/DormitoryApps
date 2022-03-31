@@ -119,6 +119,12 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
             if (!res.IsSuccessStatusCode) return false;
             return await res.Content.ReadFromJsonAsync<bool>();
-        }       
+        }
+        public Electricity Calculate(Electricity item, out decimal? Usage)
+        {
+            Usage = item.CurrentUnit - item.BeforeUnit;
+            item.Total = item.Price * (Usage ?? 0);
+            return item;
+        }
     }
 }
