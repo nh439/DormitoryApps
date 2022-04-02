@@ -2,6 +2,7 @@
 @using Blazorise;
 @using dormitoryApps.Client.Services;
 @using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json;
 @inject InvoiceServices _invoiceServices;
 @inject MyServicesServices _myServices;
 @inject ElectricityService _electricityService;
@@ -16,6 +17,7 @@
 @inject WaterService _waterService;
 @inject MyServicesServices _myServicesServices;
 @inject OfficerServices _officerServices;
+@inject ClientdataServices _clientdataServices;
 
 @code {
     string[] currentCustomers = new string[1];
@@ -79,6 +81,8 @@
             && x.Year == DateTime.Now.Year
             && x.RentalPrice > 0
             && !x.Iscancel).Count() > 0;
+        status = selectedCustomer.Booking ? "จองห้อง" : "เข้าอยู่";
+        status = selectedCustomer.RentalType.ToLower().Equals("Monthly".ToLower()) && selectedCustomer.StayUntil.HasValue ? $"เข้าอยู่(ออกวันที่ {selectedCustomer.StayUntil.Value.ToLongDateString()})" : status;
         fetchIng = "กำลังเตรียมข้อมูลการใช้ไฟฟ้า";
         StateHasChanged();
         await Task.Delay(1);
@@ -314,7 +318,7 @@ else
             <Div Class="col">
                 <div class="form-group">
                     <label for="text">สถานะ</label>
-                    <input id="text" name="text" type="text" class="form-control" readonly>
+                    <input id="text" @bind-value="status" type="text" class="form-control" readonly>
                 </div>
             </Div>
         </Div>

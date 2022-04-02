@@ -59,7 +59,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <Modal Style="color:black" @ref="e">
-    <ModalContent Size="ModalSize.Large">
+    <ModalContent Size="ModalSize.Fullscreen">
         <ModalHeader>
             <CloseButton></CloseButton>
         </ModalHeader>
@@ -214,12 +214,14 @@
                     <th>ค่าไฟ</th> @*4*@
                     <th>ค่าบริการ</th>  @*5*@
                     <th>ค่าเช่า</th>    @*6*@
-                    <th>ภาษี</th>    @*7*@
-                    <th>รวม</th>     @*8*@
-                    <th>เป็นค่าเช่า</th> @*9*@
-                    <th>การชำระเงิน</th>@*10*@
-                    <th>วันที่ออก</th>   @*11*@
-                    <th>วันที่ชำระเงิน</th>@*12*@
+                    <th>ค่าบริการเพิ่มเติม</th>    @*7*@
+                    <th>ส่วนลด</th>    @*5*@
+                    <th>ภาษี</th>    @*9*@
+                    <th>รวม</th>     @*10*@
+                    <th>เป็นค่าเช่า</th> @*11*@
+                    <th>การชำระเงิน</th>@*12*@
+                    <th>วันที่ออก</th>   @*13*@
+                    <th>วันที่ชำระเงิน</th>@*14*@
                 </tr>
                 </thead>
                 <tbody>
@@ -234,65 +236,67 @@
                         @*4*@    <td>@(invoice.Electricity != null ?  $"{invoice.Electricity.Total.ToString("#,###")} บาท":"")</td>
                         @*5*@    <td>@(invoice.ServicePrice >  0 ?  $"{invoice.ServicePrice.ToString("#,###")} บาท":"")</td>                       
                         @*6*@    <td>@(invoice.RentalPrice >  0 ?  $"{invoice.RentalPrice.ToString("#,###")} บาท":"")</td>
-                        @*7*@        <td>@(invoice.Tax > 0 ? $"{invoice.Tax.ToString("#,###")} บาท":"")</td>
-                        @*8*@    <td>@($"{invoice.GrandTotal.ToString("#,###")} บาท")</td>
-                        @*9*@    <td>@if (invoice.RentalPrice > 0) { <i class="check icon"></i>}</td>
-                        @*10*@    <td>@if (invoice.Ispaid) { <i class="check icon"></i>}</td>
-                        @*11*@    <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
-                        @*12*@    <td style="color:@statusColor;font-weight:bold">@invoiceStatus</td>
+                        @*7*@    <td>@(invoice.Fee >  0 ?  $"{invoice.Fee.ToString("#,###")} บาท":"")</td>
+                        @*8*@    <td>@(invoice.Discount.HasValue ?  $"{invoice.Discount.Value.ToString("#,###")} บาท":"")</td>
+                        @*9*@        <td>@(invoice.Tax > 0 ? $"{invoice.Tax.ToString("#,###")} บาท":"")</td>
+                        @*10*@    <td>@($"{invoice.GrandTotal.ToString("#,###")} บาท")</td>
+                        @*11*@    <td>@if (invoice.RentalPrice > 0) { <i class="check icon"></i>}</td>
+                        @*12*@    <td>@if (invoice.Ispaid) { <i class="check icon"></i>}</td>
+                        @*13*@    <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                        @*14*@    <td style="color:@statusColor;font-weight:bold">@invoiceStatus</td>
                         </tr>
                     }
                     @if ((waterUsed != null && waterUsed.Count >0) || (electricityUsed != null && electricityUsed.Count >0))
                     {
                     <tr>
-                            <td colspan="11" class="table-success">ไฟฟ้า และ น้ำประปา</td>
+                            <td colspan="14" class="table-success">ไฟฟ้า และ น้ำประปา</td>
                     </tr>
                     <tr style="font-weight:bold">
                         <td colspan="10">Description</td>
-                        <td colspan="2">Value</td>
+                        <td colspan="4">Value</td>
                     </tr>
                     @if(waterUsed != null && waterUsed.Count >0)
                         {
                             <tr>
                                 <td colspan="10">ใช้น้ำประปารวม</td>
-                                <td colspan="2">@waterUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                                <td colspan="4">@waterUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
                             </tr>
                             <tr>
                                 <td colspan="10">คิดเป็น</td>
-                                <td colspan="2">@waterUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                                <td colspan="4">@waterUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
                             </tr>
                         }
                     @if(electricityUsed != null && electricityUsed.Count >0)
                         {
                             <tr>
                                 <td colspan="10">ใช้ไฟฟ้ารวม</td>
-                                <td colspan="2">@electricityUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                                <td colspan="4">@electricityUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
                             </tr>
                             <tr>
                                 <td colspan="10">คิดเป็น</td>
-                                <td colspan="2">@electricityUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                                <td colspan="4">@electricityUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
                             </tr>
                         }
 
                     }
                     <tr>
-                        <td colspan="12" class="table-success">สรุปการชำระ</td>
+                        <td colspan="14" class="table-success">สรุปการชำระ</td>
                     </tr>
                      <tr style="font-weight:bold">
                         <td colspan="10">Description</td>
-                        <td colspan="2">Value</td>
+                        <td colspan="4">Value</td>
                     </tr>
                     <tr>
                         <td colspan="10">ยอดทั้งหมด</td>
-                        <td colspan="2">@relatedInvoices.Where(x=>!x.Iscancel).Select(x=>x.GrandTotal).Sum().ToString("#,###") บาท</td>
+                        <td colspan="4">@relatedInvoices.Where(x=>!x.Iscancel).Select(x=>x.GrandTotal).Sum().ToString("#,###") บาท</td>
                     </tr>
                      <tr>
                         <td colspan="10">ชำระแล้ว</td>
-                        <td colspan="2" style="color:green">@(relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum() > 0 ? relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###"):"0") บาท</td>
+                        <td colspan="4" style="color:green">@(relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum() > 0 ? relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###"):"0") บาท</td>
                     </tr>
                     <tr>
                         <td colspan="10">ค้างชำระ</td>
-                        <td colspan="2" style="color:@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? "red":"green")">@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? $"{ relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###")} บาท": "ไม่มีรายการค้างชำระ" ) </td>
+                        <td colspan="4" style="color:@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? "red":"green")">@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? $"{ relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###")} บาท": "ไม่มีรายการค้างชำระ" ) </td>
                     </tr>
 
                 </tbody>
