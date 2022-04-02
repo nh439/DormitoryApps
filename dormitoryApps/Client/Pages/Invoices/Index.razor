@@ -2,16 +2,18 @@
 @using dormitoryApps.Shared.Model.Entity;
 @using dormitoryApps.Client.Services;
 @using System.Timers;
+@using System.Data;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
 @inject InvoiceServices _invoiceServices;
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
 @inject NavigationManager navigationManager;
+@inject ExportServices _exportServices;
 @inject IJSRuntime jsRuntime;
 @implements IDisposable;
 @code {
-    List<Invoice> invoiceList ;
+    List<Invoice> invoiceList;
     List<Officer> officers = new List<Officer>();
     Timer timer = new Timer();
     int page = 1;
@@ -26,7 +28,7 @@
             if (!x) page = 1;
         }
         var permissioncheck = await _sessionServices.Permissioncheck();
-        if(!permissioncheck)
+        if (!permissioncheck)
         {
             invoiceList = new List<Invoice>();
             return;
@@ -34,17 +36,17 @@
         Get();
         timer = new Timer(1000);
         timer.Elapsed += Tick;
-        timer.Enabled=true;
+        timer.Enabled = true;
         StateHasChanged();
     }
     public async void Get()
     {
-        invoiceList= await _invoiceServices.GetByPage(page);
+        invoiceList = await _invoiceServices.GetByPage(page);
         if (invoiceList == null) invoiceList = new List<Invoice>();
-        officers= await _officerServices.GetEmployee();
+        officers = await _officerServices.GetEmployee();
         count = invoiceList.Count;
     }
-    public void Tick(object sender,ElapsedEventArgs e)
+    public void Tick(object sender, ElapsedEventArgs e)
     {
         Get();
         StateHasChanged();
@@ -68,18 +70,43 @@
     }
     async void Create()
     {
-        string url ="/Invoices/Create";
+        string url = "/Invoices/Create";
         await jsRuntime.InvokeAsync<object>("open", url);
     }
-}
+    async void Export()
+    {
+
+        auto.Open("Exporting...");
+        await Task.Delay(1);
+        try
+        {
+            var filename = $"invoice {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}";
+            var file = await  _exportServices.ExportToExcel(invoiceList);
+            await Task.Delay(10);
+            using var streamRef = new DotNetStreamReference(stream: new MemoryStream(file));
+            await jsRuntime.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            auto.Close();
+            await Task.Delay(1);
+        }
+        catch(Exception x)
+        {   
+            auto.Failed(x.Message);
+             StateHasChanged();
+            await Task.Delay(1);
+        }
+
+    }
+    }
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
-<h1>ใบแจ้งชำระเงิน</h1>
+    <h1>ใบแจ้งชำระเงิน</h1>
 </center>
 <br />
 <br />
 <button class="btn btn-primary mx-1" @onclick="()=> Create()"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
 <button class="btn btn-warning mx-1"><i class="search icon"></i>  Advanced Search</button>
+<button class="btn btn-info mx-1" @onclick="()=>Export()"><i class="file excel outline icon"></i> Export</button>
 <br />
 <br />
 <table class="table" style="text-align:center">
@@ -103,29 +130,29 @@
         </tr>
     </thead>
     <tbody class="table-success">
-        @if(invoiceList==null)
+        @if (invoiceList == null)
         {
             <tr>
                 <td colspan="15">Loading...</td>
             </tr>
         }
-        else if(invoiceList.Count==0)
+        else if (invoiceList.Count == 0)
         {
-             <tr>
+            <tr>
                 <td colspan="15">ไม่พบรายการชำระเงิน</td>
             </tr>
         }
         else
         {
-           @foreach(var invoice in invoiceList)
+            @foreach (var invoice in invoiceList)
             {
                 bool rentalMode = invoice.RentalPrice > 0;
                 bool hasUtilty = invoice.Water != null || invoice.Electricity != null;
                 bool hasService = invoice.IsService;
-                string invoiceType=string.Empty;
-                if(rentalMode) invoiceType = "ค่าเช่า";
-                else if(hasUtilty)invoiceType = "ค่าสาธารณูปโภค";
-                if(hasService) invoiceType = string.IsNullOrEmpty(invoiceType) ? "ค่าบริการเพิ่มเติม" : $"{invoiceType},ค่าบริการเพิ่มเติม";
+                string invoiceType = string.Empty;
+                if (rentalMode) invoiceType = "ค่าเช่า";
+                else if (hasUtilty) invoiceType = "ค่าสาธารณูปโภค";
+                if (hasService) invoiceType = string.IsNullOrEmpty(invoiceType) ? "ค่าบริการเพิ่มเติม" : $"{invoiceType},ค่าบริการเพิ่มเติม";
                 if (string.IsNullOrEmpty(invoiceType)) invoiceType = "อื่นๆ";
                 <tr>
                     <td>@invoice.Id</td>
@@ -135,24 +162,39 @@
                     <td>@invoice.GrandTotal.ToString("#,###") บาท</td>
                     <td>@invoice.Paid.ToString("#,###") บาท</td>
                     <td>@invoice.Changes.ToString("#,###") บาท</td>
-                    <td>@if (invoice.RentalPrice > 0) { <i class="check icon"></i>}</td>
-                    <td>@if (invoice.Ispaid) { <i class="check icon"></i>}</td>
-                    <td>@if (invoice.Iscancel) { <i class="check icon"></i>}</td>
+                    <td>
+                        @if (invoice.RentalPrice > 0)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (invoice.Ispaid)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (invoice.Iscancel)
+                        {
+                            <i class="check icon"></i>
+                        }
+                    </td>
                     <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
-                    <td>@(invoice.PaidDate.HasValue ? invoice.PaidDate.Value.ToString("dd MMMM yyyy HH:mm:ss"):"")</td>                  
+                    <td>@(invoice.PaidDate.HasValue ? invoice.PaidDate.Value.ToString("dd MMMM yyyy HH:mm:ss"):"")</td>
                     <td>@GetOfficerName(invoice.InvoiceOfficer)</td>
                     <td>@GetOfficerName(invoice.PaidOfficer)</td>
                     <td>
                         <button class="btn btn-info mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="รายละเอียด" @onclick="()=>Details.Open(invoice.Id)">
                             <i class="book icon"></i>
                         </button>
-                         
 
-                        @if(!invoice.Iscancel && !invoice.Ispaid)
+
+                        @if (!invoice.Iscancel && !invoice.Ispaid)
                         {
                             <button class="btn btn-danger mx-1" data-bs-toggle="tooltip" @onclick="()=>cancellation.Open(invoice.Id)" data-bs-placement="bottom" title="ยกเลิกใบชำระ">
-                            <i class="trash icon"></i>
-                        </button>
+                                <i class="trash icon"></i>
+                            </button>
                             <button class="btn btn-success mx-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ชำระเงิน" @onclick="()=>paidInvoice.Open(invoice.Id)">
                                 <i class="money bill alternate outline icon"></i>
                             </button>
@@ -164,31 +206,33 @@
     </tbody>
 </table>
 <nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-    <li class="page-item @(page <=1 ?  "disabled":"")">
-      <button class="page-link" @onclick="()=>Changepage(page-1)">Previous</button>
-    </li>
-    @for(int i =-1;i<=1;i++)
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(page <=1 ?  "disabled":"")">
+            <button class="page-link" @onclick="()=>Changepage(page-1)">Previous</button>
+        </li>
+        @for (int i = -1; i <= 1; i++)
         {
             int destinationPage = page + i;
-            if(destinationPage >= 1 && (count < 20 && destinationPage > page)==false)
+            if (destinationPage >= 1 && (count < 20 && destinationPage > page) == false)
             {
                 <li class="page-item @(destinationPage==page ? "active":"")"><button class="page-link" @onclick="()=>Changepage(destinationPage)">@destinationPage</button></li>
             }
         }
-        
-    <li class="page-item @(count < 20 ?  "disabled":"")">
-      <button class="page-link" @onclick="()=>Changepage(page+1)">Next</button>
-    </li>
-  </ul>
+
+        <li class="page-item @(count < 20 ?  "disabled":"")">
+            <button class="page-link" @onclick="()=>Changepage(page+1)">Next</button>
+        </li>
+    </ul>
 </nav>
 <dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice @ref="paidInvoice"></dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice>
 <dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
-<dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation"/>
-@code{
+<dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation" />
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
     dormitoryApps.Client.Pages.Invoices.Modal.Cancellation cancellation;
+    dormitoryApps.Client.Pages.Modal.Auto auto;
 }
 <style>
     table {
