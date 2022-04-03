@@ -5,6 +5,7 @@
 @using System.Data;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
+@using Blazorise;
 @inject InvoiceServices _invoiceServices;
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
@@ -73,16 +74,25 @@
         string url = "/Invoices/Create";
         await jsRuntime.InvokeAsync<object>("open", url);
     }
-    async void Export()
+    async void Export(int mode=1)
     {
 
         auto.Open("Exporting...");
         await Task.Delay(1);
         try
         {
-            List<Invoice> allInvoices = await _invoiceServices.GetInvoices();
+
+            List<Invoice> Invoices = new List<Invoice>();//await _invoiceServices.GetInvoices();
+            switch(mode){
+                case 1: 
+                    Invoices = await _invoiceServices.GetInvoices(); 
+                    break;
+                case 2 :
+                    Invoices = invoiceList;
+                    break;
+            }
             var filename = $"invoice {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}.xlsx";
-            var file = await  _exportServices.ExportToExcel(allInvoices);
+            var file = await  _exportServices.ExportToExcel(Invoices);
             _exportServices.Download(file, filename);
             auto.Close();
             await Task.Delay(1);
@@ -232,7 +242,15 @@
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
     dormitoryApps.Client.Pages.Invoices.Modal.Cancellation cancellation;
     dormitoryApps.Client.Pages.Modal.Auto auto;
+    Blazorise.Modal exp;
 }
+<Modal @ref="exp" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>Export Excel</ModalTitle>
+        </ModalHeader>
+    </ModalContent>
+</Modal>
 <style>
     table {
         text-align: center;
@@ -242,3 +260,4 @@
         color: red;
     }
 </style>
+

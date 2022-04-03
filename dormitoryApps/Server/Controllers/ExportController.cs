@@ -116,6 +116,24 @@ namespace dormitoryApps.Server.Controllers
             }
             return ExportToExcel(invoiceTable);
         }
+        public async Task<IActionResult> InvoiceSummaryToExcel([FromBody] IEnumerable<Invoice> invoices)
+        {
+            var paidSummary = invoices.Where(x => x.Ispaid).GroupBy(x => new { x.Month, x.Year }, (s, t) =>
+             new
+             {
+                 Month = s.Month,
+                 Year = s.Year,
+                 CountInvoice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Count(),
+                 GrandTotal = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.GrandTotal).Sum(),
+                 Fee = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Fee).Sum(),
+                 Discount = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Discount ?? 0).Sum(),
+                 Paid = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Paid).Sum(),
+                 Changes = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Changes).Sum(),
+                 ServicePrice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.ServicePrice).Sum(),
+                 Tax = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Tax).Sum()
+             }).ToList();
+            return Ok(200);
+        }
 
         public IActionResult ExportToExcel(DataTable table)
         {
