@@ -42,7 +42,7 @@ namespace dormitoryApps.Client.Services
         {
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(blob));
 
-            await _jSRuntime.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            await _jSRuntime.InvokeAsync<object>("downloadFileFromStream", filename, streamRef);
         }
     }
 }

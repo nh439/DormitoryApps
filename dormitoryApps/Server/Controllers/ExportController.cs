@@ -66,7 +66,7 @@ namespace dormitoryApps.Server.Controllers
             return Ok("Export Failed");
         }
         [HttpPost(BaseUrl+"/InvoiceExcel")]
-        public async Task< IActionResult> InvoiceExcel(IEnumerable<Invoice> invoices)
+        public async Task< IActionResult> InvoiceExcel([FromBody]IEnumerable<Invoice> invoices)
         {
             List<Officer> officers = await _iofficerServices.Getall();
             DataTable invoiceTable = new DataTable("invoices");
@@ -123,7 +123,29 @@ namespace dormitoryApps.Server.Controllers
             string filename = $"{table.TableName} {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}";
             using (XLWorkbook wb = new XLWorkbook())
             {
-                wb.AddWorksheet(table, table.TableName);
+                var sheet = wb.AddWorksheet(table, table.TableName);
+                sheet.Columns().AdjustToContents();
+                sheet.Cells().Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    wb.SaveAs(stream);
+                    data = stream.ToArray();
+                }
+            }
+            return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{filename}.xlsx");
+        }
+        public IActionResult ExportToExcel(DataSet set)
+        {
+            byte[] data;
+            string filename = $"{set.Namespace} {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}";
+            using (XLWorkbook wb = new XLWorkbook())
+            {
+                foreach(DataTable table in set.Tables)
+                {
+                    var sheet = wb.AddWorksheet(table, table.TableName);
+                    sheet.Columns().AdjustToContents();
+                    sheet.Cells().Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                }
                 using (MemoryStream stream = new MemoryStream())
                 {
                     wb.SaveAs(stream);

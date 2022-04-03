@@ -80,11 +80,10 @@
         await Task.Delay(1);
         try
         {
-            var filename = $"invoice {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}";
-            var file = await  _exportServices.ExportToExcel(invoiceList);
-            await Task.Delay(10);
-            using var streamRef = new DotNetStreamReference(stream: new MemoryStream(file));
-            await jsRuntime.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            List<Invoice> allInvoices = await _invoiceServices.GetInvoices();
+            var filename = $"invoice {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}.xlsx";
+            var file = await  _exportServices.ExportToExcel(allInvoices);
+            _exportServices.Download(file, filename);
             auto.Close();
             await Task.Delay(1);
         }
