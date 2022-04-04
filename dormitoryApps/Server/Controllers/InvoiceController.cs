@@ -27,7 +27,10 @@ namespace dormitoryApps.Server.Controllers
                 {
                     invoices = await _invoiceServices.GetByMonth(Month: month.Value, year: year.Value);
                 }
-                invoices = await _invoiceServices.GetByYear(year.Value);
+                else
+                {
+                    invoices = await _invoiceServices.GetByYear(year.Value);
+                }
             }
             else
             {

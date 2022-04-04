@@ -19,26 +19,39 @@ namespace dormitoryApps.Client.Services
             _httpClient = httpClient;
             _logger = logger;
         }
-        
+
         public async void ExportInvoice(string invoiceId)
         {
             string url = $"{ControllerName}/Invoice/{invoiceId}";
-            await  _jSRuntime.InvokeAsync<object>("open", url);
+            await _jSRuntime.InvokeAsync<object>("open", url);
         }
-        public async Task<byte[]> ExportToExcel(IEnumerable<Invoice> invoices)
+        public async Task<byte[]> ExportInvoiceToExcel(IEnumerable<Invoice> invoices)
         {
             try
             {
                 var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/InvoiceExcel", invoices);
                 return await res.Content.ReadAsByteArrayAsync();
             }
-            catch(Exception x)
+            catch (Exception x)
             {
-                Console.WriteLine(x);
+                _logger.LogError(x.Message);
             }
             return null;
         }
-        public async void Download(byte[] blob,string filename)
+        public async Task<byte[]> ExportInvoiceSummary(IEnumerable<Invoice> invoices)
+        {
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/InvoiceSummaryToExcel", invoices);
+                return await res.Content.ReadAsByteArrayAsync();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message);
+            }
+            return null;
+        }
+        public async void Download(byte[] blob, string filename)
         {
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(blob));
 

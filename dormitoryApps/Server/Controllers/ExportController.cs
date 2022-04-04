@@ -116,6 +116,7 @@ namespace dormitoryApps.Server.Controllers
             }
             return ExportToExcel(invoiceTable);
         }
+        [HttpPost(BaseUrl+ "/InvoiceSummaryToExcel")]
         public async Task<IActionResult> InvoiceSummaryToExcel([FromBody] IEnumerable<Invoice> invoices)
         {
             var paidSummary = invoices.Where(x => x.Ispaid).GroupBy(x => new { x.Month, x.Year }, (s, t) =>
@@ -126,13 +127,113 @@ namespace dormitoryApps.Server.Controllers
                  CountInvoice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Count(),
                  GrandTotal = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.GrandTotal).Sum(),
                  Fee = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Fee).Sum(),
-                 Discount = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Discount ?? 0).Sum(),
+                 Discount = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Discount).Sum(),
                  Paid = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Paid).Sum(),
                  Changes = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Changes).Sum(),
                  ServicePrice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.ServicePrice).Sum(),
                  Tax = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Tax).Sum()
              }).ToList();
-            return Ok(200);
+
+            var UnpaidSummary = invoices.Where(x => !x.Ispaid && !x.Iscancel).GroupBy(x => new { x.Month, x.Year }, (s, t) =>
+             new
+             {
+                 Month = s.Month,
+                 Year = s.Year,
+                 CountInvoice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Count(),
+                 GrandTotal = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.GrandTotal).Sum(),
+                 Fee = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Fee).Sum(),
+                 Discount = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Discount).Sum(),
+                 Paid = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Paid).Sum(),
+                 Changes = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Changes).Sum(),
+                 ServicePrice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.ServicePrice).Sum(),
+                 Tax = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Tax).Sum()
+             }).ToList();
+
+
+            var cancelSummary = invoices.Where(x => x.Iscancel).GroupBy(x => new { x.Month, x.Year }, (s, t) =>
+             new
+             {
+                 Month = s.Month,
+                 Year = s.Year,
+                 CountInvoice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Count(),
+                 GrandTotal = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.GrandTotal).Sum(),
+                 Fee = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Fee).Sum(),
+                 Discount = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Discount).Sum(),
+                 Paid = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Paid).Sum(),
+                 Changes = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Changes).Sum(),
+                 ServicePrice = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.ServicePrice).Sum(),
+                 Tax = t.Where(x => x.Year == s.Year && x.Month == s.Month).Select(x => x.Tax).Sum()
+             }).ToList();
+            DataSet set = new DataSet();
+
+            string[] headers =
+            {
+                "เดือน",
+                "ปี",
+                "จำนวนใบเสร็จ",
+                "ยอดรวมทั้งหมด",
+                "ค่าดำเนินการรวม",
+                "ส่วนลดรวม",
+                "จ่ายรวม",
+                "ทอนรวม",
+                "ค่าบริการอื่นๆรวม",
+                "ภาษีรวม"
+            };
+            DataTable paidtable = new DataTable("จ่ายแล้ว");
+            DataTable upPaidTable = new DataTable("ยังไม่จ่ายเงิน");
+            DataTable cancelTable = new DataTable("ถูกยกเลิก");
+            foreach(var header in headers)
+            {
+                paidtable.Columns.Add(header);
+                upPaidTable.Columns.Add(header);
+                cancelTable.Columns.Add(header);
+            }
+            foreach(var report in paidSummary)
+            {
+                paidtable.Rows.Add(report.Month,
+                    report.Year,
+                    report.CountInvoice,
+                    report.GrandTotal,
+                    report.Fee,
+                    report.Discount,
+                    report.Paid,
+                    report.Changes,
+                    report.ServicePrice,
+                    report.Tax
+                    );
+            }
+            foreach(var report in UnpaidSummary)
+            {
+                upPaidTable.Rows.Add(report.Month,
+                    report.Year,
+                    report.CountInvoice,
+                    report.GrandTotal,
+                    report.Fee,
+                    report.Discount,
+                    report.Paid,
+                    report.Changes,
+                    report.ServicePrice,
+                    report.Tax
+                    );
+            }
+             foreach(var report in cancelSummary)
+            {
+                cancelTable.Rows.Add(report.Month,
+                    report.Year,
+                    report.CountInvoice,
+                    report.GrandTotal,
+                    report.Fee,
+                    report.Discount,
+                    report.Paid,
+                    report.Changes,
+                    report.ServicePrice,
+                    report.Tax
+                    );
+            }
+            set.Tables.Add(paidtable);
+            set.Tables.Add(upPaidTable);
+            set.Tables.Add(cancelTable);
+            return ExportToExcel(set);
         }
 
         public IActionResult ExportToExcel(DataTable table)

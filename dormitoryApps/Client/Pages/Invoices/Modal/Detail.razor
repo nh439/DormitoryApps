@@ -31,10 +31,12 @@
     bool isCash = true;
     bool isLoading = true;
     string status;
+    int percentage = 0;
     public async void Open(string invoiceId)
     {
         await e.Show();
         isLoading = true;
+        percentage = 0;
         StateHasChanged();
         await Task.Delay(1);
         await _invoiceServices.GetById(invoiceId).ContinueWith(response =>
@@ -55,11 +57,29 @@
                 return;
             }
         });
+        percentage = 40;
+        StateHasChanged();
+        await Task.Delay(10);
         current = await _currentCustomerService.Get(item.RentalId);
+        percentage = 50;
+        StateHasChanged();
+        await Task.Delay(1);
         thisroom = await _roomServices.GetRoom(current.RoomId);
+        percentage = 60;
+        StateHasChanged();
+        await Task.Delay(1);
         building = await _buildingServices.Get(thisroom.Building);
+        percentage = 70;
+        StateHasChanged();
+        await Task.Delay(1);
         myServices = await _myServicesServices.GetMyServices();
+        percentage = 80;
+        StateHasChanged();
+        await Task.Delay(1);
         officers = await _officerServices.GetEmployee();
+        percentage = 90;
+        StateHasChanged();
+        await Task.Delay(1);
         status = item.Ispaid ? "ชำระเงินแล้ว" : "ยังไม่ชำระ";
         status = item.Iscancel ? "ยกเลิก" : status;
         isLoading = false;
@@ -80,7 +100,7 @@
             {
                 <center>
                     <Div Class="loader"></Div>
-                    <h1>Loading...</h1>
+                    <h1>Loading... @percentage %</h1>
                 </center>
                 
             }
