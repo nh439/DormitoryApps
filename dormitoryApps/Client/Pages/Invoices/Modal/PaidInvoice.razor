@@ -9,7 +9,8 @@
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
 @inject MyServicesServices _myServicesServices;
-@inject SessionServices _sessionServices
+@inject SessionServices _sessionServices;
+@inject ExportServices _exportServices;
 
 @code {
     Modal e;
@@ -22,15 +23,20 @@
     Buildings building = new Buildings();
     List<MyServices> myServices = new List<MyServices>();
     Officer officer = new Officer();
+    string loadingStatus;
     bool hasWater = false;
     bool hasElectricity = false;
     bool hasRental = false;
     bool hasService = false;
     bool payValid = false;
     bool isCash = true;
+    bool isLoading = true;
     public async void Open(string invoiceId)
     {
+        isLoading = true;
+        loadingStatus = "กำลังเตรียมข้อมูลรายการชำระเงิน(0%)";
         await e.Show();
+        await Task.Delay(1);
         await _invoiceServices.GetById(invoiceId).ContinueWith(response =>
         {
 
@@ -49,12 +55,26 @@
                 return;
             }
         });
+        loadingStatus = "กำลังเตรียมข้อมูลลูกค้า(50%)";
+        StateHasChanged();
+        await Task.Delay(10);
         current = await _currentCustomerService.Get(item.RentalId);
+        loadingStatus = "กำลังเตรียมข้อมูลห้องพัก(70%)";
+        StateHasChanged();
+        await Task.Delay(10);
         thisroom = await _roomServices.GetRoom(current.RoomId);
         building = await _buildingServices.Get(thisroom.Building);
-        myServices = await _myServicesServices.GetMyServices();
-        officer = await _sessionServices.GetCurrentLogin();
+        loadingStatus = "กำลังเตรียมข้อมูลการใช้บริการอื่นๆ(80%)";
         StateHasChanged();
+        await Task.Delay(10);
+        myServices = await _myServicesServices.GetMyServices();
+        loadingStatus = "กำลังเตรียมข้อมูลอื่นๆ(90%)";
+        StateHasChanged();
+        await Task.Delay(10);
+        officer = await _sessionServices.GetCurrentLogin();
+        isLoading = false;
+        StateHasChanged();
+        await Task.Delay(10);
     }
     public async void InputSlip(InputFileChangeEventArgs e)
     {
@@ -74,6 +94,7 @@
     }
     async void SaveChanges()
     {
+
         try
         {
             item.Ispaid = true;
@@ -81,11 +102,11 @@
             item.Paidwith = isCash ? "เงินสด" : item.Paidwith;
             item.PaidDate = DateTime.Now;
             item.PaidOfficer = officer.Id;
-            if(item.Electricity != null && item.Electricity != new Electricity())
+            if (item.Electricity != null && item.Electricity != new Electricity())
             {
                 item.Electricity.Paid = true;
             }
-             if(item.Water != null && item.Water != new Water())
+            if (item.Water != null && item.Water != new Water())
             {
                 item.Water.Paid = true;
             }
@@ -95,24 +116,26 @@
             {
                 return;
             }
+            auto.Open("Submitting");
+            await Task.Delay(1);
             var actionResult = await _invoiceServices.Update(item);
             if (actionResult)
             {
-                success.NextRequired = false;
-                success.Details = "ชำระเงินเรียบร้อย";
-                success.Open();
+                auto.Success("ชำระเงินเรียบร้อย");
                 await e.Hide();
-                item = new Invoice(){Services = new List<InvoiceService>()};
-                await InvokeAsync(StateHasChanged);
+                await Task.Delay(1);
+                _exportServices.ExportInvoice(item.Id);
+                item = new Invoice() { Services = new List<InvoiceService>() };
+                await InvokeAsync(StateHasChanged);               
                 return;
             }
-            error.Details = "Something Went Wrong";
-            error.Open();
+            auto.Failed("Something Went Wrong");
+            await Task.Delay(1);
         }
         catch (Exception x)
         {
-            error.Details = x.Message;
-            error.Open();
+            auto.Failed(x.Message);
+            await Task.Delay(1);
         }
         await InvokeAsync(StateHasChanged);
     }
@@ -127,206 +150,217 @@
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
-            <center>
-                <h1>จ่ายเงิน</h1>
-            </center>
-            <br />
-            <br />
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text" class="col-4 col-form-label">รหัส</label>
-                        <div class="col-8">
-                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+            @if (isLoading)
+            {
+                <center>
+                    <Div Class="loader"></Div>
+                    <br>
+                    <h1>@loadingStatus</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>จ่ายเงิน</h1>
+                </center>
+                <br />
+                <br />
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text" class="col-4 col-form-label">รหัส</label>
+                            <div class="col-8">
+                                <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                            </div>
                         </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">รหัสการเช่า</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="item.RentalId" type="text" class="form-control" readonly>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">รหัสการเช่า</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="item.RentalId" type="text" class="form-control" readonly>
+                            </div>
                         </div>
-                    </div>
+                    </Div>
                 </Div>
-            </Div>
-            <Div Class="row">
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">ห้อง</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="thisroom.RoomName" type="text" class="form-control" readonly>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">ห้อง</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="thisroom.RoomName" type="text" class="form-control" readonly>
+                            </div>
                         </div>
-                    </div>
-                </Div>
-                <Div Class="col">
-                    <div class="form-group row">
-                        <label for="text2" class="col-4 col-form-label">อาคาร</label>
-                        <div class="col-8">
-                            <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group row">
+                            <label for="text2" class="col-4 col-form-label">อาคาร</label>
+                            <div class="col-8">
+                                <input id="text2" @bind-value="building.Name" type="text" class="form-control" readonly>
+                            </div>
                         </div>
-                    </div>
+                    </Div>
                 </Div>
-            </Div>
-            <h2>รายชื่อ</h2>
-            <hr />
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ชื่อ-สกุล</th>
-                        <th>สถานะ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var itm in current.Members)
-                    {
+                <h2>รายชื่อ</h2>
+                <hr />
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
-                            <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
+                            <th>ชื่อ-สกุล</th>
+                            <th>สถานะ</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-            <h2>รายการ</h2>
-            <table class="table table-bordered border-primary">
-                <thead>
-                    <tr>
-                        <th>รายละเอียด</th>
-                        <th>เลขครั้งก่อน</th>
-                        <th>เลขที่จด</th>
-                        <th>จำนวนหน่วย</th>
-                        <th>หน่วยละ</th>
-                        <th>รวม</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (hasRental)
-                    {
-                        <tr>
-                            <td>ค่าเช่าห้อง</td>
-                            <td></td>
-                            <td></td>
-                            <td>1</td>
-                            <td>@item.RentalPrice บาท</td>
-                            <td>@item.RentalPrice บาท</td>
-                        </tr>
-                    }
-                    @if (hasWater)
-                    {
-                        var water = item.Water != null ? item.Water : new Water();
-                        <tr>
-                            <td>ค่าน้ำ</td>
-                            <td>@water.BeforeUnit</td>
-                            <td>@water.CurrentUnit</td>
-                            <td>@(water.CurrentUnit-water.BeforeUnit)</td>
-                            <td>@water.Price.ToString("#,###") บาท</td>
-                            <td>@water.Total.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (hasElectricity)
-                    {
-                        var electricity = item.Electricity != null ? item.Electricity : new Electricity();
-                        <tr>
-                            <td>ค่าน้ำ</td>
-                            <td>@electricity.BeforeUnit</td>
-                            <td>@electricity.CurrentUnit</td>
-                            <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
-                            <td>@electricity.Price.ToString("#,###") บาท</td>
-                            <td>@electricity.Total.ToString("#,###") บาท</td>
-                        </tr>
-                    }
-                    @if (hasService)
-                    {
-                        <tr>
-                            <td colspan="6" class="table-primary">บริการเพิ่มเติม</td>
-                        </tr>
-                        @foreach (var serv in item.Services)
+                    </thead>
+                    <tbody>
+                        @foreach (var itm in current.Members)
                         {
-                            string serviceName = serv.ServiceId.HasValue ? myServices.Where(x => x.Id == serv.ServiceId.Value).FirstOrDefault().Name : serv.Specifiy;
                             <tr>
-                                <td colspan="5">@serviceName</td>
-                                <td>@serv.Price.ToString("#,###") บาท</td>
+                                <td>@($"{itm.Member.Firstname}  {itm.Member.Surname}")</td>
+                                <td>@(itm.IsMain? "ผู้เช่าหลัก": "ผู้เช่าร่วม")</td>
                             </tr>
                         }
-                    }
-                    @if (item.Fee > 0)
-                    {
+                    </tbody>
+                </table>
+                <h2>รายการ</h2>
+                <table class="table table-bordered border-primary">
+                    <thead>
                         <tr>
-                            <td colspan="5" class="table-danger">ค่าธรรมเนียม</td>
-                            <td class="table-danger">@item.Fee.ToString("#,###") บาท</td>
+                            <th>รายละเอียด</th>
+                            <th>เลขครั้งก่อน</th>
+                            <th>เลขที่จด</th>
+                            <th>จำนวนหน่วย</th>
+                            <th>หน่วยละ</th>
+                            <th>รวม</th>
                         </tr>
-                    }
-                    @if (item.Discount.HasValue)
-                    {
+                    </thead>
+                    <tbody>
+                        @if (hasRental)
+                        {
+                            <tr>
+                                <td>ค่าเช่าห้อง</td>
+                                <td></td>
+                                <td></td>
+                                <td>1</td>
+                                <td>@item.RentalPrice บาท</td>
+                                <td>@item.RentalPrice บาท</td>
+                            </tr>
+                        }
+                        @if (hasWater)
+                        {
+                            var water = item.Water != null ? item.Water : new Water();
+                            <tr>
+                                <td>ค่าน้ำ</td>
+                                <td>@water.BeforeUnit</td>
+                                <td>@water.CurrentUnit</td>
+                                <td>@(water.CurrentUnit-water.BeforeUnit)</td>
+                                <td>@water.Price.ToString("#,###") บาท</td>
+                                <td>@water.Total.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (hasElectricity)
+                        {
+                            var electricity = item.Electricity != null ? item.Electricity : new Electricity();
+                            <tr>
+                                <td>ค่าน้ำ</td>
+                                <td>@electricity.BeforeUnit</td>
+                                <td>@electricity.CurrentUnit</td>
+                                <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
+                                <td>@electricity.Price.ToString("#,###") บาท</td>
+                                <td>@electricity.Total.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (hasService)
+                        {
+                            <tr>
+                                <td colspan="6" class="table-primary">บริการเพิ่มเติม</td>
+                            </tr>
+                            @foreach (var serv in item.Services)
+                            {
+                                string serviceName = serv.ServiceId.HasValue ? myServices.Where(x => x.Id == serv.ServiceId.Value).FirstOrDefault().Name : serv.Specifiy;
+                                <tr>
+                                    <td colspan="5">@serviceName</td>
+                                    <td>@serv.Price.ToString("#,###") บาท</td>
+                                </tr>
+                            }
+                        }
+                        @if (item.Fee > 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-danger">ค่าธรรมเนียม</td>
+                                <td class="table-danger">@item.Fee.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (item.Discount.HasValue)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-success">ส่วนลด</td>
+                                <td class="table-success">-@item.Discount.Value.ToString("#,###") บาท</td>
+                            </tr>
+                        }
+                        @if (item.Tax > 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="table-danger">ภาษี</td>
+                                <td class="table-danger">@item.Tax.ToString("#,###") บาท</td>
+                            </tr>
+                        }
                         <tr>
-                            <td colspan="5" class="table-success">ส่วนลด</td>
-                            <td class="table-success">-@item.Discount.Value.ToString("#,###") บาท</td>
+                            <td colspan="5" class="table-primary">ยอดรวม</td>
+                            <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
                         </tr>
-                    }
-                    @if (item.Tax > 0)
-                    {
                         <tr>
-                            <td colspan="5" class="table-danger">ภาษี</td>
-                            <td class="table-danger">@item.Tax.ToString("#,###") บาท</td>
+                            <td colspan="5">รับเงินมา</td>
+                            <td>
+                                <input id="text2" @bind-value="item.Paid" type="number" class="form-control @(payValid ? "is-invalid":"")">
+                                <br />
+                                <small style="display:@(payValid ? "block":"none")">จำนวนเงินที่จ่ายต้องมากกว่า ราคารวม</small>
+                            </td>
                         </tr>
-                    }
-                    <tr>
-                        <td colspan="5" class="table-primary">ยอดรวม</td>
-                        <td class="table-primary"><b> @item.GrandTotal.ToString("#,###") บาท </b></td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">รับเงินมา</td>
-                        <td>
-                            <input id="text2" @bind-value="item.Paid" type="number" class="form-control @(payValid ? "is-invalid":"")">
-                            <br />
-                            <small style="display:@(payValid ? "block":"none")">จำนวนเงินที่จ่ายต้องมากกว่า ราคารวม</small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">เงินทอน</td>
-                        <td>@(item.Paid-item.GrandTotal != 0 ? (item.Paid-item.GrandTotal).ToString("#,###") : "0") บาท</td>
-                    </tr>
-                </tbody>
-            </table>
-            <h2>จ่ายเงิน</h2>
-            <div class="form-group row">
-                <div class="col-4"></div>
-                <div class="col-8">
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="()=>{isCash=true; StateHasChanged();}" checked="@isCash">
-                        <label for="radio_0" class="custom-control-label">เงินสด</label>
-                    </div>
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input name="radio" id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="()=>{isCash=false; StateHasChanged();}" checked="@(!isCash)">
-                        <label for="radio_1" class="custom-control-label">โอนเงิน</label>
-                    </div>
-                </div>
-            </div>
-            @if (!isCash)
-            {
+                        <tr>
+                            <td colspan="5">เงินทอน</td>
+                            <td>@(item.Paid-item.GrandTotal != 0 ? (item.Paid-item.GrandTotal).ToString("#,###") : "0") บาท</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h2>จ่ายเงิน</h2>
                 <div class="form-group row">
-                    <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                    <div class="col-4"></div>
                     <div class="col-8">
-                        <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
+                        <div class="custom-control custom-radio custom-control-inline">
+                            <input name="radio" id="radio_0" type="radio" class="custom-control-input" value="true" @onchange="()=>{isCash=true; StateHasChanged();}" checked="@isCash">
+                            <label for="radio_0" class="custom-control-label">เงินสด</label>
+                        </div>
+                        <div class="custom-control custom-radio custom-control-inline">
+                            <input name="radio" id="radio_1" type="radio" class="custom-control-input" value="false" @onchange="()=>{isCash=false; StateHasChanged();}" checked="@(!isCash)">
+                            <label for="radio_1" class="custom-control-label">โอนเงิน</label>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label for="text" class="col-4 col-form-label">References</label>
-                    <div class="col-8">
-                        <input id="text" @bind-value="item.TransactionId" type="text" class="form-control">
+                @if (!isCash)
+                {
+                    <div class="form-group row">
+                        <label for="text" class="col-4 col-form-label">วิธีการชำระเงิน</label>
+                        <div class="col-8">
+                            <input id="text" @bind-value="item.Paidwith" type="text" class="form-control">
+                        </div>
                     </div>
-                </div>
+                    <div class="form-group row">
+                        <label for="text" class="col-4 col-form-label">References</label>
+                        <div class="col-8">
+                            <input id="text" @bind-value="item.TransactionId" type="text" class="form-control">
+                        </div>
+                    </div>
 
-                <Div Class="container">
-                    <center>
-                    <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
-                    </center>
-                </Div>
-                <br />
-                <div class="mb-3">
-                    <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
-                    <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
-                </div>
+                    <Div Class="container">
+                        <center>
+                            <img height="500" width="300" src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}":"")">
+                        </center>
+                    </Div>
+                    <br />
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">อัพโหลดหลักฐานการโอนเงิน</label>
+                        <InputFile OnChange="InputSlip" class="form-control" id="formFile" />
+                    </div>
+                }
             }
         </ModalBody>
         <ModalFooter>
@@ -337,9 +371,11 @@
 </Modal>
 <dormitoryApps.Client.Pages.Modal.Error @ref="error" />
 <dormitoryApps.Client.Pages.Modal.Success @ref="success" />
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
 @code {
     private dormitoryApps.Client.Pages.Modal.Error error;
     private dormitoryApps.Client.Pages.Modal.Success success;
+    private dormitoryApps.Client.Pages.Modal.Auto auto;
 }
 <style>
     table {

@@ -85,7 +85,7 @@
             {
                 <tr>
                     <td>@customer.Id</td>
-                    <td>@rooms.Where(x=>x.Id== customer.RoomId).FirstOrDefault().RoomName</td>
+                    <td>@(rooms.Where(x=>x.Id== customer.RoomId).FirstOrDefault() != null ?rooms.Where(x=>x.Id== customer.RoomId).FirstOrDefault().RoomName:"Unknown Room")</td>
                     <td>@(customer.Members != null ? customer.Members.Count :0)</td>
                     <td>@customer.Stayed.ToLongDateString() @(customer.Booking ? "*":string.Empty)</td>
                     <td>@customer.Rental บาท</td>

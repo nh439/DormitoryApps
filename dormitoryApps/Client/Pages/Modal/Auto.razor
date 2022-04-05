@@ -140,8 +140,7 @@
         ErrorHeader = Header;
         StateHasChanged();
     }
-
-    private async void Close()
+    public async void Close()
     {
         await e.Hide();
         if (NextRequired)

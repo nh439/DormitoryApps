@@ -1,5 +1,6 @@
 ﻿@using Blazorise;
 @using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json;
 @using dormitoryApps.Client.Services;
 @using System.Timers;
 @inject CurrentCustomerService _currentCustomerService;
@@ -8,7 +9,7 @@
 @inject SessionServices _sessionServices;
 @inject BuildingServices _buildingServices;
 @inject InvoiceServices _invoiceServices;
-
+@inject ClientdataServices _clientdataServices;
 
 @code {
     Modal e;
@@ -23,6 +24,7 @@
     int counter = 0;
     Member MainMember = new Member();
     List<CurrentCustomer> currentCustomer = new List<CurrentCustomer>();
+    DefaultRental defaultRental = new DefaultRental();
     int[] notAvaliablerooms = new int[0];
     bool roomValidate = false;
     bool savedisabled = true;
@@ -41,6 +43,9 @@
         if (currentCustomer == null) currentCustomer = new List<CurrentCustomer>();
         if (rooms == null) rooms = new List<Room>();
         notAvaliablerooms = currentCustomer.Select(x => x.RoomId).ToArray();
+        defaultRental = await _clientdataServices.GetDefaultRental();
+        item.BookingFee = defaultRental.BookingFee;
+        item.Booking = true;
         StateHasChanged();
     }
     void RentalChanged(ChangeEventArgs e)
@@ -304,7 +309,7 @@
                     <div class="form-group">
                         <label for="textกฟหก">ค่าจอง</label>
                         <div class="input-group">
-                            <input id="textกฟหก" @bind-value="item.BookingFee" type="text" class="form-control">
+                            <input id="text" @bind-value="item.BookingFee" type="text" class="form-control" readonly="@defaultRental.Readonly">
                             <div class="input-group-append">
                                 <div class="input-group-text">บาท</div>
                             </div>
