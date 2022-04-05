@@ -9,7 +9,8 @@
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
 @inject MyServicesServices _myServicesServices;
-@inject SessionServices _sessionServices
+@inject SessionServices _sessionServices;
+@inject ExportServices _exportServices;
 
 @code {
     Modal e;
@@ -123,8 +124,9 @@
                 auto.Success("ชำระเงินเรียบร้อย");
                 await e.Hide();
                 await Task.Delay(1);
+                _exportServices.ExportInvoice(item.Id);
                 item = new Invoice() { Services = new List<InvoiceService>() };
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);               
                 return;
             }
             auto.Failed("Something Went Wrong");

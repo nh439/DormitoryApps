@@ -9,8 +9,9 @@
 @inject RoomServices _roomServices;
 @inject BuildingServices _buildingServices;
 @inject MyServicesServices _myServicesServices;
-@inject SessionServices _sessionServices
+@inject SessionServices _sessionServices;
 @inject OfficerServices _officerServices;
+@inject ExportServices _exportServices;
 
 @code {
     Modal e;
@@ -85,6 +86,10 @@
         isLoading = false;
         await Task.Delay(1);
         StateHasChanged();
+    }
+    void Export()
+    {
+        _exportServices.ExportInvoice(item.Id);
     }
 
 }
@@ -253,7 +258,7 @@
                         {
                             var electricity = item.Electricity;
                             <tr>
-                                <td>ค่าน้ำ</td>
+                                <td>ค่าไฟฟ้า</td>
                                 <td>@electricity.BeforeUnit</td>
                                 <td>@electricity.CurrentUnit</td>
                                 <td>@(electricity.CurrentUnit-electricity.BeforeUnit)</td>
@@ -358,6 +363,7 @@
             }
         </ModalBody>
         <ModalFooter>
+            <Button Class="btn btn-outline-info" @onclick="Export">ออกใบเสร็จย้อนหลัง</Button>
             <Button Class="btn btn-outline-danger" @onclick="()=>e.Hide()">close</Button>
         </ModalFooter>
     </ModalContent>

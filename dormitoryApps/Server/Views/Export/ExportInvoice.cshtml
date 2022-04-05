@@ -3,8 +3,13 @@
 *@
 @using System.Globalization;
 @using dormitoryApps.Shared.Model.Export;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Server.Services;
+@inject IMyServicesServices _myServicesServices;
 @model InvoiceExport;
 @{
+    List<MyServices> myServices = await _myServicesServices.Getall();
+    Member mainMember = Model.Customers != null ? Model.Customers.Members.Where(x => x.IsMain).FirstOrDefault().Member : Model.PastCustomer.Members.Where(x => x.IsMain).FirstOrDefault().Member;
 }
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 <center>
@@ -14,7 +19,7 @@
     <div class="col">
         <h4>เลขที่ <b>@Model.InvoiceId</b></h4>
         <br />
-        <h4>สถานะ <b>@(Model.Invoice.Ispaid ? "จ่ายแล้ว":"ยังไม่จ่าย")</b></h4>
+        <h4>สถานะ <b>@(Model.Invoice.Ispaid ? "จ่ายแล้ว":Model.Invoice.Iscancel ? "ยกเลิก" :"ยังไม่จ่าย")</b></h4>
         <br />
         <h4>พนักงานออกบิล <b>@($"{Model.InvoiceOfficer.Firstname} {Model.InvoiceOfficer.Surname}")</b></h4>
     </div>
@@ -26,8 +31,114 @@
         <br />
         @if (Model.Invoice.Ispaid)
         {
-           
-        <h4>@("พนักงานรับเงิน") <b>@($"{Model.PaidOfficer.Firstname} {Model.PaidOfficer.Surname}")</b></h4>
+
+            <h4>@("พนักงานรับเงิน") <b>@($"{Model.PaidOfficer.Firstname} {Model.PaidOfficer.Surname}")</b></h4>
         }
     </div>
+</div>
+<center>
+    <h3>ชื่อลูกค้า <u>@($" คุณ {mainMember.Firstname} {mainMember.Surname}")</u></h3>
+    <h1>รายการ</h1>
+    <br />
+    <table class="table table-bordered  border-dark" border="2" style="text-align:center;width:90%">
+        <thead>
+            <tr>
+                <th>ชื่อ</th>
+                <th>หน่วยละ</th>
+                <th>จำนวน</th>
+                <th>รวม</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Invoice.RentalPrice > 0)
+            {
+                <tr>
+                    <td>ค่าเช่าห้อง</td>
+                    <td>@Model.Invoice.RentalPrice.ToString("#,###") บาท</td>
+                    <td>1</td>
+                    <td>@Model.Invoice.RentalPrice.ToString("#,###") บาท</td>
+                </tr>
+            }
+            @if (Model.Invoice.Electricity != null && Model.Invoice.Electricity.Total > 0)
+            {
+                var electricity = Model.Invoice.Electricity;
+                <tr>
+                    <td>ค่าไฟฟ้า</td>
+                    <td>@electricity.Price บาท</td>
+                    <td>@((electricity.CurrentUnit-electricity.BeforeUnit).ToString("#,###")) หน่วย</td>
+                    <td>@electricity.Total.ToString("#,###") บาท</td>
+                </tr>
+            }
+            @if (Model.Invoice.Water != null && Model.Invoice.Water.Total > 0)
+            {
+                var water = Model.Invoice.Water;
+                <tr>
+                    <td>ค่าไฟฟ้า</td>
+                    <td>@water.Price บาท</td>
+                    <td>@((water.CurrentUnit-water.BeforeUnit).ToString("#,###")) หน่วย</td>
+                    <td>@water.Total.ToString("#,###") บาท</td>
+                </tr>
+            }
+            @if (Model.Invoice.IsService)
+            {
+                @foreach (var serv in Model.Invoice.Services)
+                {
+                    <tr>
+                        <td>@(!serv.OtherService ?  @myServices.Where(x=>x.Id==serv.ServiceId).FirstOrDefault().Name:serv.Specifiy)</td>
+                        <td>@serv.Price.ToString("#,###") บาท</td>
+                        <td>1</td>
+                        <td>@serv.Price.ToString("#,###") บาท</td>
+                    </tr>
+                }
+            }
+            @if (Model.Invoice.Fee > 0)
+            {
+                <tr>
+                    <td colspan="3">ค่าบริการเพิ่มเติม</td>
+                    <td>@Model.Invoice.Fee.ToString("#,###") บาท</td>
+                </tr>
+            }
+            @if (Model.Invoice.Discount.HasValue)
+            {
+                <tr>
+                    <td colspan="3">ส่วนลด</td>
+                    <td>@Model.Invoice.Discount.Value.ToString("#,###") บาท</td>
+                </tr>
+            }
+            @if (Model.Invoice.Tax > 0)
+            {
+                <tr>
+                    <td colspan="3">ภาษี</td>
+                    <td>@Model.Invoice.Tax.ToString("#,###") บาท</td>
+                </tr>
+            }
+            <tr>
+                <td colspan="3">ยอดรวม</td>
+                <td>@Model.Invoice.GrandTotal.ToString("#,###") บาท</td>
+            </tr>
+            @if (Model.Invoice.Ispaid)
+            {
+                <tr>
+                    <td colspan="3">รับเงินมา</td>
+                    <td>@Model.Invoice.Paid.ToString("#,###") บาท</td>
+                </tr>
+                 <tr>
+                    <td colspan="3">เงินทอน</td>
+                    <td>@Model.Invoice.Changes.ToString("#,###") บาท</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Invoice.Iscancel)
+    {
+        <h1 style = "color:red">ใบเสร็จฉบับนี้โดนยกเลิก</h1>
+    }
+</center>
+ @if (Model.Invoice.Iscancel)
+{
+    <h2>โดนยกเลิกเนื่องจาก</h2>
+    <h3>@Html.Raw(Model.Invoice.CancellationComment)</h3>
+}
+<div style="text-align:right">
+    พิมพ์เมือ @Model.ExportDate.ToString("dddd dd MMMM yyyy HH:mm:ss",new System.Globalization.CultureInfo("th-TH"))&nbsp;&nbsp;
 </div>
