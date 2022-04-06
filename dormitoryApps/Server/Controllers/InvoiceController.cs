@@ -18,23 +18,39 @@ namespace dormitoryApps.Server.Controllers
             _logger = logger;
         }
         [HttpGet(BaseUrl)]
-        public async Task< IActionResult> Index(int? year,int? month,int? page)
+        public async Task< IActionResult> Index(int? year,int? month,int? page,string filter)
         {
             List<Invoice> invoices;
-            if (year.HasValue)
+          
+            if(!string.IsNullOrEmpty(filter))
             {
-                if (month.HasValue)
+                invoices = await _invoiceServices.GetContains(filter);
+                if (year.HasValue)
                 {
-                    invoices = await _invoiceServices.GetByMonth(Month: month.Value, year: year.Value);
-                }
-                else
-                {
-                    invoices = await _invoiceServices.GetByYear(year.Value);
+                    invoices = invoices.Where(x=>x.Year==year.Value).ToList();
+                    if (month.HasValue)
+                    {
+                        invoices = invoices.Where(x=>x.Month==month.Value).ToList();
+                    }                   
                 }
             }
             else
             {
-                invoices = await _invoiceServices.GetAll();
+                if (year.HasValue)
+                {
+                    if (month.HasValue)
+                    {
+                        invoices = await _invoiceServices.GetByMonth(Month: month.Value, year: year.Value);
+                    }
+                    else
+                    {
+                        invoices = await _invoiceServices.GetByYear(year.Value);
+                    }
+                }
+                else
+                {
+                    invoices = await _invoiceServices.GetAll();
+                }
             }
             if(page.HasValue)
             {

@@ -66,6 +66,14 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"Id='{InvoiceId}'");
             return res.FirstOrDefault();
         }
+        public async Task<List<Invoice>> GetContains(string IdKeyWord)
+        {
+            ConditionSet set = new ConditionSet();
+            set.Add("Id", IdKeyWord, SqlOperator.Contain, SqlCondition.AND);
+            set.Add("RentalId", IdKeyWord, SqlOperator.Contain, SqlCondition.AND);
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, set);
+            return res.ToList();
+        }
         public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
         {
             ConditionSet set = new ConditionSet();

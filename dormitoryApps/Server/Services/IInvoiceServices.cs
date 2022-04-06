@@ -17,6 +17,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Invoice>> GetByRental(string RentalId);
         Task<Invoice> GetById(string InvoiceId);
         Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria);
+        Task<List<Invoice>> GetContains(string IdKeyWord);
     }
     public class InvoiceServices : IInvoiceServices
     {
@@ -162,6 +163,16 @@ namespace dormitoryApps.Server.Services
         {
             var res = await _repository.GetWithAdvancesearch(criteria);
             res.ForEach(async x => { 
+                x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
+                x.Water = await _waterRepository.GetByInvoiceId(x.Id);
+                x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
+            });
+            return res;
+        }
+        public async Task<List<Invoice>> GetContains(string IdKeyWord)
+        {
+            var res = await _repository.GetContains(IdKeyWord);
+            res.ForEach(async x => {
                 x.Services = await _invoiceserviceRepository.GetByInvoice(x.Id);
                 x.Water = await _waterRepository.GetByInvoiceId(x.Id);
                 x.Electricity = await _electricityRepository.GetByInvoiceId(x.Id);
