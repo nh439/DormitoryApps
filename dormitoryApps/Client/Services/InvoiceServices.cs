@@ -189,7 +189,7 @@ namespace dormitoryApps.Client.Services
             List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}&filter={keyword}");
             return invoices;
         }
-        #region
+        #endregion
         public async Task<bool> Create(Invoice invoice)
         {
             await _sessionServices.RequiredPermission();
