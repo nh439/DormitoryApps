@@ -69,8 +69,8 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<Invoice>> GetContains(string IdKeyWord)
         {
             ConditionSet set = new ConditionSet();
-            set.Add("Id", IdKeyWord, SqlOperator.Contain, SqlCondition.AND);
-            set.Add("RentalId", IdKeyWord, SqlOperator.Contain, SqlCondition.AND);
+            set.Add("Id", IdKeyWord, SqlOperator.Contain, SqlCondition.OR);
+            set.Add("RentalId", IdKeyWord, SqlOperator.Contain, SqlCondition.OR);
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, set);
             return res.ToList();
         }

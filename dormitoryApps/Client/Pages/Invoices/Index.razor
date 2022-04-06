@@ -22,6 +22,8 @@
     int exportMonth = 0;
     int exportYear = DateTime.Now.Year;
     long selectedOfficerId = 0;
+    string preQuery;
+    string query;
     protected override async void OnInitialized()
     {
         StringValues queryres;
@@ -45,7 +47,14 @@
     }
     public async void Get()
     {
-        invoiceList = await _invoiceServices.GetByPage(page);
+        if (!string.IsNullOrEmpty(query))
+        {
+            invoiceList = await _invoiceServices.GetContainsWithPage(query, page);
+        }
+        else
+        {
+            invoiceList = await _invoiceServices.GetByPage(page);
+        }
         if (invoiceList == null) invoiceList = new List<Invoice>();
         officers = await _officerServices.GetEmployee();
         count = invoiceList.Count;
@@ -145,6 +154,10 @@
         auto.Close();
         await Task.Delay(1);
     }
+    void Search()
+    {
+        query = preQuery;
+    }
     }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
@@ -160,16 +173,16 @@
 <br />
 <Div Class="row">
     <Div Class="col"> <div class="form-group row">
-    <label class="col-4"></label> 
-    <div class="col-8">
+   
+    <div class="">
       <div class="input-group">
         <div class="input-group-prepend">
           <div class="input-group-text">
             <i class="fa fa-search"></i>
           </div>
         </div> 
-        <input id="text" name="text" placeholder="ค้นหาโดยจากรหัสใบเสร็จ หรือ รหัสผู้เช่า" type="text" class="form-control">
-        <Button Class="btn-link btn-info">Search</Button>
+        <input id="text" @bind-value="preQuery" placeholder="ค้นหาโดยจากรหัสใบเสร็จ หรือ รหัสผู้เช่า" type="text" class="form-control">
+        <Button Class="btn btn-info" @onclick="Search">Search</Button>
       </div>
     </div>
   </div> </Div>
@@ -297,11 +310,13 @@
 <dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
 <dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation" />
 <dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+<dormitoryApps.Client.Pages.Invoices.Modal.AdvancedSearch @="advanced"/>
 @code {
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;
     dormitoryApps.Client.Pages.Invoices.Modal.Cancellation cancellation;
     dormitoryApps.Client.Pages.Modal.Auto auto;
+    dormitoryApps.Client.Pages.Invoices.Modal.AdvancedSearch advanced;
     Blazorise.Modal exp;
 }
 <Blazorise.Modal @ref="exp" Style="color:black">
