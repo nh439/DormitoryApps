@@ -167,7 +167,7 @@
 <br />
 <br />
 <button class="btn btn-primary mx-1" @onclick="()=> Create()"><i class="plus icon"></i>  เพิ่มใบแจ้งชำระเงิน</button>
-<button class="btn btn-warning mx-1"><i class="search icon"></i>  Advanced Search</button>
+<button class="btn btn-warning mx-1" @onclick="()=>advanced.Open()"><i class="search icon"></i>  Advanced Search</button>
 <button class="btn btn-info mx-1" @onclick="async ()=>await exp.Show()"><i class="file excel outline icon"></i> Export</button>
 <br />
 <br />
@@ -310,7 +310,7 @@
 <dormitoryApps.Client.Pages.Invoices.Modal.Detail @ref="Details" />
 <dormitoryApps.Client.Pages.Invoices.Modal.Cancellation @ref="cancellation" />
 <dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
-<dormitoryApps.Client.Pages.Invoices.Modal.AdvancedSearch @="advanced"/>
+<dormitoryApps.Client.Pages.Invoices.Modal.AdvancedSearch @ref="advanced"/>
 @code {
     private dormitoryApps.Client.Pages.Invoices.Modal.PaidInvoice paidInvoice;
     dormitoryApps.Client.Pages.Invoices.Modal.Detail Details;

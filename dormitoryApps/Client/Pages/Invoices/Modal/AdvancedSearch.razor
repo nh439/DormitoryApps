@@ -1,7 +1,13 @@
 ﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Other;
 
 @code {
-
+    Modal e;
+    InvoiceAdvancedSearchCriteria item = new InvoiceAdvancedSearchCriteria();
+    public async void Open()
+    {
+        await e.Show();
+    }
 }
 
 <Modal @ref="e" style="color:black">
@@ -10,9 +16,111 @@
             <CloseButton></CloseButton>
         </ModalHeader>
         <ModalBody>
-</ModalBody>
-<ModalFooter>
+            <center>
+                <h1>ค้นหาใบเสร็จแบบเจาะจง</h1>
+            </center>
+            <h2>วันที่เขียนใบเสร็จ</h2>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">เริ่ม</label>
+                        <input id="text" @bind-value="item.InvoiceDate.Min" type="date" class="form-control">
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ถึง</label>
+                        <input id="text" @bind-value="item.InvoiceDate.Max" type="date" class="form-control">
+                    </div>
+                </Div>
+            </Div>
+            <h2>วันที่ออกใบเสร็จ(ชำระเงิน)</h2>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">เริ่ม</label>
+                        <input id="text" @bind-value="item.PaidDate.Min" type="date" class="form-control">
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="text">ถึง</label>
+                        <input id="text" @bind-value="item.PaidDate.Max" type="date" class="form-control">
+                    </div>
+                </Div>
+            </Div>
+            <div class="form-group">
+                <label for="select">รหัสการเช่า</label>
+                <div>
+                    <select id="select" name="select" class="custom-select">
+                        <option value="rabbit">Rabbit</option>
+                        <option value="duck">Duck</option>
+                        <option value="fish">Fish</option>
+                    </select>
+                </div>
+            </div>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="select">พนักงานออกใบเสร็จ</label>
+                        <div>
+                            <select id="select" @bind="item.InvoiceOfficer" class="custom-select">
+                                <option value="1">Rabbit</option>
+                                <option value="2">Duck</option>
+                                <option value="3">Fish</option>
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="select">พนักงานรับชำระเงิน</label>
+                        <div>
+                            <select id="select" @bind="item.PaidOfficer" class="custom-select">
+                                <option value="1">Rabbit</option>
+                                <option value="2">Duck</option>
+                                <option value="3">Fish</option>
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+            <h2>งวด</h2>
+            <Div Class="row">
+                <Div Class="col">
+                    <div class="form-group">
+                        <label for="select">เดือน</label>
+                        <div>
+                            <select id="select" @bind="item.Month" class="custom-select">
+                                <option value="">ทุกเดือน</option>
+                                @for(int i = 1;i<=12;i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+                <Div Class="col">
+                     <div class="form-group">
+                        <label for="select">ปี</label>
+                        <div>
+                            <select id="select" @bind="item.Month" class="custom-select">
+                                <option value="">ทุกปี</option>
+                                @for(int i = 0;i<=9;i++)
+                                {
+                                    int currentYear = DateTime.Now.Year -i;
+                                    <option value="@currentYear">@currentYear</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </Div>
+            </Div>
+        </ModalBody>
+        <ModalFooter>
 
-</ModalFooter>
+            <Button Class="btn btn-primary">Close</Button>
+        </ModalFooter>
     </ModalContent>
 </Modal>
