@@ -63,7 +63,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
-
+        public async Task<string[]> GetIdList()
+        {
+            var res = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Idlist");
+            return res;
+        }
 
 
     }

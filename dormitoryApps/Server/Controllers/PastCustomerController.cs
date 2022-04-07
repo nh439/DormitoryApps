@@ -32,6 +32,11 @@ namespace dormitoryApps.Server.Controllers
             var res = await _pastCustomerServices.GetById(Id);
             return Ok(res);
         }
+        [HttpGet(BaseUrl+"/Idlist")]
+        public async Task<IActionResult> GetByIds()
+        {
+            return Ok(await _pastCustomerServices.GetIds());
+        }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]PastCustomer item)
         {

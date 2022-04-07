@@ -9,8 +9,10 @@ namespace dormitoryApps.Shared.Model.Other
     public class InvoiceAdvancedSearchCriteria
     {
         public string? RentalId { get; set; }
-        public DateBetween InvoiceDate { get; set; }
-        public DateBetween PaidDate { get; set; }
+        public DateTime? InvoiceDateMin { get; set; }
+        public DateTime? InvoiceDateMax { get; set; }
+        public DateTime? PaidDateMin { get; set; }
+        public DateTime? PaidDateMax { get; set; }
         public int? Month { get; set; }
         public int? Year { get; set; }
         public long? InvoiceOfficer { get; set; }

@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<List<PastCustomer>> Getall();
         Task<List<PastCustomer>> GetUnRefund();
         Task<PastCustomer> GetById(string Id);
+        Task<string[]> GetIds();
     }
     public class PastCustomerServices : IPastCustomerServices
     {
@@ -64,6 +65,10 @@ namespace dormitoryApps.Server.Services
             var res= await _repository.GetById(Id);
             if (res != null) res.Members = await _rentalMemberServices.GetByRentalId(Id);
             return res;
+        }
+        public async Task<string[]> GetIds()
+        {
+            return await _repository.GetIds();
         }
 
 
