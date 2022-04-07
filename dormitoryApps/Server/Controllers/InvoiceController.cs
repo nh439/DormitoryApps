@@ -106,6 +106,12 @@ namespace dormitoryApps.Server.Controllers
             var res = await _invoiceServices.GetWithAdvancesearch(criteria);
             return Ok(res);
         }
+        [HttpPost(BaseUrl+"/{page}")]
+        public async Task<IActionResult> GetWithAdvancesearch(int page,[FromBody] InvoiceAdvancedSearchCriteria criteria)
+        {
+            var res = await _invoiceServices.GetWithAdvancesearch(criteria);
+            return Ok(res.ToPagedList(page,20));
+        }
 
 
     }

@@ -8,7 +8,7 @@
 
 @code {
     Modal e;
-    InvoiceAdvancedSearchCriteria item = new InvoiceAdvancedSearchCriteria();
+    public InvoiceAdvancedSearchCriteria item { get; set; } = new InvoiceAdvancedSearchCriteria();
     List<Officer> officers = new List<Officer>();
     string[] customerId = new string[0];
     bool isLoading = false;
@@ -81,11 +81,11 @@
                 <div class="form-group">
                     <label for="select">รหัสการเช่า</label>
                     <div>
-                        <select id="select" name="select" class="custom-select">
-                            <option value="">All RentalId</option>
+                        <select id="select" @bind="item.RentalId" class="custom-select">
+                            <option value="" selected="@(string.IsNullOrEmpty(item.RentalId))">All RentalId</option>
                             @foreach (var id in customerId.OrderByDescending(x=>x))
                             {
-                                <option value="@id">@id</option>
+                                <option value="@id" selected="@(id==item.RentalId)">@id</option>
                             }
                         </select>
                     </div>
@@ -99,7 +99,7 @@
                                     <option value="" selected="@(!item.InvoiceOfficer.HasValue)">All Officer</option>
                                     @foreach (var officer in officers.Select(x => new { id = x.Id, Name = $"{x.Firstname} {x.Surname}" }))
                                     {
-                                        <option value="@officer.id">@officer.Name</option>
+                                        <option value="@officer.id" selected="@(item.InvoiceOfficer==officer.id)">@officer.Name</option>
                                     }
                                 </select>
                             </div>
@@ -110,10 +110,10 @@
                             <label for="select">พนักงานรับชำระเงิน</label>
                             <div>
                                 <select id="select" @bind="item.PaidOfficer" class="custom-select">
-                                    <option value="" selected="@(!item.InvoiceOfficer.HasValue)">All Officer</option>
+                                    <option value="" selected="@(!item.PaidOfficer.HasValue)">All Officer</option>
                                     @foreach (var officer in officers.Select(x => new { id = x.Id, Name = $"{x.Firstname} {x.Surname}" }))
                                     {
-                                        <option value="@officer.id">@officer.Name</option>
+                                        <option value="@officer.id" selected="@(item.PaidOfficer==officer.id)">@officer.Name</option>
                                     }
                                 </select>
                             </div>
@@ -127,10 +127,10 @@
                             <label for="select">เดือน</label>
                             <div>
                                 <select id="select" @bind="item.Month" class="custom-select">
-                                    <option value="">ทุกเดือน</option>
+                                    <option value="" selected="@(!item.Month.HasValue)">ทุกเดือน</option>
                                     @for (int i = 1; i <= 12; i++)
                                     {
-                                        <option value="@i">@i</option>
+                                        <option value="@i" selected="@(item.Month==i)">@i</option>
                                     }
                                 </select>
                             </div>
@@ -140,12 +140,12 @@
                         <div class="form-group">
                             <label for="select">ปี</label>
                             <div>
-                                <select id="select" @bind="item.Month" class="custom-select">
-                                    <option value="">ทุกปี</option>
+                                <select id="select" @bind="item.Year" class="custom-select">
+                                    <option value="" selected="@(!item.Year.HasValue)">ทุกปี</option>
                                     @for (int i = 0; i <= 9; i++)
                                     {
                                         int currentYear = DateTime.Now.Year - i;
-                                        <option value="@currentYear">@currentYear</option>
+                                        <option value="@currentYear" selected="@(item.Year==currentYear)">@currentYear</option>
                                     }
                                 </select>
                             </div>
@@ -156,7 +156,7 @@
         </ModalBody>
         <ModalFooter>
 
-            <Button Class="btn btn-primary">Close</Button>
+            <Button Class="btn btn-primary" @onclick="()=>e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>

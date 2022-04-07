@@ -128,6 +128,16 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
             return await res.Content.ReadFromJsonAsync<List<Invoice>>();
         }
+        public async Task<List<Invoice>?> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria,int page)
+        {
+            var Havepermission = true;
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/{page}", criteria);
+            return await res.Content.ReadFromJsonAsync<List<Invoice>>();
+        }
         #region Contains
         public async Task<List<Invoice>?> GetContains(string keyword)
         {
