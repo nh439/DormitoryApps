@@ -66,6 +66,14 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, $"Id='{InvoiceId}'");
             return res.FirstOrDefault();
         }
+        public async Task<List<Invoice>> GetContains(string IdKeyWord)
+        {
+            ConditionSet set = new ConditionSet();
+            set.Add("Id", IdKeyWord, SqlOperator.Contain, SqlCondition.OR);
+            set.Add("RentalId", IdKeyWord, SqlOperator.Contain, SqlCondition.OR);
+            var res = await _databases.Dorm.SelectEntitiesAsync<Invoice>(TableName, set);
+            return res.ToList();
+        }
         public async Task<List<Invoice>> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
         {
             ConditionSet set = new ConditionSet();
@@ -73,21 +81,21 @@ namespace dormitoryApps.Server.Repository
             {
                 set.Add("RentalId", criteria.RentalId, SqlOperator.Equal, SqlCondition.AND);
             }
-            if(criteria.InvoiceDate.Min.HasValue)
+            if(criteria.InvoiceDateMin.HasValue)
             {
-                set.Add("InvoiceDate", criteria.InvoiceDate.Min.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+                set.Add("InvoiceDate", criteria.InvoiceDateMin.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
             }
-            if(criteria.InvoiceDate.Max.HasValue)
+            if(criteria.InvoiceDateMax.HasValue)
             {
-                set.Add("InvoiceDate", criteria.InvoiceDate.Max.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+                set.Add("InvoiceDate", criteria.InvoiceDateMax.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
             }
-            if(criteria.PaidDate.Min.HasValue)
+            if(criteria.PaidDateMin.HasValue)
             {
-                set.Add("PaidDate", criteria.PaidDate.Min.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
+                set.Add("PaidDate", criteria.PaidDateMin.Value.Date, SqlOperator.MoreThanOrEqual, SqlCondition.AND);
             }
-            if(criteria.PaidDate.Max.HasValue)
+            if(criteria.PaidDateMax.HasValue)
             {
-                set.Add("PaidDate", criteria.PaidDate.Max.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
+                set.Add("PaidDate", criteria.PaidDateMax.Value.Date.AddDays(1), SqlOperator.LessThanOrEqual, SqlCondition.AND);
             }
             if(criteria.Month.HasValue)
             {

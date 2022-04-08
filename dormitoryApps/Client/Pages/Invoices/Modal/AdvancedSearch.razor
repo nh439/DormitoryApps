@@ -1,0 +1,162 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Other;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject OfficerServices _officerServices;
+@inject CurrentCustomerService _currentCustomerService;
+@inject PastCustomerServices _pastCustomerServices;
+
+@code {
+    Modal e;
+    public InvoiceAdvancedSearchCriteria item { get; set; } = new InvoiceAdvancedSearchCriteria();
+    List<Officer> officers = new List<Officer>();
+    string[] customerId = new string[0];
+    bool isLoading = false;
+    public async void Open()
+    {
+        isLoading = true;
+        await e.Show();
+        await Task.Delay(1);
+        officers = await _officerServices.GetEmployee();
+        customerId = await _currentCustomerService.GetIdList();
+        await _pastCustomerServices.GetIdList().ContinueWith(pcc =>
+        {
+            customerId = customerId.Union(pcc.Result).ToArray();
+        });
+        await Task.Delay(100);       
+        isLoading = false;
+        await Task.Delay(1);
+        StateHasChanged();
+    }
+}
+
+<Modal @ref="e" style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <center>
+                    <Div Class="loader"></Div>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>ค้นหาใบเสร็จแบบเจาะจง</h1>
+                </center>
+                <h2>วันที่เขียนใบเสร็จ</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เริ่ม</label>
+                            <input id="text" @bind-value="item.InvoiceDateMin" type="date" class="form-control">
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ถึง</label>
+                            <input id="text" @bind-value="item.InvoiceDateMax" type="date" class="form-control">
+                        </div>
+                    </Div>
+                </Div>
+                <h2>วันที่ออกใบเสร็จ(ชำระเงิน)</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เริ่ม</label>
+                            <input id="text" @bind-value="item.PaidDateMin" type="date" class="form-control">
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ถึง</label>
+                            <input id="text" @bind-value="item.PaidDateMax" type="date" class="form-control">
+                        </div>
+                    </Div>
+                </Div>
+                <div class="form-group">
+                    <label for="select">รหัสการเช่า</label>
+                    <div>
+                        <select id="select" @bind="item.RentalId" class="custom-select">
+                            <option value="" selected="@(string.IsNullOrEmpty(item.RentalId))">All RentalId</option>
+                            @foreach (var id in customerId.OrderByDescending(x=>x))
+                            {
+                                <option value="@id" selected="@(id==item.RentalId)">@id</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">พนักงานออกใบเสร็จ</label>
+                            <div>
+                                <select id="select" @bind="item.InvoiceOfficer" class="custom-select">
+                                    <option value="" selected="@(!item.InvoiceOfficer.HasValue)">All Officer</option>
+                                    @foreach (var officer in officers.Select(x => new { id = x.Id, Name = $"{x.Firstname} {x.Surname}" }))
+                                    {
+                                        <option value="@officer.id" selected="@(item.InvoiceOfficer==officer.id)">@officer.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">พนักงานรับชำระเงิน</label>
+                            <div>
+                                <select id="select" @bind="item.PaidOfficer" class="custom-select">
+                                    <option value="" selected="@(!item.PaidOfficer.HasValue)">All Officer</option>
+                                    @foreach (var officer in officers.Select(x => new { id = x.Id, Name = $"{x.Firstname} {x.Surname}" }))
+                                    {
+                                        <option value="@officer.id" selected="@(item.PaidOfficer==officer.id)">@officer.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <h2>งวด</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">เดือน</label>
+                            <div>
+                                <select id="select" @bind="item.Month" class="custom-select">
+                                    <option value="" selected="@(!item.Month.HasValue)">ทุกเดือน</option>
+                                    @for (int i = 1; i <= 12; i++)
+                                    {
+                                        <option value="@i" selected="@(item.Month==i)">@i</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">ปี</label>
+                            <div>
+                                <select id="select" @bind="item.Year" class="custom-select">
+                                    <option value="" selected="@(!item.Year.HasValue)">ทุกปี</option>
+                                    @for (int i = 0; i <= 9; i++)
+                                    {
+                                        int currentYear = DateTime.Now.Year - i;
+                                        <option value="@currentYear" selected="@(item.Year==currentYear)">@currentYear</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+            }
+        </ModalBody>
+        <ModalFooter>
+
+            <Button Class="btn btn-primary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>

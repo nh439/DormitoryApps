@@ -47,5 +47,10 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<PastCustomer>(TableName, $"Id='{Id}'");
             return res.FirstOrDefault();
         }
+        public async Task<string[]> GetIds()
+        {
+            var res = await _databases.Dorm.SelectDistinctAsync(TableName, "Id");
+            return res;
+        }
     }
 }

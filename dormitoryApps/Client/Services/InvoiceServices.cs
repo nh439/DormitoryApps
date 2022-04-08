@@ -128,6 +128,78 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
             return await res.Content.ReadFromJsonAsync<List<Invoice>>();
         }
+        public async Task<List<Invoice>?> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria,int page)
+        {
+            var Havepermission = true;
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/{page}", criteria);
+            return await res.Content.ReadFromJsonAsync<List<Invoice>>();
+        }
+        #region Contains
+        public async Task<List<Invoice>?> GetContains(string keyword)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?filter={keyword}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetContains(string keyword,int year)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&filter={keyword}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetContains(string keyword,int month, int year)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}&filter={keyword}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&filter={keyword}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page, int year)
+        {
+            var Havepermission = await _sessionServices.Permissioncheck();
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&filter={keyword}");
+            return invoices;
+        }
+        public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page, int year, int month)
+        {
+            var Havepermission = true;
+            if (!Havepermission)
+            {
+                return new List<Invoice>();
+            }
+            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}&filter={keyword}");
+            return invoices;
+        }
+        #endregion
         public async Task<bool> Create(Invoice invoice)
         {
             await _sessionServices.RequiredPermission();
