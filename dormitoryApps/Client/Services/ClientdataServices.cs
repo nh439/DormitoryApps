@@ -24,5 +24,10 @@ namespace dormitoryApps.Client.Services
             return res;
 
         }
+        public async Task<MyCompany> GetMyCompany()
+        {
+            var res = await _httpClient.GetFromJsonAsync<MyCompany>($"{ControllerName}/MyCompany.json");
+            return res;
+        }
     }
 }

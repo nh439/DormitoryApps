@@ -1,0 +1,16 @@
+﻿{
+  "Id": "0001",
+  "Name": "Nithi Residence",
+  "NameEN": "Nithi Residence",
+  "NameSET": "",
+  "Description": "Description01",
+  "TaxIdentification": 1,
+  "Type": "บริษัท",
+  "RegisteredCapital": "300000",
+  "RegisteredYear": 2020,
+  "Address": "",
+  "Website": "",
+  "Email": "",
+  "Tel": "",
+  "Tel2" : ""
+}
