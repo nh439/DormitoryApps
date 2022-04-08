@@ -110,6 +110,7 @@ namespace dormitoryApps.Server.Controllers
         public async Task<IActionResult> GetWithAdvancesearch(int page,[FromBody] InvoiceAdvancedSearchCriteria criteria)
         {
             var res = await _invoiceServices.GetWithAdvancesearch(criteria);
+            res = res.OrderByDescending(x => x.Id).OrderBy(x => x.Ispaid).OrderBy(x => x.Iscancel).ToList();
             return Ok(res.ToPagedList(page,20));
         }
 

@@ -40,28 +40,31 @@
             return;
         }
         Get();
-        timer = new Timer(1000);
+        timer = new Timer(2000);
         timer.Elapsed += Tick;
         timer.Enabled = true;
         StateHasChanged();
     }
     public async void Get()
     {
-        if(advanced.item != null && advanced.item != new dormitoryApps.Shared.Model.Other.InvoiceAdvancedSearchCriteria())
+        if (advanced.item != null && advanced.item != new dormitoryApps.Shared.Model.Other.InvoiceAdvancedSearchCriteria())
         {
-            invoiceList = await _invoiceServices.GetWithAdvancesearch(advanced.item,page);
-            if(!string.IsNullOrEmpty(query))
+            invoiceList = await _invoiceServices.GetWithAdvancesearch(advanced.item, page);
+            if (!string.IsNullOrEmpty(query))
             {
                 invoiceList = invoiceList.Where(x => x.RentalId.Contains(query) || x.Id.Contains(query)).ToList();
             }
         }
-        if (!string.IsNullOrEmpty(query))
-        {
-            invoiceList = await _invoiceServices.GetContainsWithPage(query, page);
-        }
         else
         {
-            invoiceList = await _invoiceServices.GetByPage(page);
+            if (!string.IsNullOrEmpty(query))
+            {
+                invoiceList = await _invoiceServices.GetContainsWithPage(query, page);
+            }
+            else
+            {
+                invoiceList = await _invoiceServices.GetByPage(page);
+            }
         }
         if (invoiceList == null) invoiceList = new List<Invoice>();
         officers = await _officerServices.GetEmployee();
@@ -132,7 +135,7 @@
                     });
                     break;
                 case 6:
-                    invoiceList = await _invoiceServices.GetWithAdvancesearch(advanced.item);
+                    Invoices = await _invoiceServices.GetWithAdvancesearch(advanced.item);
                     break;
             }
             var filename = $"invoice {DateTime.Now.ToString("dddd dd MMMM yyyy HH:mm:ss", new System.Globalization.CultureInfo("th-TH"))}.xlsx";
