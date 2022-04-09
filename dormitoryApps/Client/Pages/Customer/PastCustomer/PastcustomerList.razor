@@ -88,10 +88,16 @@
                     <td>@customer.Rental.ToString("#,### บาท")</td>
                     <td>@customer.ContractDate.ToLongDateString()</td>
                     <td>@customer.StayUntil.ToLongDateString()</td>
-                    <td>@(customer.Deposit > 0 ? customer.Deposit.ToString("#,### บาท"):"")</td>
-                    <td>@(customer.DamageFee > 0 ? customer.DamageFee.ToString("#,### บาท"):"")</td>
+                    <td>@(customer.Deposit > 0 ? customer.Deposit.ToString("#,### บาท"):"ไม่มีเงินค่าประกัน")</td>
+                    <td>@(customer.DamageFee > 0 ? customer.DamageFee.ToString("#,### บาท"):"ไม่มีการหักเงินค่าประกัน")</td>
                     <td>@if (customer.Refunded) { <i class=" check icon"></i>}</td>
-                    <td><button class="btn btn-info">รายละเอียด</button></td>
+                    <td>
+                        <button class="btn btn-info">รายละเอียด</button>
+                        @if(!customer.Refunded && customer.Deposit > 0)
+                        {
+                            <button class="btn btn-success">คืนเงินประกัน</button>
+                        }
+                    </td>
                 </tr>
             }
         }
