@@ -13,7 +13,7 @@ namespace dormitoryApps.Server
 
         public Schedule(RequestDelegate next, IJobServices jobServices)
         {
-           RecurringJob.AddOrUpdate(() => jobServices.Run(), Cron.Minutely);
+          // RecurringJob.AddOrUpdate(() => jobServices.Run(), Cron.Minutely);
             _next = next;
         }
 
