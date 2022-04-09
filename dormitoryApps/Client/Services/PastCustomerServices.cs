@@ -27,6 +27,13 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>(ControllerName);
             return res;
         }
+        public async Task<List<PastCustomer>> GetPastCustomers(int page)
+        {
+            await _sessionServices.RequiredPermission();
+            var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}?page={page}");
+            return res;
+        }
+
         public async Task<List<PastCustomer>> GetUnRefund()
         {
             await _sessionServices.RequiredPermission();

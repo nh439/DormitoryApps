@@ -49,6 +49,7 @@ namespace dormitoryApps.Server.Services
             {
                 x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
             });
+            await Task.Delay(100);
             return res;
         }     
         public async Task<List<PastCustomer>> GetUnRefund()
@@ -58,6 +59,7 @@ namespace dormitoryApps.Server.Services
             {
                 x.Members = await _rentalMemberServices.GetByRentalId(x.Id);
             });
+            await Task.Delay(100);
             return res;
         }
         public async Task<PastCustomer> GetById(string Id)
