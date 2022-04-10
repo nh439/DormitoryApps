@@ -92,7 +92,7 @@
                     <td>@(customer.DamageFee > 0 ? customer.DamageFee.ToString("#,### บาท"):"ไม่มีการหักเงินค่าประกัน")</td>
                     <td>@if (customer.Refunded) { <i class=" check icon"></i>}</td>
                     <td>
-                        <button class="btn btn-info">รายละเอียด</button>
+                        <button class="btn btn-info" @onclick="()=>detail.Open(customer.Id)">รายละเอียด</button>
                         @if(!customer.Refunded && customer.Deposit > 0)
                         {
                             <button class="btn btn-success">คืนเงินประกัน</button>
@@ -138,3 +138,7 @@ StateHasChanged();
         </li>
     </ul>
 </nav>
+<dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail @ref="detail"/>
+@code{
+    dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail detail;
+}

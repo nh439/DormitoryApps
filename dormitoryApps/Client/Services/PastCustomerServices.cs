@@ -43,7 +43,7 @@ namespace dormitoryApps.Client.Services
         public async Task<PastCustomer> GetById(string Id)
         {
             await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<PastCustomer>($"{ControllerName}//Id/{Id}");
+            var res = await _httpClient.GetFromJsonAsync<PastCustomer>($"{ControllerName}/Id/{Id}");
             return res;
         }
         public async Task<bool> Create(PastCustomer entity)
