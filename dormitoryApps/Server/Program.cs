@@ -83,6 +83,7 @@ builder.Services.AddScoped<IRoomfurnTemplateServices,RoomfurnTemplateServices>()
 builder.Services.AddScoped<IRoomTemplateServices,RoomTemplateServices>();
 builder.Services.AddScoped<IMemberServices,MemberServices>();
 builder.Services.AddScoped<IRentalMemberServices,RentalMemberServices>();
+builder.Services.AddScoped<IRentalAccountServices,RentalAccountServices>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
