@@ -52,6 +52,7 @@ builder.Services.AddScoped<RoomfurnTemplateRepository>();
 builder.Services.AddScoped<RoomTemplateRepository>();
 builder.Services.AddScoped<MemberRepository>();
 builder.Services.AddScoped<RentalMemberRepository>();
+builder.Services.AddScoped<RentalAccountRepository>();
 #endregion
 
 #region Services
