@@ -1,5 +1,144 @@
-﻿<h3>PastcustomerList</h3>
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject PastCustomerServices _pastCustomerServices;
+@inject SessionServices _sessionServices;
+@inject RoomServices _roomServices;
+@implements IDisposable;
 
 @code {
+    int page = 1;
+    List<PastCustomer> pastCustomers;
+    Timer timer = new Timer();
+    string remarkColor = "red";
+    List<Room> rooms = new List<Room>();
+    int customerCount = 0;
+    protected override void OnInitialized()
+    {
+        Get();
+        StateHasChanged();
+        timer = new Timer(1000);
+        timer.Elapsed += Tick;
+        timer.Enabled = true;
+    }
+    public void Tick(object sender, ElapsedEventArgs e)
+    {
+        Get();
+        StateHasChanged();
+    }
+    async void Get()
+    {
+        pastCustomers = await _pastCustomerServices.GetPastCustomers(page);
+        rooms = await _roomServices.GetRooms();
+        if (pastCustomers == null) pastCustomers = new List<PastCustomer>();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
 
+}
+<link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+<br />
+<center>
+    <h1>ผู้เช่าที่ออกไปแล้ว</h1>
+</center>
+<br />
+<br />
+<br />
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <td>Id</td>
+            <td>ชื่อ/รหัสห้อง</td>
+            <td>จำนวนผู้พักอาศัย</td>
+            <td>วันที่เข้าพัก</td>
+            <td>ค่าเช่า</td>
+            <td>วันทำสัญญา</td>
+            <td>วันที่ Check Out</td>
+            <td>ค่าประกันของเสียหาย(ที่ต้องจ่ายคืน)</td>
+            <td>หักประกันของเสียหาย(ในกรณีมีของเสียหาย)</td>
+            <td>จ่ายคืนเรียบร้อย</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody class="table-success">
+        @if (pastCustomers == null)
+        {
+            <tr>
+                <td colspan="11">Loading...</td>
+            </tr>
+        }
+        else if (pastCustomers.Count == 0)
+        {
+            <tr>
+                <td colspan="11">ไม่พบข้อมูล</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var customer in pastCustomers)
+            {
+                <tr>
+                    <td>@customer.Id</td>
+                    <td>@rooms.Where(x=>x.Id==customer.RoomId).FirstOrDefault().RoomName</td>
+                    <td>@customer.Members?.Count</td>
+                    <td>@customer.Stayed?.ToString("dd MMMM yyyy")</td>
+                    <td>@customer.Rental.ToString("#,### บาท")</td>
+                    <td>@customer.ContractDate.ToLongDateString()</td>
+                    <td>@customer.StayUntil.ToLongDateString()</td>
+                    <td>@(customer.Deposit > 0 ? customer.Deposit.ToString("#,### บาท"):"ไม่มีเงินค่าประกัน")</td>
+                    <td>@(customer.DamageFee > 0 ? customer.DamageFee.ToString("#,### บาท"):"ไม่มีการหักเงินค่าประกัน")</td>
+                    <td>@if (customer.Refunded) { <i class=" check icon"></i>}</td>
+                    <td>
+                        <button class="btn btn-info" @onclick="()=>detail.Open(customer.Id)">รายละเอียด</button>
+                        @if(!customer.Refunded && customer.Deposit > 0)
+                        {
+                            <button class="btn btn-success">คืนเงินประกัน</button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(page <=1 ? "disabled":"")">
+            <button class="page-link" @onclick="()=>{
+page--;
+StateHasChanged();
+}">
+                Previous
+            </button>
+        </li>
+        @for (int i = -1; i <= 1; i++)
+        {
+            int destination = page + i;
+            if (destination >= 1 && (customerCount < 20 && destination > page) == false)
+            {
+                <li class="page-item @(destination==page ?"active":"") ">
+                    <button class="page-link" @onclick="()=>{
+                    page=destination;
+                    StateHasChanged();
+                    }">
+                        @destination
+                    </button>
+                </li>
+            }
+        }
+        <li class="page-item @(customerCount < 20 ? "disabled":"")">
+            <button class="page-link " @onclick="()=>{
+page++;
+StateHasChanged();
+}">
+                Next
+            </button>
+        </li>
+    </ul>
+</nav>
+<dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail @ref="detail"/>
+@code{
+    dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail detail;
 }

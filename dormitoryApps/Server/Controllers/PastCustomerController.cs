@@ -1,6 +1,7 @@
 ﻿using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
+using PagedList;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -15,9 +16,13 @@ namespace dormitoryApps.Server.Controllers
             _logger = logger;
         }
         [HttpGet(BaseUrl)]
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(int? page)
         {
             var res = await _pastCustomerServices.Getall();
+            if(page.HasValue)
+            {
+                return Ok(res.OrderByDescending(x=>x.Id).ToPagedList(page.Value, 20));
+            }
             return Ok(res);
         }
         [HttpGet(BaseUrl+ "/GetUnRefund")]

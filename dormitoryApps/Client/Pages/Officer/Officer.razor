@@ -62,11 +62,13 @@
 <dormitoryApps.Client.Pages.Officer.Modal.Incomplete @ref="modal">
 
 </dormitoryApps.Client.Pages.Officer.Modal.Incomplete>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
 
 
 @code {
     ElementReference Logging;
     private dormitoryApps.Client.Pages.Officer.Modal.Incomplete modal{ get; set; }
+    dormitoryApps.Client.Pages.Modal.Auto auto;
     dormitoryApps.Client.Pages.Modal.Processing processing;
     public string Username { get; set; }
     public string Password { get; set; }
@@ -84,31 +86,39 @@
             await InvokeAsync(StateHasChanged);
             return;
         }
-        processing.Open();
+        //processing.Open();
+        auto.Open("Logging In");
         await Task.Delay(1);
         var res = await officerServices.GetLogin(username: Username, password: Password);
         Console.WriteLine(res);
         if(!res)
         {
+            /*
             processing.Close();
-             await Task.Delay(1);
+             await Task.Delay(100);
             modal.IsExpired = false;
             modal.Open();
+            */
+            auto.Failed("Username Or Password Incorrect", "!Oops!");
+            await Task.Delay(1);
             return;
         }      
         var currentUser = await officerServices.GetByUsername(Username);
         if(currentUser.Expired && !currentUser.Issuper)
         {
-            processing.Close();
+            /* processing.Close();
+             await Task.Delay(100);
+             modal.IsExpired = true;
+             modal.Open();*/
+            auto.Failed("Username Is Expired", "!Oops!");
             await Task.Delay(1);
-            modal.IsExpired = true;
-            modal.Open();
             return;
         }
         string sessionId = await sessionServices.CreateLogin(currentUser.Id);
         await sessionStorageService.SetItemAsStringAsync("Id", sessionId);
         await _localStorageService.SetItemAsStringAsync("Id", sessionId);
-        processing.Close();
+        // processing.Close();
+        auto.Close();
         await Task.Delay(1);
         navigationManager.NavigateTo("/",true);
 
