@@ -180,8 +180,52 @@
   </div>
                      </Div>
                     </Div>
+                   
 
             }
+             <h2>การคืนเงินประกัน</h2>
+                    <div class="row">
+                     <div class="col">
+                          <div class="form-group">
+    <label for="text">เงินประกัน</label> 
+    <div class="input-group">
+      <input id="text" @bind-value="item.Deposit" type="text" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div> 
+                     </div>
+                     <div class="col">
+                         <div class="form-group">
+    <label for="text1">สถานะ</label> 
+    <input id="text1" value="@(item.Refunded ? "คืนเงินแล้ว":"ยังไม่คืนเงิน")" type="text" class="form-control" readonly>
+  </div> 
+                     </div>
+                    </div>
+            @if (item.Account != null)
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+    <label for="text1">เลขบัญชีธนาคาร</label> 
+    <input id="text1" @bind-value="item.Account.AccountId" type="text" class="form-control" readonly>
+  </div> 
+                    </div>
+                        <div class="col">
+                            <div class="form-group">
+    <label for="text1">ธนาคาร</label> 
+    <input id="text1" @bind-value="item.Account.Bank" type="text" class="form-control" readonly>
+  </div> 
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+    <label for="text1">ชื่อบัญชี</label> 
+    <input id="text1" @bind-value="item.Account.AccountName" type="text" class="form-control" readonly>
+  </div> 
+                        </div>
+                    </div>
+                    }
             <h2>สมาชิก</h2>
              <table class="table">
                 <thead>
