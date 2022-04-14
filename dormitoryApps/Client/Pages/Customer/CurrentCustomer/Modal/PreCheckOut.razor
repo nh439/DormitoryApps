@@ -1,0 +1,72 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject CurrentCustomerService _currentCustomerService;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
+
+@code {
+    Modal e;
+    CurrentCustomer item = new CurrentCustomer();
+    Officer officer = new Officer();
+    Officer rentalOfficer = new Officer();
+    bool isLoading = false;
+    public async void Open(string rentalId)
+    {
+        await e.Show();
+        isLoading = true;
+        await Task.Delay(1);
+        item = await _currentCustomerService.Get(rentalId);
+        if (item == null)
+        { 
+            item = new CurrentCustomer();
+            await e.Hide();
+            await Task.Delay(10);
+            auto.OpenFailed("ไม่พบข้อมูล");
+            return;
+        }
+        officer = await _sessionServices.GetCurrentLogin();
+        rentalOfficer = await _officerServices.GetById(item.EmployeeId);
+        isLoading = false;
+        await Task.Delay(5);
+        StateHasChanged();
+
+    }
+}
+<Modal @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>แจ้งออก</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <center>
+                    <div class="loader"></div>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>แจ้งออก</h1>
+                </center>
+                <div class="form-group">
+                    <label for="text">รหัสการเช่า</label>
+                    <input id="text" name="text" type="text" class="form-control">
+                </div>
+            }
+            <Div Class="row">
+                <Div Class="col"></Div>
+                <Div Class="col"></Div>
+                <Div Class="col"></Div>
+            </Div>
+        </ModalBody>
+        <ModalFooter></ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
+@code{
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}
