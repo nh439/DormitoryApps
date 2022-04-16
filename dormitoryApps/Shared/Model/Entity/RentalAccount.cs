@@ -12,5 +12,6 @@ namespace dormitoryApps.Shared.Model.Entity
         public string Bank { get; set; }
         public int AccountId { get; set; }
         public string AccountName { get; set; }
+        public bool Specify { get; set; }
     }
 }

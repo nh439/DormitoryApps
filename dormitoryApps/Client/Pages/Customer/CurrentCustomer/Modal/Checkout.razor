@@ -1,5 +1,6 @@
 ﻿@using Blazorise;
 @using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json;
 @using dormitoryApps.Client.Services;
 @inject CurrentCustomerService _currentCustomerService;
 @inject SessionServices _sessionServices;
@@ -8,6 +9,7 @@
 @inject BuildingServices _buildingServices;
 @inject InvoiceServices _invoiceService;
 @inject PastCustomerServices _pastCustomerServices
+@inject ClientdataServices _clientdataServices;
 
 @code {
     Modal e;
@@ -20,6 +22,7 @@
     List<Water> waterUsed = new List<Water>();
     List<Electricity> electricityUsed = new List<Electricity>();
     PastCustomer pastCustomer = new PastCustomer();
+    Bank[] banks = new Bank[0];
     bool isLoading = false;
     bool commentValidate = false;
     public async void Open(string rentalId)
@@ -43,7 +46,7 @@
         rentalOfficer = await _officerServices.GetById(item.EmployeeId);
         relatedInvoices = await _invoiceService.GetByRental(rentalId);
         electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
-        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();      
         isLoading = false;
         await Task.Delay(5);
         StateHasChanged();
@@ -156,7 +159,7 @@
                 </Div>
                 <Div Class="row">
                     <Div Class="col">
-                         <div class="form-group">
+                        <div class="form-group">
                             <label for="text">ค่าประกันคงเหลือ(โอนคืนลูกค้า)</label>
                             <div class="input-group">
                                 <input id="text" name="text" type="number" class="form-control">
@@ -166,8 +169,26 @@
                             </div>
                         </div>
                     </Div>
-                    <Div Class="col"></Div>
-                    <Div Class="col"></Div>
+                    <Div Class="col">
+
+                        <div class="form-group">
+                            <label for="text">เลขที่บัญชี</label>
+                            <input id="text" name="text" type="text" class="form-control">
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">ชื่อธนาคาร</label>
+                            <div>
+                                <select id="select" name="select" class="custom-select">
+                                    @foreach(var bank in banks)
+                                    {
+                                        <option value="@bank.Id">@($"{bank.Id}-{bank.Name}")</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
                 </Div>
             }
         </ModalBody>
