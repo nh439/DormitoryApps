@@ -1,0 +1,182 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject CurrentCustomerService _currentCustomerService;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceService;
+@inject PastCustomerServices _pastCustomerServices
+
+@code {
+    Modal e;
+    CurrentCustomer item = new CurrentCustomer() { Members = new List<RentalMember>() };
+    Officer officer = new Officer();
+    Officer rentalOfficer = new Officer();
+    Room room = new Room();
+    Buildings buildings = new Buildings();
+    List<Invoice> relatedInvoices = new List<Invoice>();
+    List<Water> waterUsed = new List<Water>();
+    List<Electricity> electricityUsed = new List<Electricity>();
+    PastCustomer pastCustomer = new PastCustomer();
+    bool isLoading = false;
+    bool commentValidate = false;
+    public async void Open(string rentalId)
+    {
+        await e.Show();
+        isLoading = true;
+        await Task.Delay(1);
+        item = await _currentCustomerService.Get(rentalId);
+        commentValidate = false;
+        if (item == null)
+        {
+            item = new CurrentCustomer();
+            await e.Hide();
+            await Task.Delay(10);
+            auto.OpenFailed("ไม่พบข้อมูล");
+            return;
+        }
+        room = await _roomServices.GetRoom(item.RoomId);
+        buildings = await _buildingServices.Get(room.Building);
+        officer = await _sessionServices.GetCurrentLogin();
+        rentalOfficer = await _officerServices.GetById(item.EmployeeId);
+        relatedInvoices = await _invoiceService.GetByRental(rentalId);
+        electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        isLoading = false;
+        await Task.Delay(5);
+        StateHasChanged();
+
+    }
+}
+<Modal @ref="e">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>แจ้งออก</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <center>
+                    <Div Class="loader"></Div>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>ออก/ยกเลิกสัญญา</h1>
+                </center>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">รหัสการเช่า</label>
+                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ห้อง</label>
+                            <input id="text" @bind-value="room.RoomName" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">อาคาร</label>
+                            <input id="text" @bind-value="buildings.Name" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ชื่อผู้พักอาศัย</label>
+                            <input id="text" value="@(item.Members.Where(x=>x.IsMain).Select(s=>string.Concat(s.Member.Firstname,' ',s.Member.Surname)).FirstOrDefault())" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เข้าพักเมื่อ</label>
+                            <input id="text" @bind-value="item.Stayed" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ออกวันที่</label>
+                            <input id="text" @bind-value="item.StayUntil" type="date" class="form-control" readonly>
+                        </div>
+                    </Div>
+                </Div>
+                <div class="form-group">
+                    <label for="text">รายการค้างชำระ</label>
+                    <div class="input-group">
+                        <input id="text" name="text" type="text" class="form-control" value="@(relatedInvoices.Where(x=>!x.Ispaid).Select(x=>x.GrandTotal).Sum()) " readonly>
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+                <h2>รายการชำระเงินครั้งสุดท้าย</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ค่าเช่างวดสุดท้าย</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ค่าประกันของเสียหายทั้งหมด</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control" readonly>
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">หักค่าประกันของเสียหาย</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                         <div class="form-group">
+                            <label for="text">ค่าประกันคงเหลือ(โอนคืนลูกค้า)</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col"></Div>
+                    <Div Class="col"></Div>
+                </Div>
+            }
+        </ModalBody>
+        <ModalFooter>
+
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}
