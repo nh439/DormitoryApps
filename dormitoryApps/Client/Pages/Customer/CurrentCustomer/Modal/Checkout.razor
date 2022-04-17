@@ -10,6 +10,7 @@
 @inject InvoiceServices _invoiceService;
 @inject PastCustomerServices _pastCustomerServices
 @inject ClientdataServices _clientdataServices;
+@inject BankServices _bankServices;
 
 @code {
     Modal e;
@@ -22,13 +23,14 @@
     List<Water> waterUsed = new List<Water>();
     List<Electricity> electricityUsed = new List<Electricity>();
     PastCustomer pastCustomer = new PastCustomer();
-    Bank[] banks = new Bank[0];
+    List<Bank> banks = new List<Bank>();
     bool isLoading = false;
     bool commentValidate = false;
     bool accountNameReadonly = true;
     bool bankOther = false;
     public async void Open(string rentalId)
     {
+        banks = null;
         await e.Show();
         isLoading = true;
         await Task.Delay(1);
@@ -49,16 +51,18 @@
         relatedInvoices = await _invoiceService.GetByRental(rentalId);
         electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
         waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        banks = await _bankServices.Get();
+        if (banks == null) banks = new List<Bank>();
         isLoading = false;
         accountNameReadonly = true;
         bankOther = false;
-        await Task.Delay(5);
+        await Task.Delay(20);
         StateHasChanged();
 
     }
     void BankChanged(ChangeEventArgs e)
     {
-        if(int.Parse(e.Value.ToString())==9999)
+        if (int.Parse(e.Value.ToString()) == 9999)
         {
             bankOther = true;
             return;
@@ -66,7 +70,7 @@
         bankOther = false;
     }
 }
-<Modal @ref="e">
+<Modal @ref="e" Style="color:black">
     <ModalContent Size="ModalSize.Large">
         <ModalHeader>
             <ModalTitle>แจ้งออก</ModalTitle>
@@ -194,11 +198,18 @@
                             <label for="select">ชื่อธนาคาร</label>
                             <div>
                                 <select id="select" name="select" class="custom-select" @onchange="BankChanged">
-                                     <option selected disabled>โปรดเลือก</option>
-                                    @foreach (var bank in banks)
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @if (banks != null)
                                     {
-                                        <option value="@bank.Id">@($"{bank.Id}-{bank.Name}")</option>
-                                    }                                 
+                                        @foreach (var bank in banks)
+                                        {
+                                            <option value="@bank.Id">@($"{bank.Id}-{bank.Name}")</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option>Loading...</option>
+                                    }
                                 </select>
                             </div>
                         </div>
