@@ -25,6 +25,8 @@
     Bank[] banks = new Bank[0];
     bool isLoading = false;
     bool commentValidate = false;
+    bool accountNameReadonly = true;
+    bool bankOther = false;
     public async void Open(string rentalId)
     {
         await e.Show();
@@ -46,11 +48,22 @@
         rentalOfficer = await _officerServices.GetById(item.EmployeeId);
         relatedInvoices = await _invoiceService.GetByRental(rentalId);
         electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
-        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();      
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
         isLoading = false;
+        accountNameReadonly = true;
+        bankOther = false;
         await Task.Delay(5);
         StateHasChanged();
 
+    }
+    void BankChanged(ChangeEventArgs e)
+    {
+        if(int.Parse(e.Value.ToString())==9999)
+        {
+            bankOther = true;
+            return;
+        }
+        bankOther = false;
     }
 }
 <Modal @ref="e">
@@ -180,15 +193,35 @@
                         <div class="form-group">
                             <label for="select">ชื่อธนาคาร</label>
                             <div>
-                                <select id="select" name="select" class="custom-select">
-                                    @foreach(var bank in banks)
+                                <select id="select" name="select" class="custom-select" @onchange="BankChanged">
+                                     <option selected disabled>โปรดเลือก</option>
+                                    @foreach (var bank in banks)
                                     {
                                         <option value="@bank.Id">@($"{bank.Id}-{bank.Name}")</option>
-                                    }
+                                    }                                 
                                 </select>
                             </div>
                         </div>
                     </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group mb-3">
+                            <label for="text">ชื่อบัญชี</label>
+                            <input id="text" name="text" type="text" class="form-control" aria-describedby="editbtn" readonly="@accountNameReadonly">
+                            <button class="btn btn-warning" type="button" id="editbtn" disabled="@(!accountNameReadonly)" @onclick="()=>{accountNameReadonly=false;}">แก้ไข</button>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        @if (bankOther)
+                        {
+                            <div class="form-group">
+                                <label for="text">ชื่อธนาคาร</label>
+                                <input id="text" name="text" type="text" class="form-control">
+                            </div>
+                        }
+                    </Div>
+                    <Div Class="col"></Div>
                 </Div>
             }
         </ModalBody>
