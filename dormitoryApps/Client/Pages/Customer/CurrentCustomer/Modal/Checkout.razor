@@ -11,6 +11,7 @@
 @inject PastCustomerServices _pastCustomerServices
 @inject ClientdataServices _clientdataServices;
 @inject BankServices _bankServices;
+@inject MyServicesServices _myServicesServices;
 
 @code {
     Modal e;
@@ -18,16 +19,28 @@
     Officer officer = new Officer();
     Officer rentalOfficer = new Officer();
     Room room = new Room();
-    Buildings buildings = new Buildings();
+    Buildings buildings = new Buildings();    
+    PastCustomer pastCustomer = new PastCustomer();
     List<Invoice> relatedInvoices = new List<Invoice>();
     List<Water> waterUsed = new List<Water>();
     List<Electricity> electricityUsed = new List<Electricity>();
-    PastCustomer pastCustomer = new PastCustomer();
+    List<MyServices> services = new List<MyServices>();
     List<Bank> banks = new List<Bank>();
+    InvoiceService[] invoiceServices = new InvoiceService[0];
     bool isLoading = false;
     bool commentValidate = false;
     bool accountNameReadonly = true;
     bool bankOther = false;
+    bool waterExists = false;
+    bool electricityExists = false;
+    bool waterCal = true;
+    bool electricityCal = true;
+    bool invoiceCalculate = false;
+    bool hasTax = false;
+    int month = DateTime.Now.Month;
+    int year = DateTime.Now.Year;
+    int serviceCounter = 0;
+    decimal taxPercentage = 1;
     public async void Open(string rentalId)
     {
         banks = null;
@@ -56,6 +69,10 @@
         isLoading = false;
         accountNameReadonly = true;
         bankOther = false;
+        waterExists = waterUsed.Where(x => x.month == month && x.Year == year).Count() > 0;
+        electricityExists = electricityUsed.Where(x => x.month == month && x.Year == year).Count() > 0;
+        services = await _myServicesServices.GetMyServices();
+        if (services == null) services = new List<MyServices>();
         await Task.Delay(20);
         StateHasChanged();
 
@@ -68,6 +85,54 @@
             return;
         }
         bankOther = false;
+    }
+     void AddServices()
+    {
+        invoiceCalculate = false;
+        serviceCounter++;
+        var oldValue = invoiceServices;
+        invoiceServices = new InvoiceService[serviceCounter];
+        for (int i = 0; i < oldValue.Length; i++)
+        {
+            invoiceServices[i] = oldValue[i];
+
+        }
+        StateHasChanged();
+    }
+    void RemoveRow(int index)
+    {
+        invoiceCalculate = false;
+        serviceCounter = invoiceServices.Length - 1;
+        var ivx = invoiceServices;
+        invoiceServices = new InvoiceService[serviceCounter];
+        int count = 0;
+        for (int i = 0; i < ivx.Length; i++)
+        {
+            if (i == index)
+            {
+                continue;
+            }
+            invoiceServices[count] = ivx[i];
+            count++;
+        }
+        StateHasChanged();
+    }
+    void ServiceChange(ChangeEventArgs e, int index)
+    {
+        invoiceCalculate = false;
+        long serviceId = long.Parse(e.Value.ToString());
+        if (serviceId == -1 || serviceId == null)
+        {
+            invoiceServices[index].ServiceId = null;
+            invoiceServices[index].OtherService = true;
+        }
+        else
+        {
+            invoiceServices[index].ServiceId = serviceId;
+            invoiceServices[index].OtherService = false;
+            invoiceServices[index].Price = services.Where(x => x.Id == serviceId).FirstOrDefault() != null ? services.Where(x => x.Id == serviceId).FirstOrDefault().Price : 0;
+        }
+        StateHasChanged();
     }
 }
 <Modal @ref="e" Style="color:black">
@@ -234,6 +299,307 @@
                     </Div>
                     <Div Class="col"></Div>
                 </Div>
+                @if (!waterExists)
+                {
+                    <h2>ค่าน้ำประปา</h2>
+                    <div class="form-group row">
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @bind-value="waterCal" id="checkbox_0" type="checkbox" checked="checked" class="custom-control-input">
+                                <label for="checkbox_0" class="custom-control-label">คิดค่าน้ำ</label>
+                            </div>
+                        </div>
+                    </div>
+                    @if (waterCal)
+                    {
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขครั้งก่อน</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขล่าสุด</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">หน่วยละ</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                        </Div>
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">ใช้ไป</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="text" class="form-control" readonly>
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">คิดเป็น</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="text" class="form-control" readonly>
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col"></Div>
+                        </Div>
+
+                    }
+                }
+                @if (!electricityExists)
+                {
+                    <h2>ค่าไฟฟ้า</h2>
+                    <div class="form-group row">
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @bind-value="electricityCal" id="checkbox_1" type="checkbox" checked="checked" class="custom-control-input">
+                                <label for="checkbox_1" class="custom-control-label">คิดค่าไฟฟ้า</label>
+                            </div>
+                        </div>
+                    </div>
+                    @if (electricityCal)
+                    {
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขครั้งก่อน</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขล่าสุด</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">หน่วยละ</label>
+                                    <div class="input-group">
+                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                        </Div>
+                        <Div Class="row">
+                            <Div Class="row">
+                                <Div Class="col">
+                                    <div class="form-group">
+                                        <label for="text">ใช้ไป</label>
+                                        <div class="input-group">
+                                            <input id="text" name="text" type="text" class="form-control" readonly>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">หน่วย</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Div>
+                                <Div Class="col">
+                                    <div class="form-group">
+                                        <label for="text">คิดเป็น</label>
+                                        <div class="input-group">
+                                            <input id="text" name="text" type="text" class="form-control" readonly>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">บาท</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Div>
+                                <Div Class="col"></Div>
+                            </Div>
+                        </Div>
+
+                    }
+                }
+
+                 <h2>บริการเพิ่มเติม</h2>
+        <table class="table table-bordered border-primary">
+            <thead class="table-dark">
+                <tr>
+                    <th>ชื่อบริการ</th>
+                    <th>เจาะจง</th>
+                    <th>ราคา</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="table-success">
+                @if (invoiceServices != null && invoiceServices.Length > 0)
+                {
+                    @for (int i = 0; i < invoiceServices.Length; i++)
+                    {
+                        int j = i;
+                        if (invoiceServices[j] == null) invoiceServices[j] = new InvoiceService(){OtherService=true};
+                        <tr>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select id="select" @onchange="e =>ServiceChange(e,j)" class="custom-select">
+                                            @if (services != null && services.Count > 0)
+                                            {
+                                                @foreach (var service in services)
+                                                {
+                                                    <option value="@service.Id" selected="@(service.Id==invoiceServices[j].ServiceId)" disabled="@(!service.Enabled)">@service.Name</option>
+                                                }
+                                            }
+                                            <option value="-1" selected="@(invoiceServices[j].ServiceId==-1 || invoiceServices[j].ServiceId == null)">Other(Please Specify)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input id="text3" @bind-value="invoiceServices[j].Specifiy" type="text" class="form-control" readonly="@(!invoiceServices[j].OtherService)">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group row">
+                                    <div class="col-8">
+                                        <div class="input-group">
+                                            <input id="text" @bind-value="invoiceServices[j].Price" type="number" class="form-control">
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">บาท</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <Button Class="btn btn-danger" @onclick="()=>RemoveRow(j)"><i class="trash alternate outline icon"></i></Button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <th colspan="4">ไม่มีบริการ</th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <Button Class="btn btn-primary" @onclick="AddServices"><i class="plus icon"></i></Button>
+
+         <h2>ค่าธรรมเนียม ภาษี และส่วนสด</h2>
+        <hr />
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ค่าบริการเพิ่มเติม</label>
+                    <div class="input-group">
+                        <input id="text"  type="number" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </Div>
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ส่วนลด</label>
+                    <div class="input-group">
+                        <input id="text"  type="number" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+        </Div>
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <div>
+                        <div class="custom-controls-stacked">
+                            <div class="custom-control custom-checkbox">
+                                <input @bind-value="hasTax"  id="checkbox_2" type="checkbox" class="custom-control-input">
+                                <label for="checkbox_2" class="custom-control-label">มีภาษี</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="text1">ภาษี</label>
+                    <div class="input-group">
+                        <input id="text1" @bind-value="taxPercentage" type="number" step="0.01" min="1" max="500" class="form-control" readonly="@(!hasTax)">
+                        <div class="input-group-append">
+                            <div class="input-group-text">%</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+            <Div Class="col">      
+                 <div class="form-group">
+    <label for="text">คิดเป็น</label> 
+    <div class="input-group">
+      <input id="text"  type="number" step="0.01" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div>
+            </Div>
+        </Div>      
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ราคารวม</label>
+                    <div class="input-group">
+                        <input id="text"  type="text" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+            <Div Class="col"></Div>
+        </Div>
+         <Div Class="d-flex flex-row-reverse">
+            <div class="p-2"><Button Class="btn btn-info btn-lg" ><i class="calculator icon"></i> Invoice Calculate</Button></Div>
+        </Div>
             }
         </ModalBody>
         <ModalFooter>
