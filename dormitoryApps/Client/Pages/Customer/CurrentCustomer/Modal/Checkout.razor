@@ -19,8 +19,13 @@
     Officer officer = new Officer();
     Officer rentalOfficer = new Officer();
     Room room = new Room();
-    Buildings buildings = new Buildings();    
+    Buildings buildings = new Buildings();
+    Invoice lastinvoice = new Invoice();
+    Water lastwater = new Water();
+    Electricity lastelectricity = new Electricity();
     PastCustomer pastCustomer = new PastCustomer();
+    RentalAccount account =  new RentalAccount(); 
+    Utilities utilities = new Utilities();
     List<Invoice> relatedInvoices = new List<Invoice>();
     List<Water> waterUsed = new List<Water>();
     List<Electricity> electricityUsed = new List<Electricity>();
@@ -43,10 +48,11 @@
     decimal taxPercentage = 1;
     public async void Open(string rentalId)
     {
-        banks = null;
+        banks = null;       
         await e.Show();
         isLoading = true;
         await Task.Delay(1);
+        utilities = await _clientdataServices.GetUtilities();
         item = await _currentCustomerService.Get(rentalId);
         commentValidate = false;
         if (item == null)
@@ -73,6 +79,9 @@
         electricityExists = electricityUsed.Where(x => x.month == month && x.Year == year).Count() > 0;
         services = await _myServicesServices.GetMyServices();
         if (services == null) services = new List<MyServices>();
+        account = new RentalAccount { AccountName = item.Members.Where(x => x.IsMain).Select(x => $"{x.Member.Firstname} {x.Member.Surname}").FirstOrDefault() };
+        lastwater = new Water() { BeforeUnit =waterUsed != null && waterUsed.Count > 0 ? waterUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.WaterPrice };
+        lastelectricity = new Electricity() { BeforeUnit = electricityUsed != null && electricityUsed.Count > 0? electricityUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.ElectricityPrice };
         await Task.Delay(20);
         StateHasChanged();
 
@@ -82,9 +91,12 @@
         if (int.Parse(e.Value.ToString()) == 9999)
         {
             bankOther = true;
+            account.Specify = true;
+            account.Bank = string.Empty;
             return;
         }
         bankOther = false;
+        account.Bank = e.Value.ToString();
     }
      void AddServices()
     {
@@ -209,7 +221,7 @@
                         <div class="form-group">
                             <label for="text">ค่าเช่างวดสุดท้าย</label>
                             <div class="input-group">
-                                <input id="text" name="text" type="number" class="form-control">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="lastinvoice.RentalPrice">
                                 <div class="input-group-append">
                                     <div class="input-group-text">บาท</div>
                                 </div>
@@ -220,7 +232,7 @@
                         <div class="form-group">
                             <label for="text">ค่าประกันของเสียหายทั้งหมด</label>
                             <div class="input-group">
-                                <input id="text" name="text" type="number" class="form-control" readonly>
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="item.DamageInsurance" readonly>
                                 <div class="input-group-append">
                                     <div class="input-group-text">บาท</div>
                                 </div>
@@ -231,7 +243,7 @@
                         <div class="form-group">
                             <label for="text">หักค่าประกันของเสียหาย</label>
                             <div class="input-group">
-                                <input id="text" name="text" type="number" class="form-control">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="pastCustomer.DamageFee">
                                 <div class="input-group-append">
                                     <div class="input-group-text">บาท</div>
                                 </div>
@@ -244,7 +256,7 @@
                         <div class="form-group">
                             <label for="text">ค่าประกันคงเหลือ(โอนคืนลูกค้า)</label>
                             <div class="input-group">
-                                <input id="text" name="text" type="number" class="form-control">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="pastCustomer.Deposit">
                                 <div class="input-group-append">
                                     <div class="input-group-text">บาท</div>
                                 </div>
@@ -255,7 +267,7 @@
 
                         <div class="form-group">
                             <label for="text">เลขที่บัญชี</label>
-                            <input id="text" name="text" type="text" class="form-control">
+                            <input id="text" name="text" type="number" class="form-control" @bind-value="account.AccountId">
                         </div>
                     </Div>
                     <Div Class="col">
@@ -284,7 +296,7 @@
                     <Div Class="col">
                         <div class="form-group mb-3">
                             <label for="text">ชื่อบัญชี</label>
-                            <input id="text" name="text" type="text" class="form-control" aria-describedby="editbtn" readonly="@accountNameReadonly">
+                            <input id="text" @bind-value="account.AccountName" type="text" class="form-control" aria-describedby="editbtn" readonly="@accountNameReadonly">
                             <button class="btn btn-warning" type="button" id="editbtn" disabled="@(!accountNameReadonly)" @onclick="()=>{accountNameReadonly=false;}">แก้ไข</button>
                         </div>
                     </Div>
@@ -293,7 +305,7 @@
                         {
                             <div class="form-group">
                                 <label for="text">ชื่อธนาคาร</label>
-                                <input id="text" name="text" type="text" class="form-control">
+                                <input id="text" @bind-value="account.Bank" type="text" class="form-control">
                             </div>
                         }
                     </Div>
@@ -317,7 +329,7 @@
                                 <div class="form-group">
                                     <label for="text">เลขครั้งก่อน</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastwater.BeforeUnit" type="number" step="0.01" min="0" class="form-control">
                                         <div class="input-group-append">
                                             <div class="input-group-text">หน่วย</div>
                                         </div>
@@ -328,7 +340,7 @@
                                 <div class="form-group">
                                     <label for="text">เลขล่าสุด</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastwater.CurrentUnit" type="number" step="0.01" min="@lastwater.BeforeUnit" class="form-control">
                                         <div class="input-group-append">
                                             <div class="input-group-text">หน่วย</div>
                                         </div>
@@ -339,7 +351,7 @@
                                 <div class="form-group">
                                     <label for="text">หน่วยละ</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastwater.Price" type="number" step="0.01" min="0" class="form-control" readonly="@utilities.Readonly">
                                         <div class="input-group-append">
                                             <div class="input-group-text">บาท</div>
                                         </div>
@@ -352,7 +364,7 @@
                                 <div class="form-group">
                                     <label for="text">ใช้ไป</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="text" class="form-control" readonly>
+                                        <input id="text" value="@(lastwater.CurrentUnit-lastwater.BeforeUnit)" type="text" class="form-control" readonly>
                                         <div class="input-group-append">
                                             <div class="input-group-text">หน่วย</div>
                                         </div>
@@ -363,7 +375,7 @@
                                 <div class="form-group">
                                     <label for="text">คิดเป็น</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="text" class="form-control" readonly>
+                                        <input id="text" @bind-value="lastwater.Total" type="number" class="form-control" readonly>
                                         <div class="input-group-append">
                                             <div class="input-group-text">บาท</div>
                                         </div>
@@ -393,7 +405,7 @@
                                 <div class="form-group">
                                     <label for="text">เลขครั้งก่อน</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastelectricity.BeforeUnit" type="number" step="0.01" min="0" class="form-control">
                                         <div class="input-group-append">
                                             <div class="input-group-text">หน่วย</div>
                                         </div>
@@ -404,7 +416,7 @@
                                 <div class="form-group">
                                     <label for="text">เลขล่าสุด</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastelectricity.CurrentUnit" type="number" step="0.01" min="0" class="form-control">
                                         <div class="input-group-append">
                                             <div class="input-group-text">หน่วย</div>
                                         </div>
@@ -415,7 +427,7 @@
                                 <div class="form-group">
                                     <label for="text">หน่วยละ</label>
                                     <div class="input-group">
-                                        <input id="text" name="text" type="number" step="0.01" min="0" class="form-control">
+                                        <input id="text" @bind-value="lastelectricity.Price" type="number" step="0.01" min="0" class="form-control" readonly="@utilities.Readonly">
                                         <div class="input-group-append">
                                             <div class="input-group-text">บาท</div>
                                         </div>
@@ -429,7 +441,7 @@
                                     <div class="form-group">
                                         <label for="text">ใช้ไป</label>
                                         <div class="input-group">
-                                            <input id="text" name="text" type="text" class="form-control" readonly>
+                                            <input id="text" value="@(lastelectricity.CurrentUnit-lastelectricity.BeforeUnit)" type="text" class="form-control" readonly>
                                             <div class="input-group-append">
                                                 <div class="input-group-text">หน่วย</div>
                                             </div>
@@ -440,7 +452,7 @@
                                     <div class="form-group">
                                         <label for="text">คิดเป็น</label>
                                         <div class="input-group">
-                                            <input id="text" name="text" type="text" class="form-control" readonly>
+                                            <input id="text" @bind-value="lastelectricity.Total" type="text" class="form-control" readonly>
                                             <div class="input-group-append">
                                                 <div class="input-group-text">บาท</div>
                                             </div>
@@ -528,7 +540,7 @@
                 <div class="form-group">
                     <label for="text">ค่าบริการเพิ่มเติม</label>
                     <div class="input-group">
-                        <input id="text"  type="number" class="form-control">
+                        <input id="text" @bind-value="lastinvoice.Fee" type="number" class="form-control">
                         <div class="input-group-append">
                             <div class="input-group-text">บาท</div>
                         </div>
@@ -540,7 +552,7 @@
                 <div class="form-group">
                     <label for="text">ส่วนลด</label>
                     <div class="input-group">
-                        <input id="text"  type="number" class="form-control">
+                        <input id="text" @bind-value="lastinvoice.Discount" type="number" class="form-control">
                         <div class="input-group-append">
                             <div class="input-group-text">บาท</div>
                         </div>
@@ -575,7 +587,7 @@
                  <div class="form-group">
     <label for="text">คิดเป็น</label> 
     <div class="input-group">
-      <input id="text"  type="number" step="0.01" class="form-control" readonly> 
+      <input id="text"  type="number" @bind-value="lastinvoice.Tax" step="0.01" class="form-control" readonly> 
       <div class="input-group-append">
         <div class="input-group-text">บาท</div>
       </div>
@@ -588,7 +600,7 @@
                 <div class="form-group">
                     <label for="text">ราคารวม</label>
                     <div class="input-group">
-                        <input id="text"  type="text" class="form-control">
+                        <input id="text" @bind-value="lastinvoice.GrandTotal" type="text" class="form-control">
                         <div class="input-group-append">
                             <div class="input-group-text">บาท</div>
                         </div>
