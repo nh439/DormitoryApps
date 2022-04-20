@@ -12,6 +12,8 @@
 @inject ClientdataServices _clientdataServices;
 @inject BankServices _bankServices;
 @inject MyServicesServices _myServicesServices;
+@inject WaterService _waterService;
+@inject ElectricityService _electricityService;
 
 @code {
     Modal e;
@@ -34,6 +36,7 @@
     InvoiceService[] invoiceServices = new InvoiceService[0];
     bool isLoading = false;
     bool commentValidate = false;
+    bool commentValidateRequired = false;
     bool accountNameReadonly = true;
     bool bankOther = false;
     bool waterExists = false;
@@ -42,9 +45,12 @@
     bool electricityCal = true;
     bool invoiceCalculate = false;
     bool hasTax = false;
+    bool AccountNameValidate = false;
+    bool AccountIdValidate=false;
+    bool BankSpeifyValidate = false;
     int month = DateTime.Now.Month;
     int year = DateTime.Now.Year;
-    int serviceCounter = 0;
+    int serviceCounter = 0;     
     decimal taxPercentage = 1;
     public async void Open(string rentalId)
     {
@@ -82,6 +88,20 @@
         account = new RentalAccount { AccountName = item.Members.Where(x => x.IsMain).Select(x => $"{x.Member.Firstname} {x.Member.Surname}").FirstOrDefault() };
         lastwater = new Water() { BeforeUnit =waterUsed != null && waterUsed.Count > 0 ? waterUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.WaterPrice };
         lastelectricity = new Electricity() { BeforeUnit = electricityUsed != null && electricityUsed.Count > 0? electricityUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.ElectricityPrice };
+        pastCustomer = new PastCustomer
+            {
+                Address = item.Address,
+                ContractDate = item.ContractDate,
+                EmployeeId = item.EmployeeId,
+                Id = item.Id,
+                IsStayed = true,
+                Members = item.Members,
+                RoomId = item.RoomId,
+                Rental = item.Rental,
+                RentalType = item.RentalType,
+                Stayed = item.Stayed,
+                StayUntil = item.StayUntil.GetValueOrDefault()
+            };
         await Task.Delay(20);
         StateHasChanged();
 
@@ -148,7 +168,34 @@
     }
     string ValidateResult(bool item)
     {
-        return item ? "is-invalid" : "is-valid";
+        return item ? "is-invalid" : "";
+    }
+    async void Calculate()
+    {
+        isLoading =true;
+        pastCustomer.Address = item.Address; 
+        await Task.Delay(1);
+        pastCustomer.Deposit = item.DamageInsurance - pastCustomer.DamageFee;
+        if(waterCal)
+        {
+            lastwater = _waterService.Calculate(lastwater,out decimal? wusage);
+            lastinvoice.Water = lastwater;
+        }
+        if(electricityCal)
+        {
+            lastelectricity = _electricityService.Calculate(lastelectricity, out decimal? eusage);
+            lastinvoice.Electricity = lastelectricity;
+        }
+        if(invoiceServices != null &&  invoiceServices.Length > 0)
+        {
+            lastinvoice.Services = invoiceServices.ToList();
+        }
+        lastinvoice = hasTax ? _invoiceService.InvoiceCalculate(lastinvoice, taxPercentage) : _invoiceService.InvoiceCalculate(lastinvoice);
+        invoiceCalculate=true;
+        isLoading =false;
+        commentValidateRequired = pastCustomer.DamageFee > 0;
+        await Task.Delay(1);
+        StateHasChanged();
     }
 }
 <Modal @ref="e" Style="color:black">
@@ -271,7 +318,7 @@
 
                         <div class="form-group">
                             <label for="text">เลขที่บัญชี</label>
-                            <input id="text" name="text" type="number" class="form-control" @bind-value="account.AccountId">
+                            <input id="text" name="text" type="number" class="form-control @(ValidateResult(AccountIdValidate))" @bind-value="account.AccountId">
                         </div>
                     </Div>
                     <Div Class="col">
@@ -300,7 +347,7 @@
                     <Div Class="col">
                         <div class="form-group mb-3">
                             <label for="text">ชื่อบัญชี</label>
-                            <input id="text" @bind-value="account.AccountName" type="text" class="form-control" aria-describedby="editbtn" readonly="@accountNameReadonly">
+                            <input id="text" @bind-value="account.AccountName" type="text" class="form-control @(ValidateResult(AccountIdValidate))" aria-describedby="editbtn" readonly="@accountNameReadonly">
                             <button class="btn btn-warning" type="button" id="editbtn" disabled="@(!accountNameReadonly)" @onclick="()=>{accountNameReadonly=false;}">แก้ไข</button>
                         </div>
                     </Div>
@@ -309,7 +356,7 @@
                         {
                             <div class="form-group">
                                 <label for="text">ชื่อธนาคาร</label>
-                                <input id="text" @bind-value="account.Bank" type="text" class="form-control">
+                                <input id="text" @bind-value="account.Bank" type="text" class="form-control @(ValidateResult(AccountIdValidate))">
                             </div>
                         }
                     </Div>
@@ -570,7 +617,7 @@
                     <div>
                         <div class="custom-controls-stacked">
                             <div class="custom-control custom-checkbox">
-                                <input @bind-value="hasTax"  id="checkbox_2" type="checkbox" class="custom-control-input">
+                                <input @bind-value="hasTax"  id="checkbox_2" type="checkbox" class="custom-control-input" checked="@hasTax">
                                 <label for="checkbox_2" class="custom-control-label">มีภาษี</label>
                             </div>
                         </div>
@@ -614,12 +661,17 @@
             <Div Class="col"></Div>
         </Div>
          <Div Class="d-flex flex-row-reverse">
-            <div class="p-2"><Button Class="btn btn-info btn-lg" ><i class="calculator icon"></i> Invoice Calculate</Button></Div>
+            <div class="p-2"><Button Class="btn btn-info btn-lg" @onclick="Calculate"><i class="calculator icon"></i> Invoice Calculate</Button></Div>
         </Div>
+         <div class="form-group">
+    <label for="textarea">คำอธิบายเพิ่มเติม</label> 
+    <textarea id="textarea" @bind="pastCustomer.Comments" cols="40" rows="5" class="form-control @(commentValidate ? ValidateResult(commentValidate):"")"></textarea>
+  </div> 
             }
         </ModalBody>
         <ModalFooter>
-
+            <Button Class="btn btn-outline-primary" Disabled="@(!invoiceCalculate)">Submit</Button>
+            <Button Class="btn btn-outline-primary" @onclick="()=> e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>

@@ -226,6 +226,7 @@ namespace dormitoryApps.Client.Services
             invoice.GrandTotal = serviceprice+waterprice + electricityprice+invoice.RentalPrice+invoice.Fee-(invoice.Discount.HasValue ? invoice.Discount.Value:0);
             invoice.ServicePrice = serviceprice;
             invoice.IsService = invoice.Services != null && invoice.Services.Count > 0;
+            invoice.Tax = 0;
             return invoice;
         }
         public Invoice InvoiceCalculate(Invoice invoice,decimal taxpercentage)
