@@ -98,7 +98,7 @@
         bankOther = false;
         account.Bank = e.Value.ToString();
     }
-     void AddServices()
+    void AddServices()
     {
         invoiceCalculate = false;
         serviceCounter++;
@@ -145,6 +145,10 @@
             invoiceServices[index].Price = services.Where(x => x.Id == serviceId).FirstOrDefault() != null ? services.Where(x => x.Id == serviceId).FirstOrDefault().Price : 0;
         }
         StateHasChanged();
+    }
+    string ValidateResult(bool item)
+    {
+        return item ? "is-invalid" : "is-valid";
     }
 }
 <Modal @ref="e" Style="color:black">
