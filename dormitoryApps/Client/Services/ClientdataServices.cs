@@ -29,5 +29,6 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.GetFromJsonAsync<MyCompany>($"{ControllerName}/MyCompany.json");
             return res;
         }
+     
     }
 }

@@ -12,6 +12,7 @@
 @inject SessionServices _sessionServices;
 @inject OfficerServices _officerServices;
 @inject ExportServices _exportServices;
+@inject PastCustomerServices _pastCustomerServices;
 
 @code {
     Modal e;
@@ -61,7 +62,35 @@
         percentage = 40;
         StateHasChanged();
         await Task.Delay(10);
-        current = await _currentCustomerService.Get(item.RentalId);
+        try
+        {
+            current = await _currentCustomerService.Get(item.RentalId);
+        }
+        catch
+        {
+            await _pastCustomerServices.GetById(item.RentalId).ContinueWith(p =>
+            {
+                var response = p.Result;
+                current = new CurrentCustomer()
+                    {
+                        Address = response.Address,
+                        Booking = false,
+                        BookingFee = 0,
+                        ContractDate = response.ContractDate,
+                        ContractFee = 0,
+                        DamageInsurance = response.DamageFee + response.Deposit,
+                        EmployeeId = response.EmployeeId,
+                        Id = response.Id,
+                        Rental = response.Rental,
+                        Members = response.Members,
+                        Stayed = response.Stayed.GetValueOrDefault(),
+                        RoomId = response.RoomId,
+                        RentalType = response.RentalType,
+                        StayUntil = response.StayUntil
+                    };
+            });
+            await Task.Delay(10);
+        }
         percentage = 50;
         StateHasChanged();
         await Task.Delay(1);
@@ -107,7 +136,7 @@
                     <Div Class="loader"></Div>
                     <h1>Loading... @percentage %</h1>
                 </center>
-                
+
             }
             else
             {
@@ -357,7 +386,7 @@
                         <label for="textarea">เหตุผลในการยกเลิก*</label>
                         <textarea id="textarea" readonly cols="40" rows="5" class="form-control">
                             @item.CancellationComment
-                            </textarea>
+                                    </textarea>
                     </div>
                 }
             }

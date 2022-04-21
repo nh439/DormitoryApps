@@ -1,0 +1,759 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json;
+@using dormitoryApps.Client.Services;
+@inject CurrentCustomerService _currentCustomerService;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceService;
+@inject PastCustomerServices _pastCustomerServices
+@inject ClientdataServices _clientdataServices;
+@inject BankServices _bankServices;
+@inject MyServicesServices _myServicesServices;
+@inject WaterService _waterService;
+@inject ElectricityService _electricityService;
+
+
+@code {
+    Modal e;
+    CurrentCustomer item = new CurrentCustomer() { Members = new List<RentalMember>() };
+    Officer officer = new Officer();
+    Officer rentalOfficer = new Officer();
+    Room room = new Room();
+    Buildings buildings = new Buildings();
+    Invoice lastinvoice = new Invoice();
+    Water lastwater = new Water();
+    Electricity lastelectricity = new Electricity();
+    PastCustomer pastCustomer = new PastCustomer();
+    RentalAccount account =  new RentalAccount(); 
+    Utilities utilities = new Utilities();
+    List<Invoice> relatedInvoices = new List<Invoice>();
+    List<Water> waterUsed = new List<Water>();
+    List<Electricity> electricityUsed = new List<Electricity>();
+    List<MyServices> services = new List<MyServices>();
+    List<Bank> banks = new List<Bank>();
+    InvoiceService[] invoiceServices = new InvoiceService[0];
+    bool isLoading = false;
+    bool commentValidate = false;
+    bool commentValidateRequired = false;
+    bool accountNameReadonly = true;
+    bool bankOther = false;
+    bool waterExists = false;
+    bool electricityExists = false;
+    bool waterCal = true;
+    bool electricityCal = true;
+    bool invoiceCalculate = false;
+    bool hasTax = false;
+    bool AccountNameValidate = false;
+    bool AccountIdValidate=false;
+    bool BankSpeifyValidate = false;
+    int month = DateTime.Now.Month;
+    int year = DateTime.Now.Year;
+    int serviceCounter = 0;     
+    decimal taxPercentage = 1;
+    public async void Open(string rentalId)
+    {
+        banks = null;       
+        await e.Show();
+        isLoading = true;
+        await Task.Delay(1);
+        utilities = await _clientdataServices.GetUtilities();
+        item = await _currentCustomerService.Get(rentalId);
+        commentValidate = false;
+        invoiceCalculate = false;
+        if (item == null)
+        {
+            item = new CurrentCustomer();
+            await e.Hide();
+            await Task.Delay(10);
+            auto.OpenFailed("ไม่พบข้อมูล");
+            return;
+        }
+        room = await _roomServices.GetRoom(item.RoomId);
+        buildings = await _buildingServices.Get(room.Building);
+        officer = await _sessionServices.GetCurrentLogin();
+        rentalOfficer = await _officerServices.GetById(item.EmployeeId);
+        relatedInvoices = await _invoiceService.GetByRental(rentalId);
+        electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        banks = await _bankServices.Get();
+        if (banks == null) banks = new List<Bank>();
+        isLoading = false;
+        accountNameReadonly = true;
+        bankOther = false;
+        waterExists = waterUsed.Where(x => x.month == month && x.Year == year).Count() > 0;
+        electricityExists = electricityUsed.Where(x => x.month == month && x.Year == year).Count() > 0;
+        services = await _myServicesServices.GetMyServices();
+        if (services == null) services = new List<MyServices>();
+        account = new RentalAccount { AccountName = item.Members.Where(x => x.IsMain).Select(x => $"{x.Member.Firstname} {x.Member.Surname}").FirstOrDefault() };
+        lastwater = new Water() { BeforeUnit =waterUsed != null && waterUsed.Count > 0 ? waterUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.WaterPrice };
+        lastelectricity = new Electricity() { BeforeUnit = electricityUsed != null && electricityUsed.Count > 0? electricityUsed.Select(x => x.CurrentUnit).Max():0, month = month, Year = year, Notedate = DateTime.Now, Price = utilities.ElectricityPrice };
+        pastCustomer = new PastCustomer
+            {
+                Address = item.Address,
+                ContractDate = item.ContractDate,
+                EmployeeId = item.EmployeeId,
+                Id = item.Id,
+                IsStayed = true,
+                Members = item.Members,
+                RoomId = item.RoomId,
+                Rental = item.Rental,
+                RentalType = item.RentalType,
+                Stayed = item.Stayed,
+                StayUntil = item.StayUntil.GetValueOrDefault()
+            };
+        await Task.Delay(20);
+        StateHasChanged();
+
+    }
+    void BankChanged(ChangeEventArgs e)
+    {
+        invoiceCalculate = false;
+        if (int.Parse(e.Value.ToString()) == 9999)
+        {
+            bankOther = true;
+            account.Specify = true;
+            account.Bank = string.Empty;
+            return;
+        }
+        bankOther = false;
+        account.Bank = e.Value.ToString();
+    }
+    void AddServices()
+    {
+        invoiceCalculate = false;
+        serviceCounter++;
+        var oldValue = invoiceServices;
+        invoiceServices = new InvoiceService[serviceCounter];
+        for (int i = 0; i < oldValue.Length; i++)
+        {
+            invoiceServices[i] = oldValue[i];
+
+        }
+        StateHasChanged();
+    }
+    void RemoveRow(int index)
+    {
+        invoiceCalculate = false;
+        serviceCounter = invoiceServices.Length - 1;
+        var ivx = invoiceServices;
+        invoiceServices = new InvoiceService[serviceCounter];
+        int count = 0;
+        for (int i = 0; i < ivx.Length; i++)
+        {
+            if (i == index)
+            {
+                continue;
+            }
+            invoiceServices[count] = ivx[i];
+            count++;
+        }
+        StateHasChanged();
+    }
+    void ServiceChange(ChangeEventArgs e, int index)
+    {
+        invoiceCalculate = false;
+        long serviceId = long.Parse(e.Value.ToString());
+        if (serviceId == -1 || serviceId == null)
+        {
+            invoiceServices[index].ServiceId = null;
+            invoiceServices[index].OtherService = true;
+        }
+        else
+        {
+            invoiceServices[index].ServiceId = serviceId;
+            invoiceServices[index].OtherService = false;
+            invoiceServices[index].Price = services.Where(x => x.Id == serviceId).FirstOrDefault() != null ? services.Where(x => x.Id == serviceId).FirstOrDefault().Price : 0;
+        }
+        StateHasChanged();
+    }
+    string ValidateResult(bool item)
+    {
+        return item ? "is-invalid" : "";
+    }
+    async void Calculate()
+    {
+        pastCustomer.Address = item.Address; 
+        await Task.Delay(1);
+        pastCustomer.Deposit = item.DamageInsurance - pastCustomer.DamageFee;
+        if(waterCal)
+        {
+            lastwater = _waterService.Calculate(lastwater,out decimal? wusage);
+            lastwater.RentalId = item.Id;
+            lastinvoice.Water = lastwater;
+        }
+        if(electricityCal)
+        {
+            lastelectricity = _electricityService.Calculate(lastelectricity, out decimal? eusage);
+            lastelectricity.RentalId = item.Id;
+            lastinvoice.Electricity = lastelectricity;
+        }
+        if(invoiceServices != null &&  invoiceServices.Length > 0)
+        {
+            lastinvoice.Services = invoiceServices.ToList();
+        }
+        lastinvoice = hasTax ? _invoiceService.InvoiceCalculate(lastinvoice, taxPercentage) : _invoiceService.InvoiceCalculate(lastinvoice);
+        invoiceCalculate=true;
+        commentValidateRequired = pastCustomer.DamageFee > 0;
+        Console.WriteLine(pastCustomer);
+        await Task.Delay(1);
+        StateHasChanged();
+    }
+    async void Savechanges()
+    {
+
+        AccountIdValidate = account.AccountId == 0;
+        AccountNameValidate = !accountNameReadonly ? string.IsNullOrEmpty(account.AccountName):false;
+        BankSpeifyValidate = bankOther ? string.IsNullOrEmpty(account.Bank) : false;
+        commentValidateRequired = pastCustomer.DamageFee > 0;
+        commentValidate = commentValidateRequired ? string.IsNullOrEmpty(pastCustomer.Comments) : false;
+        if(AccountIdValidate || AccountNameValidate || BankSpeifyValidate || commentValidate)
+        {
+            return;
+        }
+        auto.Open("Submitting");
+        await Task.Delay(1);
+        try
+        {
+            pastCustomer.Account = account;
+            var res = await _pastCustomerServices.Create(pastCustomer);
+            if(!res)
+            {
+                auto.Failed("Past Customer Failed");
+                await Task.Delay(1);
+                return;
+            }
+            if(waterCal)
+            {
+                res = await _waterService.Create(lastwater);
+                if(!res)
+                {
+                    auto.Failed("Last Water Failed");
+                    await Task.Delay(1);
+                    return;
+                }
+            }
+            if(electricityCal)
+            {
+                res = await _electricityService.Create(lastelectricity);
+                if(!res)
+                {
+                    auto.Failed("Last Electricity Failed");
+                    await Task.Delay(1);
+                    return;
+                }
+            }
+            lastinvoice.RentalId = item.Id;
+            lastinvoice.InvoiceOfficer = officer.Id;
+            lastinvoice.InvoiceDate=DateTime.Now;
+            lastinvoice.Month = DateTime.Now.Month;
+            lastinvoice.Year = DateTime.Now.Year;
+            res  = await _invoiceService.Create(lastinvoice);
+            if(!res)
+            {
+                auto.Failed("Last Invoice Failed");
+                await Task.Delay(1);
+                return;
+            }
+            res = await _currentCustomerService.Delete(item.Id);
+            if(!res)
+            {
+                auto.Failed("Deleted Failed");
+                await Task.Delay(1);
+                return;
+            }
+            await e.Hide();
+            auto.Success("Checkout สำเร็จ");
+            await Task.Delay(1);
+            StateHasChanged();
+        }
+        catch(Exception x)
+        {
+             auto.Failed(x.Message);
+             await Task.Delay(1);
+        }
+    }
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>แจ้งออก</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <center>
+                    <Div Class="loader"></Div>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>ออก/ยกเลิกสัญญา</h1>
+                </center>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">รหัสการเช่า</label>
+                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ห้อง</label>
+                            <input id="text" @bind-value="room.RoomName" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">อาคาร</label>
+                            <input id="text" @bind-value="buildings.Name" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ชื่อผู้พักอาศัย</label>
+                            <input id="text" value="@(item.Members.Where(x=>x.IsMain).Select(s=>string.Concat(s.Member.Firstname,' ',s.Member.Surname)).FirstOrDefault())" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เข้าพักเมื่อ</label>
+                            <input id="text" @bind-value="item.Stayed" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ออกวันที่</label>
+                            <input id="text" @bind-value="item.StayUntil" type="date" class="form-control" readonly>
+                        </div>
+                    </Div>
+                </Div>
+                <div class="form-group">
+                    <label for="text">รายการค้างชำระ</label>
+                    <div class="input-group">
+                        <input id="text" name="text" type="text" class="form-control" value="@(relatedInvoices.Where(x=>!x.Ispaid).Select(x=>x.GrandTotal).Sum()) " readonly>
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+                <h2>รายการชำระเงินครั้งสุดท้าย</h2>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ค่าเช่างวดสุดท้าย</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="lastinvoice.RentalPrice">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ค่าประกันของเสียหายทั้งหมด</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="item.DamageInsurance" readonly>
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">หักค่าประกันของเสียหาย</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="pastCustomer.DamageFee">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ค่าประกันคงเหลือ(โอนคืนลูกค้า)</label>
+                            <div class="input-group">
+                                <input id="text" name="text" type="number" class="form-control" @bind-value="pastCustomer.Deposit">
+                                <div class="input-group-append">
+                                    <div class="input-group-text">บาท</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+
+                        <div class="form-group">
+                            <label for="text">เลขที่บัญชี</label>
+                            <input id="text" name="text" type="number" class="form-control @(ValidateResult(AccountIdValidate))" @bind-value="account.AccountId">
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="select">ชื่อธนาคาร</label>
+                            <div>
+                                <select id="select" name="select" class="custom-select" @onchange="BankChanged">
+                                    <option selected disabled>โปรดเลือก</option>
+                                    @if (banks != null)
+                                    {
+                                        @foreach (var bank in banks)
+                                        {
+                                            <option value="@bank.Id">@($"{bank.Id}-{bank.Name}")</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option>Loading...</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group mb-3">
+                            <label for="text">ชื่อบัญชี</label>
+                            <input id="text" @bind-value="account.AccountName" type="text" class="form-control @(ValidateResult(AccountIdValidate))" aria-describedby="editbtn" readonly="@accountNameReadonly">
+                            <button class="btn btn-warning" type="button" id="editbtn" disabled="@(!accountNameReadonly)" @onclick="()=>{accountNameReadonly=false;}">แก้ไข</button>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        @if (bankOther)
+                        {
+                            <div class="form-group">
+                                <label for="text">ชื่อธนาคาร</label>
+                                <input id="text" @bind-value="account.Bank" type="text" class="form-control @(ValidateResult(AccountIdValidate))">
+                            </div>
+                        }
+                    </Div>
+                    <Div Class="col"></Div>
+                </Div>
+                @if (!waterExists)
+                {
+                    <h2>ค่าน้ำประปา</h2>
+                    <div class="form-group row">
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @bind-value="waterCal" id="checkbox_0" type="checkbox" checked="checked" class="custom-control-input">
+                                <label for="checkbox_0" class="custom-control-label">คิดค่าน้ำ</label>
+                            </div>
+                        </div>
+                    </div>
+                    @if (waterCal)
+                    {
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขครั้งก่อน</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastwater.BeforeUnit" readonly="@(waterUsed != null || waterUsed.Count >0)" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขล่าสุด</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastwater.CurrentUnit" type="number" step="0.01" min="@lastwater.BeforeUnit" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">หน่วยละ</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastwater.Price" type="number" step="0.01" min="0" class="form-control" readonly="@utilities.Readonly">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                        </Div>
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">ใช้ไป</label>
+                                    <div class="input-group">
+                                        <input id="text" value="@(lastwater.CurrentUnit-lastwater.BeforeUnit)" type="text" class="form-control" readonly>
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">คิดเป็น</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastwater.Total" type="number" class="form-control" readonly>
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col"></Div>
+                        </Div>
+
+                    }
+                }
+                @if (!electricityExists)
+                {
+                    <h2>ค่าไฟฟ้า</h2>
+                    <div class="form-group row">
+                        <div class="col-8">
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @bind-value="electricityCal" id="checkbox_1" type="checkbox" checked="checked" class="custom-control-input">
+                                <label for="checkbox_1" class="custom-control-label">คิดค่าไฟฟ้า</label>
+                            </div>
+                        </div>
+                    </div>
+                    @if (electricityCal)
+                    {
+                        <Div Class="row">
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขครั้งก่อน</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastelectricity.BeforeUnit" readonly="@(electricityUsed != null || electricityUsed.Count >0)" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">เลขล่าสุด</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastelectricity.CurrentUnit" type="number" step="0.01" min="0" class="form-control">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">หน่วย</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                            <Div Class="col">
+                                <div class="form-group">
+                                    <label for="text">หน่วยละ</label>
+                                    <div class="input-group">
+                                        <input id="text" @bind-value="lastelectricity.Price" type="number" step="0.01" min="0" class="form-control" readonly="@utilities.Readonly">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text">บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Div>
+                        </Div>
+                        <Div Class="row">
+                            <Div Class="row">
+                                <Div Class="col">
+                                    <div class="form-group">
+                                        <label for="text">ใช้ไป</label>
+                                        <div class="input-group">
+                                            <input id="text" value="@(lastelectricity.CurrentUnit-lastelectricity.BeforeUnit)" type="text" class="form-control" readonly>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">หน่วย</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Div>
+                                <Div Class="col">
+                                    <div class="form-group">
+                                        <label for="text">คิดเป็น</label>
+                                        <div class="input-group">
+                                            <input id="text" @bind-value="lastelectricity.Total" type="text" class="form-control" readonly>
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">บาท</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Div>
+                                <Div Class="col"></Div>
+                            </Div>
+                        </Div>
+
+                    }
+                }
+
+                 <h2>บริการเพิ่มเติม</h2>
+        <table class="table table-bordered border-primary">
+            <thead class="table-dark">
+                <tr>
+                    <th>ชื่อบริการ</th>
+                    <th>เจาะจง</th>
+                    <th>ราคา</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="table-success">
+                @if (invoiceServices != null && invoiceServices.Length > 0)
+                {
+                    @for (int i = 0; i < invoiceServices.Length; i++)
+                    {
+                        int j = i;
+                        if (invoiceServices[j] == null) invoiceServices[j] = new InvoiceService(){OtherService=true};
+                        <tr>
+                            <td>
+                                <div class="form-group">
+                                    <div>
+                                        <select id="select" @onchange="e =>ServiceChange(e,j)" class="custom-select">
+                                            @if (services != null && services.Count > 0)
+                                            {
+                                                @foreach (var service in services)
+                                                {
+                                                    <option value="@service.Id" selected="@(service.Id==invoiceServices[j].ServiceId)" disabled="@(!service.Enabled)">@service.Name</option>
+                                                }
+                                            }
+                                            <option value="-1" selected="@(invoiceServices[j].ServiceId==-1 || invoiceServices[j].ServiceId == null)">Other(Please Specify)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input id="text3" @bind-value="invoiceServices[j].Specifiy" type="text" class="form-control" readonly="@(!invoiceServices[j].OtherService)">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group row">
+                                    <div class="col-8">
+                                        <div class="input-group">
+                                            <input id="text" @bind-value="invoiceServices[j].Price" type="number" class="form-control">
+                                            <div class="input-group-append">
+                                                <div class="input-group-text">บาท</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <Button Class="btn btn-danger" @onclick="()=>RemoveRow(j)"><i class="trash alternate outline icon"></i></Button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <th colspan="4">ไม่มีบริการ</th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <Button Class="btn btn-primary" @onclick="AddServices"><i class="plus icon"></i></Button>
+
+         <h2>ค่าธรรมเนียม ภาษี และส่วนสด</h2>
+        <hr />
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ค่าบริการเพิ่มเติม</label>
+                    <div class="input-group">
+                        <input id="text" @bind-value="lastinvoice.Fee" type="number" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+            </Div>
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ส่วนลด</label>
+                    <div class="input-group">
+                        <input id="text" @bind-value="lastinvoice.Discount" type="number" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+        </Div>
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <div>
+                        <div class="custom-controls-stacked">
+                            <div class="custom-control custom-checkbox">
+                                <input @bind-value="hasTax"  id="checkbox_2" type="checkbox" class="custom-control-input" checked="@hasTax">
+                                <label for="checkbox_2" class="custom-control-label">มีภาษี</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="text1">ภาษี</label>
+                    <div class="input-group">
+                        <input id="text1" @bind-value="taxPercentage" type="number" step="0.01" min="1" max="500" class="form-control" readonly="@(!hasTax)">
+                        <div class="input-group-append">
+                            <div class="input-group-text">%</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+            <Div Class="col">      
+                 <div class="form-group">
+    <label for="text">คิดเป็น</label> 
+    <div class="input-group">
+      <input id="text"  type="number" @bind-value="lastinvoice.Tax" step="0.01" class="form-control" readonly> 
+      <div class="input-group-append">
+        <div class="input-group-text">บาท</div>
+      </div>
+    </div>
+  </div>
+            </Div>
+        </Div>      
+        <Div Class="row">
+            <Div Class="col">
+                <div class="form-group">
+                    <label for="text">ราคารวม</label>
+                    <div class="input-group">
+                        <input id="text" @bind-value="lastinvoice.GrandTotal" type="text" class="form-control">
+                        <div class="input-group-append">
+                            <div class="input-group-text">บาท</div>
+                        </div>
+                    </div>
+                </div>
+            </Div>
+            <Div Class="col"></Div>
+        </Div>
+         <Div Class="d-flex flex-row-reverse">
+            <div class="p-2"><Button Class="btn btn-info btn-lg" @onclick="Calculate"><i class="calculator icon"></i> Invoice Calculate</Button></Div>
+        </Div>
+         <div class="form-group">
+    <label for="textarea">คำอธิบายเพิ่มเติม</label> 
+    <textarea id="textarea" @bind="pastCustomer.Comments" cols="40" rows="5" class="form-control @(commentValidate ? ValidateResult(commentValidate):"")"></textarea>
+  </div> 
+            }
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-primary" @onclick="Savechanges" Disabled="@(!invoiceCalculate)">Submit</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=> e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}

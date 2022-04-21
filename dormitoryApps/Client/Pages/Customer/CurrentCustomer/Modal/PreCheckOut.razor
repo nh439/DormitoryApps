@@ -1,0 +1,273 @@
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject CurrentCustomerService _currentCustomerService;
+@inject SessionServices _sessionServices;
+@inject OfficerServices _officerServices;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices;
+@inject InvoiceServices _invoiceService;
+
+@code {
+    Modal e;
+    CurrentCustomer item = new CurrentCustomer() { Members = new List<RentalMember>() };
+    Officer officer = new Officer();
+    Officer rentalOfficer = new Officer();
+    Room room = new Room();
+    Buildings buildings = new Buildings();
+    List<Invoice> relatedInvoices = new List<Invoice>();
+    List<Water> waterUsed = new List<Water>();
+    List<Electricity> electricityUsed = new List<Electricity>();
+    bool isLoading = false;
+    bool stayUntilValidate = false;
+    public async void Open(string rentalId)
+    {
+        await e.Show();
+        stayUntilValidate = false;
+        isLoading = true;
+        await Task.Delay(1);
+        item = await _currentCustomerService.Get(rentalId);
+        if (item == null)
+        {
+            item = new CurrentCustomer();
+            await e.Hide();
+            await Task.Delay(10);
+            auto.OpenFailed("ไม่พบข้อมูล");
+            return;
+        }
+        room = await _roomServices.GetRoom(item.RoomId);
+        buildings = await _buildingServices.Get(room.Building);
+        officer = await _sessionServices.GetCurrentLogin();
+        rentalOfficer = await _officerServices.GetById(item.EmployeeId);
+        relatedInvoices = await _invoiceService.GetByRental(rentalId);
+        electricityUsed = relatedInvoices.Where(x => x.Electricity != null).Select(x => x.Electricity).ToList();
+        waterUsed = relatedInvoices.Where(x => x.Water != null).Select(x => x.Water).ToList();
+        isLoading = false;
+        await Task.Delay(5);
+        StateHasChanged();
+
+    }
+    public async void SaveChanges()
+    {
+
+        stayUntilValidate = !item.StayUntil.HasValue;
+        if (stayUntilValidate)
+        {
+            StateHasChanged();
+            return;
+        }
+        try{
+            auto.Open("Submitting");
+            await Task.Delay(1);
+            var actionResult = await _currentCustomerService.Update(item);
+            if (actionResult)
+            {
+                await e.Hide();
+                auto.Success("บันทึกการแจ้งออกสำเร็จ");
+                await Task.Delay(1);      
+                StateHasChanged();
+                return;               
+            }
+            auto.Failed("บันทึกการแจ้งออกไม่สำเร็จ");
+            await Task.Delay(1);
+        }
+        catch(Exception x)
+        {
+            auto.Failed(x.Message);
+            await Task.Delay(1);
+        }
+        StateHasChanged();
+    }
+}
+<Modal @ref="e" Style="color:black">
+    <ModalContent Size="ModalSize.Fullscreen">
+        <ModalHeader>
+            <ModalTitle>แจ้งออก</ModalTitle>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <center>
+                    <div class="loader"></div>
+                    <h1>Loading...</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>แจ้งออก</h1>
+                </center>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">รหัสการเช่า</label>
+                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ห้อง</label>
+                            <input id="text" @bind-value="room.RoomName" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">อาคาร</label>
+                            <input id="text" @bind-value="buildings.Name" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                </Div>
+                <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ชื่อผู้พักอาศัย</label>
+                            <input id="text" value="@(item.Members.Where(x=>x.IsMain).Select(s=>string.Concat(s.Member.Firstname,' ',s.Member.Surname)).FirstOrDefault())" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">เข้าพักเมื่อ</label>
+                            <input id="text" @bind-value="item.Stayed" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ออกวันที่*</label>
+                            <input id="text" @bind-value="item.StayUntil" type="date" class="form-control @(stayUntilValidate ? "is invalid":"")">
+                        </div>
+                    </Div>
+                </Div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>เลขที่</th> @*1*@
+                            <th>งวด</th>  @*2*@
+                            <th>ค่าน้ำ</th> @*3*@
+                            <th>ค่าไฟ</th> @*4*@
+                            <th>ค่าบริการ</th>  @*5*@
+                            <th>ค่าเช่า</th>    @*6*@
+                            <th>ค่าบริการเพิ่มเติม</th>    @*7*@
+                            <th>ส่วนลด</th>    @*5*@
+                            <th>ภาษี</th>    @*9*@
+                            <th>รวม</th>     @*10*@
+                            <th>เป็นค่าเช่า</th> @*11*@
+                            <th>การชำระเงิน</th>@*12*@
+                            <th>วันที่ออก</th>   @*13*@
+                            <th>วันที่ชำระเงิน</th>@*14*@
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var invoice in relatedInvoices.OrderByDescending(x => x.InvoiceDate))
+                        {
+                            string statusColor = invoice.Iscancel ? "orange" : (invoice.Ispaid ? "green" : "red");
+                            string invoiceStatus = invoice.Iscancel ? "ยกเลิก" : (invoice.PaidDate.HasValue ? $"ชำระแล้วเมื่อ {invoice.PaidDate.Value.ToString("dd MMMM yyyy HH:mm:ss")}" : "ยังไม่ได้ชำระเงิน");
+                            <tr>
+                                @*1*@
+                                <td>@invoice.Id</td>
+                                @*2*@
+                                <td>@($"{invoice.Month}/{invoice.Year}")</td>
+                                @*3*@
+                                <td>@(invoice.Water != null ?  $"{invoice.Water.Total.ToString("#,###")} บาท":"")</td>
+                                @*4*@
+                                <td>@(invoice.Electricity != null ?  $"{invoice.Electricity.Total.ToString("#,###")} บาท":"")</td>
+                                @*5*@
+                                <td>@(invoice.ServicePrice >  0 ?  $"{invoice.ServicePrice.ToString("#,###")} บาท":"")</td>
+                                @*6*@
+                                <td>@(invoice.RentalPrice >  0 ?  $"{invoice.RentalPrice.ToString("#,###")} บาท":"")</td>
+                                @*7*@
+                                <td>@(invoice.Fee >  0 ?  $"{invoice.Fee.ToString("#,###")} บาท":"")</td>
+                                @*8*@
+                                <td>@(invoice.Discount.HasValue ?  $"{invoice.Discount.Value.ToString("#,###")} บาท":"")</td>
+                                @*9*@
+                                <td>@(invoice.Tax > 0 ? $"{invoice.Tax.ToString("#,###")} บาท":"")</td>
+                                @*10*@
+                                <td>@($"{invoice.GrandTotal.ToString("#,###")} บาท")</td>
+                                @*11*@
+                                <td>@if (invoice.RentalPrice > 0)
+                                    {
+                                        <i class="check icon"></i>
+                                    }</td>
+                                @*12*@
+                                <td>@if (invoice.Ispaid)
+                                    {
+                                        <i class="check icon"></i>
+                                    }</td>
+                                @*13*@
+                                <td>@invoice.InvoiceDate.ToString("dd MMMM yyyy HH:mm:ss")</td>
+                                @*14*@
+                                <td style="color:@statusColor;font-weight:bold">@invoiceStatus</td>
+                            </tr>
+                        }
+                        @if ((waterUsed != null && waterUsed.Count > 0) || (electricityUsed != null && electricityUsed.Count > 0))
+                        {
+                            <tr>
+                                <td colspan="14" class="table-success">ไฟฟ้า และ น้ำประปา</td>
+                            </tr>
+                            <tr style="font-weight:bold">
+                                <td colspan="10">Description</td>
+                                <td colspan="4">Value</td>
+                            </tr>
+                            @if (waterUsed != null && waterUsed.Count > 0)
+                            {
+                                <tr>
+                                    <td colspan="10">ใช้น้ำประปารวม</td>
+                                    <td colspan="4">@waterUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="10">คิดเป็น</td>
+                                    <td colspan="4">@waterUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                                </tr>
+                            }
+                            @if (electricityUsed != null && electricityUsed.Count > 0)
+                            {
+                                <tr>
+                                    <td colspan="10">ใช้ไฟฟ้ารวม</td>
+                                    <td colspan="4">@electricityUsed.Select(x=>(x.CurrentUnit-x.BeforeUnit)).Sum() หน่วย</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="10">คิดเป็น</td>
+                                    <td colspan="4">@electricityUsed.Select(x=>x.Total).Sum().ToString("#,###") บาท</td>
+                                </tr>
+                            }
+
+                        }
+                        <tr>
+                            <td colspan="14" class="table-success">สรุปการชำระ</td>
+                        </tr>
+                        <tr style="font-weight:bold">
+                            <td colspan="10">Description</td>
+                            <td colspan="4">Value</td>
+                        </tr>
+                        <tr>
+                            <td colspan="10">ยอดทั้งหมด</td>
+                            <td colspan="4">@relatedInvoices.Where(x=>!x.Iscancel).Select(x=>x.GrandTotal).Sum().ToString("#,###") บาท</td>
+                        </tr>
+                        <tr>
+                            <td colspan="10">ชำระแล้ว</td>
+                            <td colspan="4" style="color:green">@(relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum() > 0 ? relatedInvoices.Where(x=>!x.Iscancel && x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###"):"0") บาท</td>
+                        </tr>
+                        <tr>
+                            <td colspan="10">ค้างชำระ</td>
+                            <td colspan="4" style="color:@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? "red":"green")">@(relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum() >0 ? $"{ relatedInvoices.Where(x=>!x.Iscancel && !x.Ispaid).Select(x=>x.GrandTotal).Sum().ToString("#,###")} บาท": "ไม่มีรายการค้างชำระ" ) </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+            }
+
+        </ModalBody>
+        <ModalFooter>
+            @if (!isLoading)
+            {
+                <Button Class="btn btn-primary" @onclick="()=>SaveChanges()">บันทึกการแจ้งออก</Button>
+                <Button Class="btn btn-secondary" @onclick="()=>e.Hide()">ปิด</Button>
+            }
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}

@@ -55,5 +55,6 @@ builder.Services.AddScoped<MemberServices>();
 builder.Services.AddScoped<RentalMemberServices>();
 builder.Services.AddScoped<RentalAccountServices>();
 builder.Services.AddScoped<ClientdataServices>();
+builder.Services.AddScoped<BankServices>();
 builder.Services.AddScoped<ExportServices>();
 await builder.Build().RunAsync();

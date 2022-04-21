@@ -1,0 +1,22 @@
+
+start transaction;
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (024,'ธนาคารยูโอบี','UOBT','UOVBTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (022,'ธนาคารซีไอเอ็มบีไทย','CIMBT','UBOBTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (011,'ธนาคารทหารไทยธนชาต','TTB','TMBKTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (066,'ธนาคารอิสลามแห่งประเทศไทย','ISBT','TIBTTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (071,'ธนาคารไทยเครดิตเพื่อรายย่อย','TCD','THCETHB1');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (067,'ธนาคารทิสโก้','TISCO','TFPCTHB1');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (014,'ธนาคารไทยพาณิชย์','SCB','SICOTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (073,'ธนาคารแลนด์ แอนด์ เฮ้าส์','LHFG','LAHRTHB1');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (006,'ธนาคารกรุงไทย','KTB','KRTHTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (069,'ธนาคารเกียรตินาคินภัทร','KKP','KIFITHB1');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (004,'ธนาคารกสิกรไทย','KBANK','KASITHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (070,'ธนาคารไอซีบีซี (ไทย)','ICBCT','ICBKTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (030,'ธนาคารออมสิน','GSB','GSBATHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (035,'ธนาคารเพื่อการส่งออกและนำเข้าแห่งประเทศไทย','EXIM','EXTHTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (002,'ธนาคารกรุงเทพ','BBL','BKKBTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (034,'ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร','BAAC','BAABTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (025,'ธนาคารกรุงศรีอยุธยา','BAY','AYUDTHBK');
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (098,'ธนาคารพัฒนาวิสาหกิจขนาดกลางและขนาดย่อมแห่งประเทศไทย','SME',NULL);
+INSERT INTO bank(Id,Name,ShortName,SwiftCode) VALUES (033,'ธนาคารอาคารสงเคราะห์','GHB',NULL);
+commit;

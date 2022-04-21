@@ -95,6 +95,7 @@ namespace dormitoryApps.Server.Services
         public async Task<CurrentCustomer> GetById(string Id)
         {
             var res= await _repository.GetById(Id);
+            if (res == null) return null;
             res.Members = await _rentalMemberServices.GetByRentalId(res.Id);
             res.Imgs = await _customerImgRepository.GetbyRentalId(res.Id);
             return res;

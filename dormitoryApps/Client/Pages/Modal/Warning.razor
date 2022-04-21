@@ -14,6 +14,7 @@
     public string NoButtonLabel { get; set; } = "No";
     public bool Result{ get; private set; }
     public bool Isclosed{ get; private set; }
+    public Action actionResult = new Action(()=>{});
     public void Open()
     {
         ModalDisplay = "block;";
@@ -34,7 +35,7 @@
     }
     private void SetResult(bool result)
     {
-        Result = result;
+        actionResult();
     }
 
 }

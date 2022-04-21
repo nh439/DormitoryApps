@@ -105,7 +105,14 @@
                         }
                         else
                         {
-                            <button class="btn btn-danger">แจ้งออก</button>
+                            @if (!customer.StayUntil.HasValue)
+                            {
+                                <button class="btn btn-danger" @onclick="()=>preCheckOut.Open(customer.Id)">แจ้งออก</button>
+                            }
+                            else
+                            {
+                                 <button class="btn btn-danger" @onclick="()=>checkout.Open(customer.Id)">ออก</button>
+                            }
                         }
                     </td>
                 </tr>
@@ -152,9 +159,13 @@ StateHasChanged();
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking @ref="CFB"/>
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Details @ref ="details"/>
 <dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateContract @ref="contract"/>
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.PreCheckOut @ref="preCheckOut"/>
+<dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Checkout @ref="checkout"/>
 @code {
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateBooking booking;
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.ContractFromBooking CFB;
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Details details;
     private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.CreateContract contract;
+    private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.PreCheckOut preCheckOut;
+    private dormitoryApps.Client.Pages.Customer.CurrentCustomer.Modal.Checkout checkout;
 }
