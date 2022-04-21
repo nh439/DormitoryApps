@@ -234,7 +234,7 @@ namespace dormitoryApps.Client.Services
             var serviceprice = (invoice.Services != null ? invoice.Services.Select(x => x.Price).Sum() : 0);
             var waterprice = (invoice.Water != null ? invoice.Water.Total : 0);
             var electricityprice = (invoice.Electricity != null ? invoice.Electricity.Total : 0);
-            var total = serviceprice + waterprice + electricityprice + invoice.RentalPrice;
+            var total = serviceprice + waterprice + electricityprice + invoice.RentalPrice+invoice.Fee-(invoice.Discount?? 0);
             invoice.Tax = (taxpercentage / 100) * total;
             invoice.GrandTotal = total+invoice.Tax;
             invoice.ServicePrice = serviceprice;

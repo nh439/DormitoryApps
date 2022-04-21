@@ -10,7 +10,7 @@ namespace dormitoryApps.Shared.Model.Entity
     {
         public string RentalId { get; set; }
         public string Bank { get; set; }
-        public int AccountId { get; set; }
+        public long AccountId { get; set; }
         public string AccountName { get; set; }
         public bool Specify { get; set; }
     }
