@@ -22,6 +22,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string RentalType { get; set; }
 		public long EmployeeId { get; set; }
 		public string Comments { get; set; }
+		public byte[] Slip { get; set; }
 		public RentalAccount? Account { get; set; }
 		public virtual List<RentalMember> Members { get; set; }
 	}
