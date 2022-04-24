@@ -95,7 +95,7 @@
                         <button class="btn btn-info" @onclick="()=>detail.Open(customer.Id)">รายละเอียด</button>
                         @if(!customer.Refunded && customer.Deposit > 0)
                         {
-                            <button class="btn btn-success">คืนเงินประกัน</button>
+                            <button class="btn btn-success" @onclick="()=>refunded.Open(customer.Id)">คืนเงินประกัน</button>
                         }
                     </td>
                 </tr>
@@ -139,6 +139,8 @@ StateHasChanged();
     </ul>
 </nav>
 <dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail @ref="detail"/>
+<dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Refunded @ref="refunded"/>
 @code{
     dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Detail detail;
+    dormitoryApps.Client.Pages.Customer.PastCustomer.Modal.Refunded refunded;
 }

@@ -1,5 +1,109 @@
-﻿<h3>Refunded</h3>
+﻿@using Blazorise;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject PastCustomerServices _pastCustomerServices;
+@inject BankServices _bankServices;
+@inject RentalAccountServices _rentalAccountServices;
+@inject RoomServices _roomServices;
+@inject BuildingServices _buildingServices
 
 @code {
+    Modal e;
+    PastCustomer item = new PastCustomer(){Members= new List<RentalMember>(),Account = new RentalAccount()};
+    Room room = new Room();
+    //RentalAccount rentalAccount = new RentalAccount();
+    Bank bank = new Bank();
+    Buildings buildings = new Buildings();
+    bool Loading = false;
+    string bankName = string.Empty;
+    public async void Open(string Id)
+    {
+        await e.Show();
+        Loading = true;
+        await Task.Delay(1);
+        item = await _pastCustomerServices.GetById(Id);
+        room = await _roomServices.GetRoom(item.RoomId);
+        buildings = await _buildingServices.Get(room.Building);
+        bank = item.Account != null && !item.Account.Specify ? await _bankServices.Get(int.Parse(item.Account?.Bank)) : new Bank();
+        bankName = item.Account != null ? (!item.Account.Specify ? bank.Name : item.Account.Bank) : "ข้อมูลผิดพลาด";
+        await Task.Delay(10);
+        Loading = false;
+        StateHasChanged();
 
+    }
 }
+<Modal Style="color:black" @ref="e">
+    <ModalContent>
+        <ModalHeader>
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (Loading)
+            {
+                <center>
+                    <div Class="loader"></div>
+                    <br />
+                    Loading...
+                </center>
+            }
+            else
+            {
+                <center>
+                    คืนเงินประกัน
+                </center>
+                <br />
+                <div class="row">
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">เลขที่</label>
+                            <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">ห้อง</label>
+                            <input id="text" @bind-value="room.RoomName" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">อาคาร</label>
+                            <input id="text" @bind-value="buildings.Name" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">เลขที่บัญชี</label>
+                            <input id="text" @bind-value="item.Account.AccountId" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">ธนาคาร</label>
+                            <input id="text" @bind-value="bankName" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div Class="col">
+                        <div class="form-group">
+                            <label for="text">ชื่อบัญชี</label>
+                            <input id="text" @bind-value="item.Account.AccountName" type="text" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>
+                <h2>หลักฐานการโอนเงิน*</h2>
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Default file input example</label>
+                    <input class="form-control" type="file" id="formFile">
+                </div>
+                <div class="text-center">
+                    <img src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}" :"...")" class="rounded" alt="..." height="300" width="200">
+                </div>
+           }
+        </ModalBody>
+        <ModalFooter>
+
+        </ModalFooter>
+    </ModalContent>
+</Modal>
