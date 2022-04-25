@@ -31,6 +31,53 @@
         StateHasChanged();
 
     }
+    async void SlipChanges(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (!file.ContentType.Contains("image"))
+            {
+                auto.OpenFailed("ต้องเลือกไฟล์ภาพ");
+                return;
+            }
+            MemoryStream stream = new MemoryStream();
+            var fs = file.OpenReadStream();
+            await fs.CopyToAsync(stream);
+            fs.Close();
+            item.Slip = stream.ToArray();
+            stream.Close();
+            StateHasChanged();
+        }
+        catch(Exception x)
+        {
+            auto.OpenFailed(x.Message);
+        }
+    }
+    async void SaveChanges()
+    {
+        auto.Open("Submitting");
+        await Task.Delay(1);
+        try
+        {
+            item.Refunded = true;
+            var res = await _pastCustomerServices.Update(item);
+            if(res)
+            {
+                await e.Hide();
+                auto.Success("บันทึกการคืนเงินสำเร็จ");
+                await Task.Delay(1);
+                return;
+            }
+            auto.Failed("Something Went Wrong");
+            await Task.Delay(1);
+        }
+        catch(Exception x)
+        {
+            auto.Failed(x.Message);
+            await Task.Delay(1);
+        }
+    }
 }
 <Modal Style="color:black" @ref="e">
     <ModalContent>
@@ -94,8 +141,8 @@
                 </div>
                 <h2>หลักฐานการโอนเงิน*</h2>
                 <div class="mb-3">
-                    <label for="formFile" class="form-label">Default file input example</label>
-                    <input class="form-control" type="file" id="formFile">
+                   
+                    <InputFile class="btn btn-primary" id="formFile"  OnChange="SlipChanges"/>
                 </div>
                 <div class="text-center">
                     <img src="@(item.Slip != null ? $"data:image/png;base64,{Convert.ToBase64String(item.Slip)}" :"...")" class="rounded" alt="..." height="300" width="200">
@@ -103,7 +150,12 @@
            }
         </ModalBody>
         <ModalFooter>
-
+            <Button Class="btn btn-outline-primary" Disabled="item.Slip==null" @onclick="SaveChanges">บันทึกการโอนเงิน</Button>
+            <Button Class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code{
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}
