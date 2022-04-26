@@ -351,6 +351,12 @@
     <textarea id="textarea" name="textarea" cols="40" rows="5" class="form-control" readonly>@item.Comments</textarea>
   </div> 
                 }
+                @if(item.Slip != null)
+            {
+                <center>
+                    <img src="@($"data:image/png;base64,{Convert.ToBase64String(item.Slip)}")" height="300" width="200"/>
+                </center>
+            }
         </ModalBody>
         <ModalFooter></ModalFooter>
     </ModalContent>
