@@ -20,5 +20,9 @@
     <ProjectReference Include="..\Shared\dormitoryApps.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Email\" />
+  </ItemGroup>
+
 
 </Project>
