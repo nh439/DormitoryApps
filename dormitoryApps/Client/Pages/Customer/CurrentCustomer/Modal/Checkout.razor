@@ -178,13 +178,13 @@
         pastCustomer.Address = item.Address; 
         await Task.Delay(1);
         pastCustomer.Deposit = item.DamageInsurance - pastCustomer.DamageFee;
-        if(waterCal)
+        if(waterCal && !waterExists && (lastwater.CurrentUnit > lastwater.BeforeUnit))
         {
             lastwater = _waterService.Calculate(lastwater,out decimal? wusage);
             lastwater.RentalId = item.Id;
             lastinvoice.Water = lastwater;
         }
-        if(electricityCal)
+        if(electricityCal && !electricityExists && (lastelectricity.CurrentUnit > lastelectricity.BeforeUnit))
         {
             lastelectricity = _electricityService.Calculate(lastelectricity, out decimal? eusage);
             lastelectricity.RentalId = item.Id;
@@ -225,7 +225,7 @@
                 await Task.Delay(1);
                 return;
             }
-            if(waterCal)
+            if(waterCal && !waterExists && (lastwater.CurrentUnit > lastwater.BeforeUnit))
             {
                 res = await _waterService.Create(lastwater);
                 if(!res)
@@ -235,7 +235,7 @@
                     return;
                 }
             }
-            if(electricityCal)
+            if(electricityCal && !electricityExists && (lastelectricity.CurrentUnit > lastelectricity.BeforeUnit))
             {
                 res = await _electricityService.Create(lastelectricity);
                 if(!res)
@@ -271,8 +271,32 @@
         }
         catch(Exception x)
         {
-             auto.Failed(x.Message);
-             await Task.Delay(1);
+            auto.Failed(x.Message);
+            await Task.Delay(1);
+        }
+    }
+    async void Cancellation()
+    {
+        auto.Open("Checkout Cancellation");
+        try
+        {
+            await Task.Delay(1);
+            item.StayUntil=null;
+            var res = await _currentCustomerService.Update(item);
+            if(res)
+            {
+                auto.Success("Cancellation Complete");
+                await e.Hide();
+                await Task.Delay(1);
+                return;
+            }
+            auto.Failed("Something Went Wrong");
+            await Task.Delay(1);
+        }
+        catch(Exception x)
+        {
+            auto.Failed(x.Message);
+            await Task.Delay(1);
         }
     }
 }
@@ -335,6 +359,16 @@
                         </div>
                     </Div>
                 </Div>
+                 <Div Class="row">
+                    <Div Class="col">
+                        <div class="form-group">
+                            <label for="text">ประเภทการเข้าพัก</label>
+                            <input id="text" value="@(item.RentalType=="Monthly" ? "รายเดือน":item.RentalType=="Daily" ? "รายวัน":item.RentalType)" type="text" class="form-control" readonly>
+                        </div>
+                    </Div>
+                    <Div Class="col"></Div>
+                    <Div Class="col"></Div>
+                    </Div>
                 <div class="form-group">
                     <label for="text">รายการค้างชำระ</label>
                     <div class="input-group">
@@ -749,6 +783,7 @@
         </ModalBody>
         <ModalFooter>
             <Button Class="btn btn-outline-primary" @onclick="Savechanges" Disabled="@(!invoiceCalculate)">Submit</Button>
+            <Button Class="btn btn-outline-success" @onclick="Cancellation" Disabled="@(item.RentalType != "Monthly")">Checkout Cancellation</Button>
             <Button Class="btn btn-outline-secondary" @onclick="()=> e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
