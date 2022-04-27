@@ -16,7 +16,7 @@
         </!--button-->
     </div>
 </div>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         @if (currentlogin != null)
@@ -24,7 +24,12 @@
             <div class="nav-item px-3" style="color:white">
 
                 <center>
-                    @(currentlogin.Firstname+" "+currentlogin.Surname)
+                    @if (currentlogin.Img != null)
+                    {
+                        <img class="ui Small circular image" src="@($"data:image/png;base64,{Convert.ToBase64String(currentlogin.Img)}")">
+                        <br/>
+                    }
+                   <h2>@(currentlogin.Firstname+" "+currentlogin.Surname)</h2>
                 </center>
 
             </div>
