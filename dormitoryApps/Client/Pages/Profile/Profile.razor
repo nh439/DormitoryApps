@@ -1,6 +1,185 @@
 ﻿@page "/Profile"
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject PostitionServices _postitionServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject PostitionChangedServices _postitionChangedServices;
 
 @code {
-
+    Officer item = new Officer();
+    Postition currentPostition = new Postition();
+    List<Postition> postitions = new List<Postition>();
+    List<Session> sessions = new List<Session>();
+    List<PostitionChanged> postitionChangeds = new List<PostitionChanged>();
+    protected override async void OnInitialized()
+    {
+        item = await _sessionServices.GetCurrentLogin();
+        currentPostition = await _postitionServices.GetById(item.Postition);
+        postitions = await _postitionServices.GetPostitions();
+        postitionChangeds = await _postitionChangedServices.GetByOfficer(item.Id);
+        StateHasChanged();
+    }
 }
-profile
+<center>
+    <h1>ข้อมูลส่วนตัว</h1>
+</center>
+@if (item.Img != null)
+{
+    <img src="@($"data:image/png;base64,{Convert.ToBase64String(item.Img)}")" alt="..." class="img-thumbnail">
+}
+<br>
+<br>
+<div class="d-none d-sm-block">
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">รหัส</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">ชื่อ</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="item.Firstname" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">สกุล</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="item.Surname" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">ชื่อผู้ใช้</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="item.Username" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">Email</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="item.Email" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">ตำแหน่งงานปัจจุบัน</label>
+                <div class="col-8">
+                    <input id="text" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">เงินเดือน</label>
+                <div class="col-8">
+                    <input id="text" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">วันเริ่มทำงาน</label>
+                <div class="col-8">
+                    <input id="text" value="@item.Registerd.ToLongDateString()" type="text" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text" class="col-4 col-form-label">วันเกิด</label>
+                <div class="col-8">
+                    <input id="text" value="@item.Brithday.ToLongDateString()" type="text" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2>ตำแหน่งงานก่อนหน้า</h2>
+    <table class="table" border="1" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>ตำแหน่งเดิม</th>
+                <th>เงินเดือน</th>
+                <th>หมายเหตุ</th>
+                <th>วันที่พ้นตำแหน่ง</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary"> 
+            @if (postitionChangeds == null || postitionChangeds.Count == 0)
+            {
+                <tr>
+                    <td colspan="5"></td>
+                </tr>
+            }
+            else
+            {
+                @foreach(var i in postitionChangeds.OrderByDescending(x=>x.Date).Select((a,b)=> new { Index=b,Data=a}))
+                {
+                    <tr>
+                        <td>@i.Index</td>
+                        <td>@postitions.Where(x=>x.Id==i.Data.OldPostition).FirstOrDefault().Name</td>
+                        <td>@(i.Data.OldSalary > 0 ? $"{i.Data.OldSalary.ToString("#,###")} บาท":"")</td>
+                        <td>@i.Data.Remark</td>
+                        <td>@i.Data.Date</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<!--MOBILE-->
+<div class="d-block d-sm-none">
+    <div class="form-group">
+        <label for="text">รหัส</label>
+        <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">ชื่อ-สกุล</label>
+        <input id="text" value="@($"{item.Firstname} {item.Surname}")" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">ชื่อผู้ใช้</label>
+        <input id="text" @bind-value="item.Username" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">Email</label>
+        <input id="text" @bind-value="item.Email" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">ตำแหน่งงานปัจจุบัน</label>
+        <input id="text" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">เงินเดือน</label>
+        <input id="text" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">วันเริ่มทำงาน</label>
+        <input id="text" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text">วันเกิด</label>
+        <input id="text" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
+    </div>
+
+</div>
+
