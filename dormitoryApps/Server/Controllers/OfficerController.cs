@@ -264,6 +264,22 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, x.Message);
             }
         }
+        [HttpPost($"{ControllerName}/Newpassword")]
+        public async Task<IActionResult> newpassword([FromBody]byte[] data)
+        {
+            try
+            {
+                var content = Encoding.ASCII.GetString(data);
+                var rawData = content.Split('|');
+                var res = await _officerServices.ChangePassword(long.Parse(rawData[0]), rawData[1], bool.Parse(rawData[2]));
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x, x.Message);
+                return StatusCode(500, x.Message);
+            }
+        }
 
 
     }

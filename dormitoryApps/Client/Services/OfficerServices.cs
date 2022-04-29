@@ -110,6 +110,11 @@ namespace dormitoryApps.Client.Services
             var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/PasswordCheck", data);
             return await res.Content.ReadFromJsonAsync<bool>();
         }
-
+        public async Task<bool> PasswordChanges(long officerId,string newpassword,bool forgot)
+        {
+            var content = Encoding.ASCII.GetBytes($"{officerId}|{newpassword}|{forgot}");
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Newpassword", content);
+            return await res.Content.ReadFromJsonAsync<bool>();
+        }
     }
 }
