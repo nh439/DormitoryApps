@@ -18,6 +18,7 @@
         currentPostition = await _postitionServices.GetById(item.Postition);
         postitions = await _postitionServices.GetPostitions();
         postitionChangeds = await _postitionChangedServices.GetByOfficer(item.Id);
+        sessions = await _sessionServices.Get(item.Id);
         StateHasChanged();
     }
 }
@@ -121,7 +122,7 @@
                 <th>วันที่พ้นตำแหน่ง</th>
             </tr>
         </thead>
-        <tbody class="table-primary"> 
+        <tbody class="table-primary">
             @if (postitionChangeds == null || postitionChangeds.Count == 0)
             {
                 <tr>
@@ -130,16 +131,56 @@
             }
             else
             {
-                @foreach(var i in postitionChangeds.OrderByDescending(x=>x.Date).Select((a,b)=> new { Index=b,Data=a}))
+                @foreach (var i in postitionChangeds.OrderBy(x => x.Date).Select((a, b) => new { Index = b, Data = a }).OrderByDescending(x => x.Index))
                 {
                     <tr>
-                        <td>@i.Index</td>
+                        <td>@(i.Index+1)</td>
                         <td>@postitions.Where(x=>x.Id==i.Data.OldPostition).FirstOrDefault().Name</td>
                         <td>@(i.Data.OldSalary > 0 ? $"{i.Data.OldSalary.ToString("#,###")} บาท":"")</td>
                         <td>@i.Data.Remark</td>
                         <td>@i.Data.Date</td>
                     </tr>
                 }
+            }
+        </tbody>
+    </table>
+    <h2>การเปลี่ยนรหัสผ่าน</h2>
+    <button class="btn btn-primary">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+    <table class="table" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>วันที่</th>
+                <th>ลืมรหัสผ่าน</th>
+                <th>บังคับเปลี่ยน</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary">
+            <tr>
+                <td colspan="3">ยังไม่มีการเปลี่ยนรหัสผ่าน</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>ประวัติการใช้งาน(50ครั้งล่าสุด)</h2>
+    <table class="table" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Id</th>
+                <th>วันล็อคอิน</th>
+                <th>วันล็อคเอาท์</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var itm in sessions.OrderByDescending(x=>x.LoggedIn).Select((x,y)=> new {Index=1+y,Data=x}).Take(50))
+            {
+                string rowClass = itm.Index % 2 == 0 ? "table-success" : "table-danger";
+                <tr class="@rowClass">
+                    <td>@itm.Index</td>
+                    <td>@itm.Data.Id</td>
+                    <td>@itm.Data.LoggedIn</td>
+                    <td>@itm.Data.LoggOut</td>
+                </tr>
             }
         </tbody>
     </table>
@@ -180,6 +221,41 @@
         <label for="text">วันเกิด</label>
         <input id="text" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
     </div>
+    <h2>ตำแหน่งงานก่อนหน้า</h2>
+    <table class="table" border="1" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>ตำแหน่งเดิม</th>
+                <th>เงินเดือน</th>
+                <th>หมายเหตุ</th>
+                <th>วันที่พ้นตำแหน่ง</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary">
+            @if (postitionChangeds == null || postitionChangeds.Count == 0)
+            {
+                <tr>
+                    <td colspan="5"></td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var i in postitionChangeds.OrderBy(x => x.Date).Select((a, b) => new { Index = b, Data = a }).OrderByDescending(x => x.Index))
+                {
+                    <tr>
+                        <td>@(i.Index+1)</td>
+                        <td>@postitions.Where(x=>x.Id==i.Data.OldPostition).FirstOrDefault().Name</td>
+                        <td>@(i.Data.OldSalary > 0 ? $"{i.Data.OldSalary.ToString("#,###")} บาท":"")</td>
+                        <td>@i.Data.Remark</td>
+                        <td>@i.Data.Date</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
 
 </div>
 
