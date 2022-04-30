@@ -35,25 +35,25 @@
     <div class="row">
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">รหัส</label>
+                <label for="text1" class="col-4 col-form-label">รหัส</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+                    <input id="text1" @bind-value="item.Id" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">ชื่อ</label>
+                <label for="text2" class="col-4 col-form-label">ชื่อ</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="item.Firstname" type="text" class="form-control" readonly>
+                    <input id="text2" @bind-value="item.Firstname" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">สกุล</label>
+                <label for="text3" class="col-4 col-form-label">สกุล</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="item.Surname" type="text" class="form-control" readonly>
+                    <input id="text3" @bind-value="item.Surname" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
@@ -62,25 +62,25 @@
     <div class="row">
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">ชื่อผู้ใช้</label>
+                <label for="text4" class="col-4 col-form-label">ชื่อผู้ใช้</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="item.Username" type="text" class="form-control" readonly>
+                    <input id="text4" @bind-value="item.Username" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">Email</label>
+                <label for="text5" class="col-4 col-form-label">Email</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="item.Email" type="text" class="form-control" readonly>
+                    <input id="text5" @bind-value="item.Email" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">ตำแหน่งงานปัจจุบัน</label>
+                <label for="text6" class="col-4 col-form-label">ตำแหน่งงานปัจจุบัน</label>
                 <div class="col-8">
-                    <input id="text" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+                    <input id="text6" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
@@ -88,25 +88,25 @@
     <div class="row">
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">เงินเดือน</label>
+                <label for="text7" class="col-4 col-form-label">เงินเดือน</label>
                 <div class="col-8">
-                    <input id="text" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+                    <input id="text7" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">วันเริ่มทำงาน</label>
+                <label for="text8" class="col-4 col-form-label">วันเริ่มทำงาน</label>
                 <div class="col-8">
-                    <input id="text" value="@item.Registerd.ToLongDateString()" type="text" class="form-control">
+                    <input id="text8" value="@item.Registerd.ToLongDateString()" type="text" class="form-control">
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="form-group row">
-                <label for="text" class="col-4 col-form-label">วันเกิด</label>
+                <label for="text9" class="col-4 col-form-label">วันเกิด</label>
                 <div class="col-8">
-                    <input id="text" value="@item.Brithday.ToLongDateString()" type="text" class="form-control">
+                    <input id="text9" value="@item.Brithday.ToLongDateString()" type="text" class="form-control">
                 </div>
             </div>
         </div>
@@ -145,7 +145,7 @@
         </tbody>
     </table>
     <h2>การเปลี่ยนรหัสผ่าน</h2>
-    <button class="btn btn-primary">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn btn-primary" @onclick="()=>password.Open()">เปลี่ยนรหัสผ่าน</button>
     <button class="btn btn-warning">ลืมรหัสผ่าน</button>
     <table class="table" style="text-align:center">
         <thead class="table-dark">
@@ -190,36 +190,36 @@
 <!--MOBILE-->
 <div class="d-block d-sm-none">
     <div class="form-group">
-        <label for="text">รหัส</label>
-        <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+        <label for="texta">รหัส</label>
+        <input id="texta" @bind-value="item.Id" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">ชื่อ-สกุล</label>
-        <input id="text" value="@($"{item.Firstname} {item.Surname}")" type="text" class="form-control" readonly>
+        <label for="textb">ชื่อ-สกุล</label>
+        <input id="textb" value="@($"{item.Firstname} {item.Surname}")" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">ชื่อผู้ใช้</label>
-        <input id="text" @bind-value="item.Username" type="text" class="form-control" readonly>
+        <label for="textc">ชื่อผู้ใช้</label>
+        <input id="textc" @bind-value="item.Username" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">Email</label>
-        <input id="text" @bind-value="item.Email" type="text" class="form-control" readonly>
+        <label for="textd">Email</label>
+        <input id="textd" @bind-value="item.Email" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">ตำแหน่งงานปัจจุบัน</label>
-        <input id="text" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+        <label for="texte">ตำแหน่งงานปัจจุบัน</label>
+        <input id="texte" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">เงินเดือน</label>
-        <input id="text" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+        <label for="textf">เงินเดือน</label>
+        <input id="textf" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">วันเริ่มทำงาน</label>
-        <input id="text" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
+        <label for="textg">วันเริ่มทำงาน</label>
+        <input id="textg" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
     </div>
     <div class="form-group">
-        <label for="text">วันเกิด</label>
-        <input id="text" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
+        <label for="texth">วันเกิด</label>
+        <input id="texth" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
     </div>
     <h2>ตำแหน่งงานก่อนหน้า</h2>
     <table class="table" border="1" style="text-align:center">
@@ -258,4 +258,8 @@
     <button class="btn btn-warning">ลืมรหัสผ่าน</button>
 
 </div>
+<dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal @ref="password"/>
+@code{
+    dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal password;
+}
 
