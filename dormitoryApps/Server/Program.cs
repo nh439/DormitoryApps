@@ -54,6 +54,7 @@ builder.Services.AddScoped<MemberRepository>();
 builder.Services.AddScoped<RentalMemberRepository>();
 builder.Services.AddScoped<RentalAccountRepository>();
 builder.Services.AddScoped<BankRepository>();
+builder.Services.AddScoped<ChangePasswordHistoryRepository>();
 #endregion
 
 #region Services
@@ -86,6 +87,7 @@ builder.Services.AddScoped<IMemberServices,MemberServices>();
 builder.Services.AddScoped<IRentalMemberServices,RentalMemberServices>();
 builder.Services.AddScoped<IRentalAccountServices,RentalAccountServices>();
 builder.Services.AddScoped<IBankServices,BankServices>();
+builder.Services.AddScoped<IChangePasswordHistoryService,ChangePasswordHistoryService>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
