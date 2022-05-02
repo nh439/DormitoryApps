@@ -28,7 +28,7 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<ForgotPassword> Get(long UserId, string Token)
         {
-            var res = await _httpClient.GetFromJsonAsync<ForgotPassword>(($"{ControllerName}/Get?Id={UserId}&Token={Token}");
+            var res = await _httpClient.GetFromJsonAsync<ForgotPassword>(($"{ControllerName}/Get?Id={UserId}&Token={Token}"));
             return res;
         }
         public async Task<int> Delete()
