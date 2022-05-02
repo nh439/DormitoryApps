@@ -5,6 +5,7 @@
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
 @inject PostitionChangedServices _postitionChangedServices;
+@inject ChangePasswordHistoryService _changePasswordHistoryService;
 
 @code {
     Officer item = new Officer();
@@ -12,6 +13,7 @@
     List<Postition> postitions = new List<Postition>();
     List<Session> sessions = new List<Session>();
     List<PostitionChanged> postitionChangeds = new List<PostitionChanged>();
+    List<ChangePasswordHistory> passwordHistories = new List<ChangePasswordHistory>();
     protected override async void OnInitialized()
     {
         item = await _sessionServices.GetCurrentLogin();
@@ -19,9 +21,16 @@
         postitions = await _postitionServices.GetPostitions();
         postitionChangeds = await _postitionChangedServices.GetByOfficer(item.Id);
         sessions = await _sessionServices.Get(item.Id);
+        passwordHistories = await _changePasswordHistoryService.Get(item.Id);
+        StateHasChanged();
+    }
+    async void ChangePasswordHistoryRefresh()
+    {
+        passwordHistories = await _changePasswordHistoryService.Get(item.Id);
         StateHasChanged();
     }
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <center>
     <h1>ข้อมูลส่วนตัว</h1>
 </center>
@@ -85,6 +94,7 @@
             </div>
         </div>
     </div>
+    <br />
     <div class="row">
         <div class="col">
             <div class="form-group row">
@@ -98,7 +108,7 @@
             <div class="form-group row">
                 <label for="text8" class="col-4 col-form-label">วันเริ่มทำงาน</label>
                 <div class="col-8">
-                    <input id="text8" value="@item.Registerd.ToLongDateString()" type="text" class="form-control">
+                    <input id="text8" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
@@ -106,7 +116,7 @@
             <div class="form-group row">
                 <label for="text9" class="col-4 col-form-label">วันเกิด</label>
                 <div class="col-8">
-                    <input id="text9" value="@item.Brithday.ToLongDateString()" type="text" class="form-control">
+                    <input id="text9" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
                 </div>
             </div>
         </div>
@@ -147,6 +157,9 @@
     <h2>การเปลี่ยนรหัสผ่าน</h2>
     <button class="btn btn-primary" @onclick="()=>password.Open()">เปลี่ยนรหัสผ่าน</button>
     <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+    <button class="btn btn-info" @onclick="ChangePasswordHistoryRefresh"><i class="sync icon"></i></button>
+    <br />
+    <br />
     <table class="table" style="text-align:center">
         <thead class="table-dark">
             <tr>
@@ -156,11 +169,36 @@
             </tr>
         </thead>
         <tbody class="table-primary">
-            <tr>
-                <td colspan="3">ยังไม่มีการเปลี่ยนรหัสผ่าน</td>
-            </tr>
+            @if (passwordHistories == null || passwordHistories.Count == 0)
+            {
+                <tr>
+                    <td colspan="3">ยังไม่มีการเปลี่ยนรหัสผ่าน</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var histories in passwordHistories.OrderByDescending(x => x.ChangeAt))
+                {
+                    <tr>
+                        <td>@histories.ChangeAt</td>
+                        <td>
+                            @if (histories.IsForgot)
+                            {
+                                <i class="check icon"></i>
+                            }
+                        </td>
+                        <td>
+                            @if (histories.SystemReset)
+                            {
+                                <i class="check icon"></i>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
         </tbody>
     </table>
+    <br />
     <h2>ประวัติการใช้งาน(50ครั้งล่าสุด)</h2>
     <table class="table" style="text-align:center">
         <thead class="table-dark">
@@ -172,7 +210,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var itm in sessions.OrderByDescending(x=>x.LoggedIn).Select((x,y)=> new {Index=1+y,Data=x}).Take(50))
+            @foreach (var itm in sessions.OrderByDescending(x => x.LoggedIn).Select((x, y) => new { Index = 1 + y, Data = x }).Take(50))
             {
                 string rowClass = itm.Index % 2 == 0 ? "table-success" : "table-danger";
                 <tr class="@rowClass">
@@ -236,7 +274,7 @@
             @if (postitionChangeds == null || postitionChangeds.Count == 0)
             {
                 <tr>
-                    <td colspan="5"></td>
+                    <td colspan="5">ไม่พบประวัติการทำงาน</td>
                 </tr>
             }
             else
@@ -258,8 +296,8 @@
     <button class="btn btn-warning">ลืมรหัสผ่าน</button>
 
 </div>
-<dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal @ref="password"/>
-@code{
+<dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal @ref="password" />
+@code {
     dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal password;
 }
 
