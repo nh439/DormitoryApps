@@ -10,10 +10,10 @@ namespace dormitoryApps.Shared.Model.Entity
     {
 		public Int64 Id { get; set; }
 		public Int64 UserId { get; set; }
-		public DateTime ForgotDate { get; set; }
+		public DateTime ForgotDate { get; set; } = DateTime.Now;
 		public string Email { get; set; }
 		public string Token { get; set; } = ObjectGenerate.ObjectRandom.RandomText(50);
-		public DateTime ExpiredAt { get; set; }
+		public DateTime ExpiredAt { get; set; } = DateTime.Now.AddMinutes(15);
 		public byte HasReset { get; set; }
 		public int Password { get; set; } = ObjectGenerate.ObjectRandom.CreatePin(6);
 		public bool Expired { get; set; }
