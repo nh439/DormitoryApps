@@ -38,6 +38,11 @@ namespace dormitoryApps.Server.Repository
             }
             return result;
         }
+        public async Task<ForgotPassword> PasswordCheck(int Password,long UserId)
+        {
+            var result = await _databases.Dorm.SelectEntitiesAsync<ForgotPassword>(TableName, $"UserId={UserId} and Password={Password}");
+            return result.FirstOrDefault();
+        }
         public async Task<int> Delete()
         {
             var res = await _databases.Dorm.DeleteAsync(TableName, $"Expired=1");

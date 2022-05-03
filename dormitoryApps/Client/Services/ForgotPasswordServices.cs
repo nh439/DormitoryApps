@@ -1,5 +1,7 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace dormitoryApps.Client.Services
 {
@@ -30,6 +32,14 @@ namespace dormitoryApps.Client.Services
         {
             var res = await _httpClient.GetFromJsonAsync<ForgotPassword>(($"{ControllerName}/Get?Id={UserId}&Token={Token}"));
             return res;
+        }
+        public async Task<ForgotPassword> GetWithPassword(int Password, long UserId)
+        {
+            LoginParameter item = new LoginParameter();
+            string cipher = Password + "|" + UserId + "|" + item.Reference;
+            item.Content = Encoding.ASCII.GetBytes(cipher);
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/PasswordCheck",item);
+            return await res.Content.ReadFromJsonAsync<ForgotPassword>();
         }
         public async Task<int> Delete()
         {

@@ -10,6 +10,7 @@ namespace dormitoryApps.Server.Services
         Task<ForgotPassword> GetByToken(string Token, long UserId);
         Task<bool> TokenCheck(string Token, long UserId);
         Task<int> Delete();
+        Task<ForgotPassword> PasswordCheck(int Password, long UserId);
     }
     public class ForgotPasswordServices : IForgotPasswordServices
     {
@@ -38,6 +39,10 @@ namespace dormitoryApps.Server.Services
         public async Task<int> Delete()
         {
             return await _repository.Delete();
+        }
+        public async Task<ForgotPassword> PasswordCheck(int Password, long UserId)
+        {
+            return await _repository.PasswordCheck(Password, UserId);
         }
     }
 }

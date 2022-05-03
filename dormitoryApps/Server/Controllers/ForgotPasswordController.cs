@@ -1,6 +1,8 @@
 ﻿using dormitoryApps.Server.Services;
 using dormitoryApps.Shared.Model.Entity;
+using dormitoryApps.Shared.Model.Other;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace dormitoryApps.Server.Controllers
 {
@@ -46,6 +48,23 @@ namespace dormitoryApps.Server.Controllers
             var officer = await _officerServices.GetById(OfficerId);
             if (!officer.Issuper) return BadRequest();
             return Ok(await _forgotPasswordServices.Delete());
+        }
+        [HttpPost(BaseUrl + "/PasswordCheck")]
+        public async Task<IActionResult> PasswordCheck([FromBody]LoginParameter item)
+        {
+            string content = Encoding.ASCII.GetString(item.Content);
+            string[] loginarr = content.Split('|');
+            if (loginarr.Length != 3)
+            {
+                return BadRequest("Parameter Incorrect");
+            }
+            if (loginarr[2] != item.Reference)
+            {
+                return BadRequest("Parameter Incorrect");
+            }
+            long userId = long.Parse(loginarr[1]);
+            int password = int.Parse(loginarr[0]);
+            return Ok(await _forgotPasswordServices.PasswordCheck(password, userId));
         }
     }
 }

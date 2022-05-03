@@ -90,6 +90,7 @@ builder.Services.AddScoped<IRentalAccountServices,RentalAccountServices>();
 builder.Services.AddScoped<IBankServices,BankServices>();
 builder.Services.AddScoped<IChangePasswordHistoryService,ChangePasswordHistoryService>();
 builder.Services.AddScoped<IForgotPasswordServices,ForgotPasswordServices>();
+builder.Services.AddScoped<IEmailServices,EmailService>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));

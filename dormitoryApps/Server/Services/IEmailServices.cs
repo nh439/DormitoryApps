@@ -8,7 +8,7 @@ namespace dormitoryApps.Server.Services
 {
     public interface IEmailServices
     {
-        void SendAsync(MailRequest request);
+        Task SendAsync(MailRequest request);
     }
     public class EmailService : IEmailServices
     {
@@ -20,8 +20,9 @@ namespace dormitoryApps.Server.Services
         }
 
 
-        public async void SendAsync(MailRequest request)
+        public async Task SendAsync(MailRequest request)
         {
+            Console.WriteLine(1000);
             string sender = _configuration.GetSection("Email:Name").Value;
             string password = _configuration.GetSection("Email:Password").Value;
             string host = _configuration.GetSection("Email:Host").Value;
@@ -49,7 +50,9 @@ namespace dormitoryApps.Server.Services
             }
             builder.HtmlBody = request.Body;
             email.Subject = request.Subject;
-            email.Body = builder.ToMessageBody();
+            email.Body = builder.ToMessageBody();          
+           //  MailAddress address = new MailAddress(sender,request.DisplayName);
+           //  email.From.Add(address);
             var smtp = new MailKit.Net.Smtp.SmtpClient();
             await smtp.ConnectAsync(host, port);
             await smtp.AuthenticateAsync(sender, password);
