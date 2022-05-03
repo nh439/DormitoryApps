@@ -59,4 +59,5 @@ builder.Services.AddScoped<BankServices>();
 builder.Services.AddScoped<ExportServices>();
 builder.Services.AddScoped<ChangePasswordHistoryService>();
 builder.Services.AddScoped<ForgotPasswordServices>();
+builder.Services.AddScoped<EmailTemplateService>();
 await builder.Build().RunAsync();
