@@ -52,6 +52,12 @@ namespace dormitoryApps.Client.Services
             if (!res.IsSuccessStatusCode) return -1;
             return await res.Content.ReadFromJsonAsync<int>();
         }
+        public async Task<bool> HadReset(long userId,string token)
+        {
+            object[] items = new object[] { userId, token };
+            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/HadReset", items);
+            return await res.Content.ReadFromJsonAsync<bool>();
+        }
 
     }
 }

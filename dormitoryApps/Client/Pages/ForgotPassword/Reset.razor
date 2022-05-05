@@ -1,0 +1,149 @@
+﻿@page "/Reset/{id:long}/{token}";
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Other;
+@using dormitoryApps.Client.Services;
+@using System.Text;
+@inject ForgotPasswordServices _forgotPasswordServices;
+@inject OfficerServices _officerServices;
+
+@code {
+    [Parameter]
+    public long id { get; set; }
+    [Parameter]
+    public string token { get; set; }
+    bool isValid = false;
+    bool isExpired = false;
+    bool passwordValidate = false;
+
+    string newPassword;
+    string retypePassword;
+    string validateMessage;
+
+    dormitoryApps.Shared.Model.Entity.ForgotPassword forgot = new dormitoryApps.Shared.Model.Entity.ForgotPassword();
+    protected override async void OnInitialized()
+    {
+        string key = string.Empty;
+        try
+        {
+            key = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+        }
+        catch
+        {
+            key = string.Empty;
+        }
+        forgot = await _forgotPasswordServices.Get(id, key);
+        if (forgot == null || forgot == new dormitoryApps.Shared.Model.Entity.ForgotPassword())
+        {
+            forgot = new dormitoryApps.Shared.Model.Entity.ForgotPassword();
+            isValid = false;
+            return;
+        }
+        isValid = true;
+        isExpired = forgot.Expired || DateTime.Now.Subtract(forgot.ExpiredAt).TotalSeconds > 0 || forgot.HasReset;
+        StateHasChanged();
+    }
+    async void Submit()
+    {
+        passwordValidate = string.IsNullOrEmpty(newPassword) || newPassword != retypePassword;
+        if (passwordValidate)
+        {
+            validateMessage = string.IsNullOrEmpty(newPassword) ? "ห้ามเว้นว่าง" : "ยืนยันรหัสไม่ตรง";
+            StateHasChanged();
+            return;
+        }
+        auto.Open("Processing");
+        await Task.Delay(1);
+        try
+        {
+            var res = await _officerServices.PasswordChanges(forgot.UserId, newPassword, true);
+            await _forgotPasswordServices.HadReset(forgot.UserId, forgot.Token);
+            if (res)
+            {
+                auto.NextRequired = true;
+                auto.NextLink = "/";
+                await Task.Delay(10);
+                auto.Success("เปลี่ยนรหัสผ่านสำเร็จ");
+                return;
+            }
+            await Task.Delay(10);
+            auto.NextRequired = false;
+            auto.Failed("เปลี่ยนรหัสผ่านไม่สำเร็จ");
+            return;
+        }
+        catch (Exception x)
+        {
+            await Task.Delay(10);
+            auto.NextRequired = false;
+            auto.Failed(x.Message);
+            return;
+        }
+
+    }
+}
+<center>
+    @if (!isValid)
+    {
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <!------ Include the above in your HEAD tag ---------->
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="error-template">
+                        <h1>
+                            Oops!
+                        </h1>
+                        <h2>
+                            404 Not Found
+                        </h2>
+                        <div class="error-details">
+                            Sorry, an error has occured, Requested page not found!
+                        </div>
+                        <br>
+                        <div class="error-actions">
+                            <a href="/" class="btn btn-primary btn-lg">
+                                <span class="glyphicon glyphicon-home"></span>
+                                Take Me Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (isExpired)
+        {
+            <h1>Sorry</h1>
+            <h2>คำร้องเปลี่ยนรหัสผ่านฉุกเฉินหมดอายุ</h2>
+        }
+        else
+        {
+            <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+            <h1>เปลี่ยนรหัสผ่าน</h1>
+            <div class="container">
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col">
+                        <label>รหัสผ่านใหม่</label>
+                        <div class="form-group pass_show">
+                            <input type="password" @bind-value="newPassword" class="form-control" placeholder="New Password">
+                        </div>
+                        <label>ยืนยันรหัสผ่าน</label>
+                        <div class="form-group pass_show">
+                            <input type="password" @bind-value="retypePassword" class="form-control" placeholder="Confirm Password">
+                        </div>
+                        <small style="color:red; display : @(passwordValidate ? "block":"none")">@validateMessage</small>
+                    </div>
+                    <div class="col"></div>
+                </div>
+                <button class="btn btn-success" @onclick="Submit">เปลี่ยนรหัสผ่าน</button>
+            </div>
+        }
+    }
+</center>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"></dormitoryApps.Client.Pages.Modal.Auto>
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}

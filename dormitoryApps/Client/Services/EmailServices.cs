@@ -7,7 +7,7 @@ namespace dormitoryApps.Client.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<EmailServices> _logger;
-        public const string ControllerName = "api/address";
+        public const string ControllerName = "api/email";
 
         public EmailServices(HttpClient httpClient, ILogger<EmailServices> logger)
         {

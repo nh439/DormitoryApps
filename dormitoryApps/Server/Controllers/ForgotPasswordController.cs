@@ -66,5 +66,21 @@ namespace dormitoryApps.Server.Controllers
             int password = int.Parse(loginarr[0]);
             return Ok(await _forgotPasswordServices.PasswordCheck(password, userId));
         }
+        [HttpPost(BaseUrl+"/HadReset")]
+        public async Task<IActionResult> HadReset([FromBody]object[] data)
+        {
+            try
+            {
+                long userId = long.Parse(data[0].ToString());
+                string token = data[1].ToString();
+                await _forgotPasswordServices.HadReset(token, userId);
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

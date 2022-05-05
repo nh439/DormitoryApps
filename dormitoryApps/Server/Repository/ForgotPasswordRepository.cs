@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Server.Databases;
 using dormitoryApps.Shared.Model.Entity;
+using RocketSQL;
 
 namespace dormitoryApps.Server.Repository
 {
@@ -22,23 +23,32 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<ForgotPassword>(TableName, $"Id={Id}");
             return res.FirstOrDefault();
         }
-        public async Task<ForgotPassword> GetByToken(string Token,long UserId)
+        public async Task<ForgotPassword> GetByToken(string Token, long UserId)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<ForgotPassword>(TableName, $"Token='{Token}' and UserId={UserId}");
             return res.FirstOrDefault();
         }
-        public async Task<bool> TokenCheck(string Token,long UserId)
+        public async Task<bool> TokenCheck(string Token, long UserId)
         {
             bool result = false;
             var queryRes = await _databases.Dorm.SelectEntitiesAsync<ForgotPassword>(TableName, $"Token='{Token}' and UserId={UserId}");
-            if(result != null)
+            if (result != null)
             {
                 var item = queryRes.FirstOrDefault();
                 result = !item.Expired && DateTime.Now.Subtract(item.ExpiredAt).TotalSeconds <= 0;
             }
             return result;
         }
-        public async Task<ForgotPassword> PasswordCheck(int Password,long UserId)
+        public async Task HadReset(string Token, long UserId)
+        {
+            DBRowContrainer contrainer = new DBRowContrainer(TableName);
+            contrainer.Add("Expired", true);
+            await _databases.Dorm.UpdateAsync(contrainer, $"UserId={UserId}");
+            contrainer.Add("HasReset", true);
+            await _databases.Dorm.UpdateAsync(contrainer, $"UserId={UserId} and Token='{Token}'");
+
+        }
+        public async Task<ForgotPassword> PasswordCheck(int Password, long UserId)
         {
             var result = await _databases.Dorm.SelectEntitiesAsync<ForgotPassword>(TableName, $"UserId={UserId} and Password={Password}");
             return result.FirstOrDefault();
