@@ -1,0 +1,303 @@
+﻿@page "/Profile"
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject PostitionServices _postitionServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject PostitionChangedServices _postitionChangedServices;
+@inject ChangePasswordHistoryService _changePasswordHistoryService;
+
+@code {
+    Officer item = new Officer();
+    Postition currentPostition = new Postition();
+    List<Postition> postitions = new List<Postition>();
+    List<Session> sessions = new List<Session>();
+    List<PostitionChanged> postitionChangeds = new List<PostitionChanged>();
+    List<ChangePasswordHistory> passwordHistories = new List<ChangePasswordHistory>();
+    protected override async void OnInitialized()
+    {
+        item = await _sessionServices.GetCurrentLogin();
+        currentPostition = await _postitionServices.GetById(item.Postition);
+        postitions = await _postitionServices.GetPostitions();
+        postitionChangeds = await _postitionChangedServices.GetByOfficer(item.Id);
+        sessions = await _sessionServices.Get(item.Id);
+        passwordHistories = await _changePasswordHistoryService.Get(item.Id);
+        StateHasChanged();
+    }
+    async void ChangePasswordHistoryRefresh()
+    {
+        passwordHistories = await _changePasswordHistoryService.Get(item.Id);
+        StateHasChanged();
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>ข้อมูลส่วนตัว</h1>
+</center>
+@if (item.Img != null)
+{
+    <img src="@($"data:image/png;base64,{Convert.ToBase64String(item.Img)}")" alt="..." class="img-thumbnail">
+}
+<br>
+<br>
+<div class="d-none d-sm-block">
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text1" class="col-4 col-form-label">รหัส</label>
+                <div class="col-8">
+                    <input id="text1" @bind-value="item.Id" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text2" class="col-4 col-form-label">ชื่อ</label>
+                <div class="col-8">
+                    <input id="text2" @bind-value="item.Firstname" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text3" class="col-4 col-form-label">สกุล</label>
+                <div class="col-8">
+                    <input id="text3" @bind-value="item.Surname" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text4" class="col-4 col-form-label">ชื่อผู้ใช้</label>
+                <div class="col-8">
+                    <input id="text4" @bind-value="item.Username" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text5" class="col-4 col-form-label">Email</label>
+                <div class="col-8">
+                    <input id="text5" @bind-value="item.Email" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text6" class="col-4 col-form-label">ตำแหน่งงานปัจจุบัน</label>
+                <div class="col-8">
+                    <input id="text6" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="text7" class="col-4 col-form-label">เงินเดือน</label>
+                <div class="col-8">
+                    <input id="text7" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text8" class="col-4 col-form-label">วันเริ่มทำงาน</label>
+                <div class="col-8">
+                    <input id="text8" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="text9" class="col-4 col-form-label">วันเกิด</label>
+                <div class="col-8">
+                    <input id="text9" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2>ตำแหน่งงานก่อนหน้า</h2>
+    <table class="table" border="1" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>ตำแหน่งเดิม</th>
+                <th>เงินเดือน</th>
+                <th>หมายเหตุ</th>
+                <th>วันที่พ้นตำแหน่ง</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary">
+            @if (postitionChangeds == null || postitionChangeds.Count == 0)
+            {
+                <tr>
+                    <td colspan="5"></td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var i in postitionChangeds.OrderBy(x => x.Date).Select((a, b) => new { Index = b, Data = a }).OrderByDescending(x => x.Index))
+                {
+                    <tr>
+                        <td>@(i.Index+1)</td>
+                        <td>@postitions.Where(x=>x.Id==i.Data.OldPostition).FirstOrDefault().Name</td>
+                        <td>@(i.Data.OldSalary > 0 ? $"{i.Data.OldSalary.ToString("#,###")} บาท":"")</td>
+                        <td>@i.Data.Remark</td>
+                        <td>@i.Data.Date</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <h2>การเปลี่ยนรหัสผ่าน</h2>
+    <button class="btn btn-primary" @onclick="()=>password.Open()">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+    <button class="btn btn-info" @onclick="ChangePasswordHistoryRefresh"><i class="sync icon"></i></button>
+    <br />
+    <br />
+    <table class="table" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>วันที่</th>
+                <th>ลืมรหัสผ่าน</th>
+                <th>บังคับเปลี่ยน</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary">
+            @if (passwordHistories == null || passwordHistories.Count == 0)
+            {
+                <tr>
+                    <td colspan="3">ยังไม่มีการเปลี่ยนรหัสผ่าน</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var histories in passwordHistories.OrderByDescending(x => x.ChangeAt))
+                {
+                    <tr>
+                        <td>@histories.ChangeAt</td>
+                        <td>
+                            @if (histories.IsForgot)
+                            {
+                                <i class="check icon"></i>
+                            }
+                        </td>
+                        <td>
+                            @if (histories.SystemReset)
+                            {
+                                <i class="check icon"></i>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <br />
+    <h2>ประวัติการใช้งาน(50ครั้งล่าสุด)</h2>
+    <table class="table" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Id</th>
+                <th>วันล็อคอิน</th>
+                <th>วันล็อคเอาท์</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var itm in sessions.OrderByDescending(x => x.LoggedIn).Select((x, y) => new { Index = 1 + y, Data = x }).Take(50))
+            {
+                string rowClass = itm.Index % 2 == 0 ? "table-success" : "table-danger";
+                <tr class="@rowClass">
+                    <td>@itm.Index</td>
+                    <td>@itm.Data.Id</td>
+                    <td>@itm.Data.LoggedIn</td>
+                    <td>@itm.Data.LoggOut</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<!--MOBILE-->
+<div class="d-block d-sm-none">
+    <div class="form-group">
+        <label for="texta">รหัส</label>
+        <input id="texta" @bind-value="item.Id" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="textb">ชื่อ-สกุล</label>
+        <input id="textb" value="@($"{item.Firstname} {item.Surname}")" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="textc">ชื่อผู้ใช้</label>
+        <input id="textc" @bind-value="item.Username" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="textd">Email</label>
+        <input id="textd" @bind-value="item.Email" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="texte">ตำแหน่งงานปัจจุบัน</label>
+        <input id="texte" @bind-value="currentPostition.Name" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="textf">เงินเดือน</label>
+        <input id="textf" value="@($"{item.Salary.ToString("#,###")} บาท")" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="textg">วันเริ่มทำงาน</label>
+        <input id="textg" value="@item.Registerd.ToLongDateString()" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="texth">วันเกิด</label>
+        <input id="texth" value="@item.Brithday.ToLongDateString()" type="text" class="form-control" readonly>
+    </div>
+    <h2>ตำแหน่งงานก่อนหน้า</h2>
+    <table class="table" border="1" style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>ตำแหน่งเดิม</th>
+                <th>เงินเดือน</th>
+                <th>หมายเหตุ</th>
+                <th>วันที่พ้นตำแหน่ง</th>
+            </tr>
+        </thead>
+        <tbody class="table-primary">
+            @if (postitionChangeds == null || postitionChangeds.Count == 0)
+            {
+                <tr>
+                    <td colspan="5">ไม่พบประวัติการทำงาน</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var i in postitionChangeds.OrderBy(x => x.Date).Select((a, b) => new { Index = b, Data = a }).OrderByDescending(x => x.Index))
+                {
+                    <tr>
+                        <td>@(i.Index+1)</td>
+                        <td>@postitions.Where(x=>x.Id==i.Data.OldPostition).FirstOrDefault().Name</td>
+                        <td>@(i.Data.OldSalary > 0 ? $"{i.Data.OldSalary.ToString("#,###")} บาท":"")</td>
+                        <td>@i.Data.Remark</td>
+                        <td>@i.Data.Date</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+
+</div>
+<dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal @ref="password" />
+@code {
+    dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal password;
+}
+

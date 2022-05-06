@@ -207,7 +207,20 @@
         IsWarning = false;
         WarningSubmitted();
     }
-
+    public void Response()
+    {
+        ProcessingWord = ProcessingWord;
+        //Success
+        SuccessHeader = SuccessHeader;
+        SuccessDetail  = SuccessDetail;
+        //Error
+        ErrorHeader  =  ErrorHeader;
+        ErrorDetail  = ErrorDetail;
+        //Warning
+        WarningHeader  = WarningHeader;
+        WarningDetail  = WarningDetail;
+        StateHasChanged();
+    }
 
 
 }

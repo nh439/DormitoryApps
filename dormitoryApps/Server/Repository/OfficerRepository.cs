@@ -159,6 +159,16 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.ExecuteStoredProcedureAsync(contrainer);
             return res.HasCompleted;
         }
+        public async Task<bool> ChangePassword(long officerId ,string newPassword,string salt,bool forgotMode)
+        {
+            var contrainer = new StoredProcedureContrainer("sp_Changepassword");
+            contrainer.Addparameters("officerId", officerId);
+            contrainer.Addparameters("pass", newPassword);
+            contrainer.Addparameters("salt", salt);
+            contrainer.Addparameters("forgot", forgotMode);
+            var result = await _databases.Dorm.ExecuteStoredProcedureAsync(contrainer);
+            return result.HasCompleted;
+        }
     }
 
 }

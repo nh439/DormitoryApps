@@ -21,6 +21,7 @@ namespace dormitoryApps.Server.Services
         Task<bool> GetExistEmail(string Email);
         Task<bool> ExpiredOfficer(long officeId, string remark);
         Task<bool> RestoreOfficer(long officeId, bool resetRegisterDate);
+        Task<bool> ChangePassword(long officerId, string newPassword, bool forgotMode);
     }
     public class OfficerServices : IOfficerServices
     {
@@ -92,6 +93,13 @@ namespace dormitoryApps.Server.Services
         public async Task<bool> RestoreOfficer(long officeId, bool resetRegisterDate)
         {
             return await _repository.RestoreOfficer(officeId, resetRegisterDate);
+        }
+        public async Task<bool> ChangePassword(long officerId, string newPassword, bool forgotMode)
+        {
+            PasswordHash hash = new PasswordHash();
+            var salt = hash.CreateSalt();
+            var password = hash.CreateHash(newPassword, salt);
+            return await _repository.ChangePassword(officerId, Convert.ToBase64String(password), Convert.ToBase64String(salt), forgotMode);
         }
     }
 }
