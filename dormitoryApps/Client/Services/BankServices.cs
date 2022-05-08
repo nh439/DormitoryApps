@@ -17,6 +17,7 @@ namespace dormitoryApps.Client.Services
 
         public async Task<List<Bank>> Get()
         {
+
             var result = await _httpClient.GetFromJsonAsync<List<Bank>>(ControllerName);
             return result;
         }
