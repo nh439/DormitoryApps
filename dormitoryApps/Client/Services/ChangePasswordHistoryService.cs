@@ -53,7 +53,7 @@ namespace dormitoryApps.Client.Services
             {
                 _logger.LogError(ServiceException<ChangePasswordHistory>.Select(), x);
             }
-            return 0;
+            return -1;
         }
     }
 }
