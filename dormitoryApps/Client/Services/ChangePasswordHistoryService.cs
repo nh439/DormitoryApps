@@ -51,7 +51,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<ChangePasswordHistory>.Select(), x);
+                _logger.LogError(ServiceException<ChangePasswordHistory>.Delete(), x);
             }
             return -1;
         }

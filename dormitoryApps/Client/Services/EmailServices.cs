@@ -24,7 +24,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<MailRequest>.Select(), x);
+                _logger.LogError(ServiceException<MailRequest>.Insert(), x);
             }
         }
     }

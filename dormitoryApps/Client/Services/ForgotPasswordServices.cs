@@ -28,7 +28,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<ForgotPassword>.Select(), x);
+                _logger.LogError(ServiceException<ForgotPassword>.Insert(), x);
             }
             return false;
         }
@@ -89,7 +89,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<ForgotPassword>.Select(), x);
+                _logger.LogError(ServiceException<ForgotPassword>.Delete(), x);
             }
             return -1;
         }
@@ -103,7 +103,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<ForgotPassword>.Select(), x);
+                _logger.LogError(ServiceException<ForgotPassword>.Update(), x);
             }
             return false;
         }

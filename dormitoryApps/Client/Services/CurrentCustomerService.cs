@@ -101,7 +101,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+                _logger.LogError(ServiceException<CurrentCustomer>.Insert(), x);
             }
             return null;
         }
@@ -115,7 +115,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+                _logger.LogError(ServiceException<CurrentCustomer>.Update(), x);
             }
             return false;
         }
@@ -129,7 +129,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+                _logger.LogError(ServiceException<CurrentCustomer>.Delete(), x);
             }
             return false;
         }

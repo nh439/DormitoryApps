@@ -1,4 +1,5 @@
 ﻿using Blazored.SessionStorage;
+using dormitoryApps.Client.Enum;
 using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
@@ -23,57 +24,129 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<PastCustomer>> GetPastCustomers()
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>(ControllerName);
-            return res;
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>(ControllerName);
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<PastCustomer>> GetPastCustomers(int page)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}?page={page}");
-            return res;
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}?page={page}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Select(), x);
+            }
+            return null;
         }
 
         public async Task<List<PastCustomer>> GetUnRefund()
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}/GetUnRefund");
-            return res;
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.GetFromJsonAsync<List<PastCustomer>>($"{ControllerName}/GetUnRefund");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Select(), x);
+            }
+            return null;
         }
         public async Task<PastCustomer> GetById(string Id)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.GetFromJsonAsync<PastCustomer>($"{ControllerName}/Id/{Id}");
-            return res;
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.GetFromJsonAsync<PastCustomer>($"{ControllerName}/Id/{Id}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(PastCustomer entity)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", entity);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", entity);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Insert(), x);
+            }
+            return false;
         }
          public async Task<bool> Create(IEnumerable<PastCustomer> entities)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", entities);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", entities);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Insert(), x);
+            }
+            return false;
         }
          public async Task<bool> Update(PastCustomer entity)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", entity);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", entity);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Update(), x);
+            }
+            return false;
         }
          public async Task<bool> Delete(string Id)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Delete(), x);
+            }
+            return false;
         }
         public async Task<string[]> GetIdList()
         {
-            var res = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Idlist");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Idlist");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PastCustomer>.Select(), x);
+            }
+            return null;
         }
 
 

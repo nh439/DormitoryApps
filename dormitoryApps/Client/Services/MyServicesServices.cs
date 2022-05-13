@@ -54,7 +54,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError("GetMyservices", x);
+                _logger.LogError("CreateMyservices", x);
                 return false;
             }
         }
@@ -68,7 +68,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError("GetMyservices", x);
+                _logger.LogError("UpdateMyservices", x);
                 return false;
             }
         }
@@ -82,7 +82,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError("GetMyservices", x);
+                _logger.LogError("DeleteMyservices", x);
                 return false;
             }
         }

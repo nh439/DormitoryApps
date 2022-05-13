@@ -57,7 +57,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Department>.Select(), x);
+                _logger.LogError(ServiceException<Department>.Insert(), x);
             }
             return false;
         }
@@ -70,7 +70,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Department>.Select(), x);
+                _logger.LogError(ServiceException<Department>.Update(), x);
             }
             return false;
         }

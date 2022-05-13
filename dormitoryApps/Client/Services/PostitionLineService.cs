@@ -1,5 +1,6 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
+using dormitoryApps.Client.Enum;
 
 namespace dormitoryApps.Client.Services
 {
@@ -18,28 +19,68 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<PostitionLine>> GetPostitionLines()
         {
-            var res = await _httpClient.GetFromJsonAsync<List<PostitionLine>>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<PostitionLine>>(ControllerName);
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionLine>.Select(), x);
+            }
+            return null;
         }
         public async Task<PostitionLine> GetById(int id)
         {
-            var res = await _httpClient.GetFromJsonAsync<PostitionLine>($"{ControllerName}?id={id}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<PostitionLine>($"{ControllerName}?id={id}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionLine>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(PostitionLine line)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", line);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", line);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionLine>.Insert(), x);
+            }
+            return false;
         }
          public async Task<bool> Update(PostitionLine line)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", line);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", line);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionLine>.Update(), x);
+            }
+            return false;
         }
         public async Task<bool> Delete (int plId)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", plId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", plId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionLine>.Delete(), x);
+            }
+            return false;
         }
 
     }

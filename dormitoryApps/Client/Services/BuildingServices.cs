@@ -54,7 +54,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Buildings>.Select(), x);
+                _logger.LogError(ServiceException<Buildings>.Insert(), x);
             }
             return false;
         }
@@ -71,7 +71,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Buildings>.Select(), x);
+                _logger.LogError(ServiceException<Buildings>.Update(), x);
             }
             return false;
         }

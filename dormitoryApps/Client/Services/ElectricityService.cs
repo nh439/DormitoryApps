@@ -158,6 +158,11 @@ namespace dormitoryApps.Client.Services
                 }
                 return new Electricity();
             }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Electricity>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(Electricity item)
         {
@@ -170,7 +175,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Electricity>.Select(), x);
+                _logger.LogError(ServiceException<Electricity>.Insert(), x);
             }
             return false;
         }
@@ -185,7 +190,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Electricity>.Select(), x);
+                _logger.LogError(ServiceException<Electricity>.Update(), x);
             }
             return false;
         }
@@ -200,23 +205,15 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Electricity>.Select(), x);
+                _logger.LogError(ServiceException<Electricity>.Delete(), x);
             }
             return false;
         }
         public Electricity Calculate(Electricity item, out decimal? Usage)
         {
-            try
-            {
                 Usage = item.CurrentUnit - item.BeforeUnit;
                 item.Total = item.Price * (Usage ?? 0);
-                return item;
-            }
-            catch (Exception x)
-            {
-                _logger.LogError(ServiceException<Electricity>.Select(), x);
-            }
-            return null;
+                return item;            
         }
     }
 }

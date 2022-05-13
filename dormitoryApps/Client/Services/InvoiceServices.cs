@@ -355,7 +355,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Invoice>.Select(), x);
+                _logger.LogError(ServiceException<Invoice>.Insert(), x);
             }
             return false;
         }
@@ -369,7 +369,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Invoice>.Select(), x);
+                _logger.LogError(ServiceException<Invoice>.Update(), x);
             }
             return false;
         }
@@ -383,7 +383,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Invoice>.Select(), x);
+                _logger.LogError(ServiceException<Invoice>.Delete(), x);
             }
             return false;
         }
