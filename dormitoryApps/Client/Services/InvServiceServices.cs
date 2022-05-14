@@ -64,7 +64,7 @@ namespace dormitoryApps.Client.Services
             {
                 _logger.LogError(ServiceException<InvoiceServices>.Insert(), x);
             }
-            return null;
+            return false;
         }
         public async Task<int> Create(IEnumerable< InvoiceServices> items)
         {

@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -16,55 +17,135 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<RoomFurnHeader>> GetallHeaders()
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>(ControllerName);
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<RoomFurnHeader>> GetByType(string type)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Type/{type}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Type/{type}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<RoomFurnHeader>> GetContain(string keyword)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Contains/{keyword}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<RoomFurnHeader>>($"{ControllerName}/Contains/{keyword}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Select(), x);
+            }
+            return null;
         }
         public async Task<RoomFurnHeader> GetById(long Id)
         {
-            var res = await _httpClient.GetFromJsonAsync<RoomFurnHeader>($"{ControllerName}?Id={Id}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<RoomFurnHeader>($"{ControllerName}?Id={Id}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Select(), x);
+            }
+            return null;
         }
 
         public async Task<string[]> GetTypes()
         {
-            var res = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Type");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Type");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(RoomFurnHeader item)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Insert(), x);
+            }
+            return false;
         }
         public async Task<int> Create(IEnumerable<RoomFurnHeader> items)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
-            return await res.Content.ReadFromJsonAsync<int>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
+                return await res.Content.ReadFromJsonAsync<int>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Insert(), x);
+            }
+            return -1;
         }
 
         public async Task<bool> Update(RoomFurnHeader item)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Update(), x);
+            }
+            return false;
         }
         public async Task<bool> Delete(long itemId)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", itemId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Delete(), x);
+            }
+            return false;
         }
         public async Task<int> DeleteByType(string itemType)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/DeleteByType", itemType);
-            return await res.Content.ReadFromJsonAsync<int>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/DeleteByType", itemType);
+                return await res.Content.ReadFromJsonAsync<int>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomFurnHeader>.Delete(), x);
+            }
+            return -1;
         }
 
     }

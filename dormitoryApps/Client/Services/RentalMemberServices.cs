@@ -1,5 +1,6 @@
 ﻿
 
+using dormitoryApps.Client.Enum;
 using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
@@ -20,28 +21,68 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> Create(RentalMember item)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create",item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RentalMember>.Insert(), x);
+            }
+            return false;
         }
         public async Task<int> Create(IEnumerable< RentalMember> items)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
-            return await res.Content.ReadFromJsonAsync<int>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
+                return await res.Content.ReadFromJsonAsync<int>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RentalMember>.Insert(), x);
+            }
+            return -1;
         }
         public async Task<bool> Setmain(RentalMember mainmember)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Setmain", mainmember);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Setmain", mainmember);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RentalMember>.Update(), x);
+            }
+            return false;
         }
         public async Task<List<RentalMember>> GetByRentalId(string rentalId)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Rental/{rentalId}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Rental/{rentalId}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RentalAccount>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<RentalMember>> GetByMemberId(long Id)
         {
-            var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Member/{Id}");
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<RentalMember>>($"{ControllerName}/Member/{Id}");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RentalAccount>.Select(), x);
+            }
+            return null;
         }
 
     }
