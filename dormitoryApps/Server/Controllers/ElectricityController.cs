@@ -18,68 +18,132 @@ namespace dormitoryApps.Server.Controllers
         }
 
         [HttpGet(BaseUrl)]
-        public async Task< IActionResult> Index(string? RentalId,int? Year, int? Month)
+        public async Task<IActionResult> Index(string? RentalId, int? Year, int? Month)
         {
-            if(Year.HasValue)
+            try
             {
-                if(Month.HasValue)
+                if (Year.HasValue)
                 {
-                    if(!string.IsNullOrEmpty(RentalId))
+                    if (Month.HasValue)
                     {
-                        return Ok(await _electricityServices.Getone(RentalId, Month.Value, Year.GetValueOrDefault()));
+                        if (!string.IsNullOrEmpty(RentalId))
+                        {
+                            return Ok(await _electricityServices.Getone(RentalId, Month.Value, Year.GetValueOrDefault()));
+                        }
+                        return Ok(await _electricityServices.GetByMonth(month: Month.GetValueOrDefault(), year: Year.GetValueOrDefault()));
                     }
-                    return Ok(await _electricityServices.GetByMonth(month: Month.GetValueOrDefault(), year: Year.GetValueOrDefault()));
+                    return Ok(await _electricityServices.GetByYear(year: Year.GetValueOrDefault()));
                 }
-                return Ok(await _electricityServices.GetByYear(year: Year.GetValueOrDefault()));
+                var res = await _electricityServices.Getall();
+                return Ok(res);
             }
-            var res = await _electricityServices.Getall();
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpGet(BaseUrl+"/Rental/{Id}")]
-        public async Task<IActionResult>GetRental(string Id)
+        [HttpGet(BaseUrl + "/Rental/{Id}")]
+        public async Task<IActionResult> GetRental(string Id)
         {
-            var res = await _electricityServices.GetByRentalId(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.GetByRentalId(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpGet(BaseUrl+"/Paid")]
-        public async Task<IActionResult>Getpaid()
+        [HttpGet(BaseUrl + "/Paid")]
+        public async Task<IActionResult> Getpaid()
         {
-            var res = await _electricityServices.GetPaid();
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.GetPaid();
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpGet(BaseUrl+"/UnPaid")]
-        public async Task<IActionResult>GetUnpaid()
+        [HttpGet(BaseUrl + "/UnPaid")]
+        public async Task<IActionResult> GetUnpaid()
         {
-            var res = await _electricityServices.GetUnPaid();
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.GetUnPaid();
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl)]
-        public async Task<IActionResult> AdvancedSearch([FromBody]ElectricityAndWaterAdvancedSearchCriteria criteria)
+        public async Task<IActionResult> AdvancedSearch([FromBody] ElectricityAndWaterAdvancedSearchCriteria criteria)
         {
-            var res = await _electricityServices.GetWithAdvanceSearch(criteria);
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.GetWithAdvanceSearch(criteria);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpPost(BaseUrl+"/Create")]
-        public async Task<IActionResult> Create([FromBody]Electricity item)
+        [HttpPost(BaseUrl + "/Create")]
+        public async Task<IActionResult> Create([FromBody] Electricity item)
         {
-            var res = await _electricityServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpPost(BaseUrl+"/Update")]
-        public async Task<IActionResult> Update([FromBody]Electricity item)
+        [HttpPost(BaseUrl + "/Update")]
+        public async Task<IActionResult> Update([FromBody] Electricity item)
         {
-            var res = await _electricityServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
-        [HttpPost(BaseUrl+"/Delete")]
-        public async Task<IActionResult> Delete([FromBody]Electricity item)
+        [HttpPost(BaseUrl + "/Delete")]
+        public async Task<IActionResult> Delete([FromBody] Electricity item)
         {
-            var res = await _electricityServices.Delete(rentalId:item.RentalId,month:item.month,year:item.Year);
-            return Ok(res);
+            try
+            {
+                var res = await _electricityServices.Delete(rentalId: item.RentalId, month: item.month, year: item.Year);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
 
-   
+
 
     }
 }

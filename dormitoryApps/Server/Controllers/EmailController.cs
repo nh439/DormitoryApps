@@ -20,21 +20,16 @@ namespace dormitoryApps.Server.Controllers
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> Index([FromBody]MailRequest item)
         {
-            await _emailServices.SendAsync(item);
-            return Ok(200);
-        }
-        [HttpGet(BaseUrl)]
-        public async Task<IActionResult> Test()
-        {
-            MailRequest request = new MailRequest
+            try
             {
-                Body = "<h1>TEST01</h1>",
-                DisplayName = "Display01",
-                Subject = "TEST",
-                ToEmail = new string[1] { "nithi.handsome@gmail.com" }
-            };
-            await _emailServices.SendAsync(request);
-            return Ok(200);
-        }
+                await _emailServices.SendAsync(item);
+                return Ok(200);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
+        }     
     }
 }

@@ -23,55 +23,111 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(int? page)
         {
-            var result = await _currentCustomerServices.Getall();
-            if (page.HasValue)
+            try
             {
-                return Ok( result.ToPagedList(page.Value, 20));
+                var result = await _currentCustomerServices.Getall();
+                if (page.HasValue)
+                {
+                    return Ok(result.ToPagedList(page.Value, 20));
+                }
+                return Ok(result);
             }
-            return Ok(result);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }       
         [HttpGet(BaseUrl +"/{Id}")]
         public async Task<IActionResult> GetById(string Id)
         {
-            var result = await _currentCustomerServices.GetById(Id);
-            return Ok(result);
+            try
+            {
+                var result = await _currentCustomerServices.GetById(Id);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Room/{Id}")]
         public async Task<IActionResult> GetByroom(int Id)
         {
-            var result = await _currentCustomerServices.GetByRoom(Id);
-            return Ok(result);
+            try
+            {
+                var result = await _currentCustomerServices.GetByRoom(Id);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> Create([FromBody]CurrentCustomer item)
         {
-            var result = await _currentCustomerServices.Create(item);
-            return Ok(result);
+            try
+            {
+                var result = await _currentCustomerServices.Create(item);
+                return Ok(result);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody] CurrentCustomer item)
         {
-            if(item.Imgs != null)
+            try
             {
-                var results = await _currentCustomerServices.UpdateWithImg(item);
-                return Ok(results);
+                if (item.Imgs != null)
+                {
+                    var results = await _currentCustomerServices.UpdateWithImg(item);
+                    return Ok(results);
+                }
+                var result = await _currentCustomerServices.Update(item);
+                return Ok(result);
             }
-            var result = await _currentCustomerServices.Update(item);
-            return Ok(result);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
 
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody]string Id)
         {
-            var res = await _currentCustomerServices.Delete(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _currentCustomerServices.Delete(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         
         [HttpGet(BaseUrl+"/idlist")]
         public async Task<IActionResult> GetIdList()
         {
-            var res = await _currentCustomerServices.GetIdList();
-            return Ok(res);
+            try
+            {
+                var res = await _currentCustomerServices.GetIdList();
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

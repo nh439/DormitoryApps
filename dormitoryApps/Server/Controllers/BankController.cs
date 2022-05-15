@@ -19,21 +19,45 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(int? id)
         {
-            if(id.HasValue)
+            try
             {
-                return Ok(await _bnkServices.Get(id.Value));
+                if (id.HasValue)
+                {
+                    return Ok(await _bnkServices.Get(id.Value));
+                }
+                return Ok(await _bnkServices.Get());
             }
-            return Ok(await _bnkServices.Get());
+            catch(Exception x)
+            {
+                _logger.LogError(x.Message,x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]Bank item)
         {
-            return Ok(await _bnkServices.Create(item));
+            try
+            {
+                return Ok(await _bnkServices.Create(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody]int id)
         {
-            return Ok(await _bnkServices.Delete(id));
+            try
+            {
+                return Ok(await _bnkServices.Delete(id));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }
