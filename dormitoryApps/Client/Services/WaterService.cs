@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
 
@@ -19,114 +20,210 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Water>> GetWater()
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>(ControllerName);
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>(ControllerName);
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetWater(int page)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?page={page}");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?page={page}");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetByYear(int Year)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?Year={Year}");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?Year={Year}");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetByMonth(int Year, int Month)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?Year={Year}&Month={Month}");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}?Year={Year}&Month={Month}");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetByRental(string RentalId)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/Rental/{RentalId}");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/Rental/{RentalId}");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetPaidList()
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/Paid");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/Paid");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>> GetUnPaidList()
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/UnPaid");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Water>>($"{ControllerName}/UnPaid");
+                    return res;
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Water>?> GetAdvancedSearch(ElectricityAndWaterAdvancedSearchCriteria criteria)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
-                return await res.Content.ReadFromJsonAsync<List<Water>>();
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
+                    return await res.Content.ReadFromJsonAsync<List<Water>>();
+                }
+                return new List<Water>();
             }
-            return new List<Water>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<Water> GetOne(int Year, int Month, string RentalId)
         {
-            var havePermission = true;
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<Water>($"{ControllerName}?Year={Year}&Month={Month}&RentalId={RentalId}");
-                return res;
+                var havePermission = true;
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<Water>($"{ControllerName}?Year={Year}&Month={Month}&RentalId={RentalId}");
+                    return res;
+                }
+                return new Water();
             }
-            return new Water();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(Water item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
-            if (!res.IsSuccessStatusCode) return false;
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                if (!res.IsSuccessStatusCode) return false;
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Insert(), x);
+            }
+            return false;
         }
         public async Task<bool> Update(Water item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
-            if (!res.IsSuccessStatusCode) return false;
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
+                if (!res.IsSuccessStatusCode) return false;
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Update(), x);
+            }
+            return false;
         }
         public async Task<bool> Delete(Water item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
-            if (!res.IsSuccessStatusCode) return false;
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
+                if (!res.IsSuccessStatusCode) return false;
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Water>.Delete(), x);
+            }
+            return false;
         }
         public Water Calculate(Water item,out decimal? Usage)
         {
