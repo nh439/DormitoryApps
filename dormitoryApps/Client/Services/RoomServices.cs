@@ -1,6 +1,7 @@
 ﻿using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 using PagedList;
+using dormitoryApps.Client.Enum;
 
 namespace dormitoryApps.Client.Services
 {
@@ -19,81 +20,128 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Room>> GetRooms()
         {
-            var Havepermission = true;
-            if (Havepermission)
+            try
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>(ControllerName);
                 return res;
             }
-            return new List<Room>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Room>.Select(), x);
+            }
+            return null;
         }
-         public async Task<Room> GetRoom(int Id)
+        public async Task<Room> GetRoom(int Id)
         {
-            var Havepermission = true;
-            if (Havepermission)
+            try
             {
                 var res = await _httpClient.GetFromJsonAsync<Room>($"{ControllerName}?id={Id}");
                 return res;
             }
-            return new Room();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Room>> GetByBuilding(int buildingId)
         {
-            var Havepermission = true;
-            if ( Havepermission)
+            try
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/building/{buildingId}");
                 return res;
             }
-            return new List<Room>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Room>> GetHasAircondition()
         {
-            var Havepermission = true;
-            if (Havepermission)
+            try
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/air");
                 return res;
             }
-            return new List<Room>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Select(), x);
+            }
+            return null;
         }
-         public async Task<List<Room>> GetEnabled()
+        public async Task<List<Room>> GetEnabled()
         {
-            var Havepermission = true;
-            if ( Havepermission)
+            try
             {
                 var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/Enabled");
                 return res;
             }
-            return new List<Room>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(Room item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Insert(), x);
+            }
+            return false;
         }
         public async Task<bool> Update(Room item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
-        }
-         public async Task<bool> Delete(int Id)
-        {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
-            return await res.Content.ReadFromJsonAsync<bool>();
-        }
-        public async Task<List<Room>> GetByPage(int buildingId,int page)
-        {
-            var Havepermission = _sessionServices.Permissioncheck();
-            if (await Havepermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/building/{buildingId}?page={page}");
-                return res;
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
             }
-            return new List<Room>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Update(), x);
+            }
+            return false;
+        }
+        public async Task<bool> Delete(int Id)
+        {
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Delete(), x);
+            }
+            return false;
+        }
+        public async Task<List<Room>> GetByPage(int buildingId, int page)
+        {
+            try
+            {
+                var Havepermission = _sessionServices.Permissioncheck();
+                if (await Havepermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<Room>>($"{ControllerName}/building/{buildingId}?page={page}");
+                    return res;
+                }
+                return new List<Room>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<RoomfurnTemplate>.Select(), x);
+            }
+            return null;
         }
 
     }

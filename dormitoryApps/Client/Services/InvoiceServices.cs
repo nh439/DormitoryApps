@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
 
@@ -19,204 +20,372 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Invoice>?> GetInvoices()
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if(!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>(ControllerName);
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>(ControllerName);
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetByYear(int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetByMonth(int month, int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetByPage(int page)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetByPage(int page,int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetByPage(int page,int year,int month)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
 
         public async Task<List<Invoice>?> GetByRental(string RentalId)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/rental/{RentalId}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/rental/{RentalId}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<Invoice?> GetById(string Id)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new Invoice();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new Invoice();
+                }
+                Invoice? invoices = await _httpClient.GetFromJsonAsync<Invoice>($"{ControllerName}/Id/{Id}");
+                return invoices;
             }
-            Invoice? invoices = await _httpClient.GetFromJsonAsync<Invoice>($"{ControllerName}/Id/{Id}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetPaid()
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/Paid");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/Paid");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetUnPaid()
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/UnPaid");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}/UnPaid");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
+                return await res.Content.ReadFromJsonAsync<List<Invoice>>();
             }
-            var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
-            return await res.Content.ReadFromJsonAsync<List<Invoice>>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetWithAdvancesearch(InvoiceAdvancedSearchCriteria criteria,int page)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/{page}", criteria);
+                return await res.Content.ReadFromJsonAsync<List<Invoice>>();
             }
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/{page}", criteria);
-            return await res.Content.ReadFromJsonAsync<List<Invoice>>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         #region Contains
         public async Task<List<Invoice>?> GetContains(string keyword)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetContains(string keyword,int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetContains(string keyword,int month, int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}&filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?year={year}&month={month}&filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page, int year)
         {
-            var Havepermission = await _sessionServices.Permissioncheck();
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = await _sessionServices.Permissioncheck();
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Invoice>?> GetContainsWithPage(string keyword, int page, int year, int month)
         {
-            var Havepermission = true;
-            if (!Havepermission)
+            try
             {
-                return new List<Invoice>();
+                var Havepermission = true;
+                if (!Havepermission)
+                {
+                    return new List<Invoice>();
+                }
+                List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}&filter={keyword}");
+                return invoices;
             }
-            List<Invoice>? invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>($"{ControllerName}?page={page}&year={year}&month={month}&filter={keyword}");
-            return invoices;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Select(), x);
+            }
+            return null;
         }
         #endregion
         public async Task<bool> Create(Invoice invoice)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", invoice);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", invoice);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Insert(), x);
+            }
+            return false;
         }
          public async Task<bool> Update(Invoice invoice)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", invoice);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", invoice);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Update(), x);
+            }
+            return false;
         }
          public async Task<bool> Delete(long invoiceId)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", invoiceId);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", invoiceId);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Invoice>.Delete(), x);
+            }
+            return false;
         }
         public Invoice InvoiceCalculate(Invoice invoice)
         {

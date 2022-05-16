@@ -22,28 +22,68 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? Id)
         {
-            if (Id.HasValue) return Ok(await _memberServices.GetById(Id.Value));
-            return Ok(await _memberServices.Getall());
+            try
+            {
+                if (Id.HasValue) return Ok(await _memberServices.GetById(Id.Value));
+                return Ok(await _memberServices.Getall());
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> GetIn([FromBody] IEnumerable<long> IdCollection)
         {
-            return Ok(await _memberServices.GetIn(IdCollection));
+            try
+            {
+                return Ok(await _memberServices.GetIn(IdCollection));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]Member item)
         {
-            return Ok(await _memberServices.Create(item));
+            try
+            {
+                return Ok(await _memberServices.Create(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Create([FromBody]IEnumerable<Member> items)
         {
-            return Ok(await _memberServices.Create(items));
+            try
+            {
+                return Ok(await _memberServices.Create(items));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Update")]
         public async Task<IActionResult> Update([FromBody] Member item)
         {
-            return Ok(await _memberServices.Update(item));
+            try
+            {
+                return Ok(await _memberServices.Update(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            } 
         }
 
     }

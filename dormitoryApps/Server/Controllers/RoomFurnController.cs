@@ -18,56 +18,120 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task< IActionResult> Index(long? id)
         {
-            if(id.HasValue)
+            try
             {
-                var resid = await _roomFurnServices.GetById(id.Value);
-                return Ok(resid);
+                if (id.HasValue)
+                {
+                    var resid = await _roomFurnServices.GetById(id.Value);
+                    return Ok(resid);
 
+                }
+                var res = await _roomFurnServices.Getall();
+                return Ok(res);
             }
-            var res = await _roomFurnServices.Getall();
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/room/{id}")]
         public async Task<IActionResult> GetByRoom(int id)
         {
-            var res = await _roomFurnServices.GetByRoom(id);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.GetByRoom(id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/create")]
         public async Task<IActionResult> Create([FromBody]RoomFurn item)
         {
-            var res = await _roomFurnServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/createmulit")]
         public async Task<IActionResult> Create([FromBody] IEnumerable<RoomFurn> items)
         {
-            var res = await _roomFurnServices.Create(items);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.Create(items);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody] RoomFurn item)
         {
-            var res = await _roomFurnServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
          [HttpPost(BaseUrl+"/UpdateMulit")]
         public async Task<IActionResult> Update([FromBody] IEnumerable<RoomFurn> items)
         {
-            var res = await _roomFurnServices.UpdateRoom(items);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.UpdateRoom(items);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
          [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody] long furnId)
         {
-            var res = await _roomFurnServices.Delete(furnId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.Delete(furnId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
          [HttpPost(BaseUrl+"/DeleteMulit")]
         public async Task<IActionResult> Delete([FromBody] int roomId)
         {
-            var res = await _roomFurnServices.DeleteRoom(roomId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnServices.DeleteRoom(roomId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

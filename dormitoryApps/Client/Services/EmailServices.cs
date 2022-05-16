@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Other;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Other;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -17,7 +18,14 @@ namespace dormitoryApps.Client.Services
 
         public async void SendAsync(MailRequest item)
         {
-            await _httpClient.PostAsJsonAsync(ControllerName, item);
+            try
+            {
+                await _httpClient.PostAsJsonAsync(ControllerName, item);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<MailRequest>.Insert(), x);
+            }
         }
     }
 }

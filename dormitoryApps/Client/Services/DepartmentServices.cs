@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http;
 using System.Net.Http.Json;
 
@@ -17,29 +18,61 @@ namespace dormitoryApps.Client.Services
             _logger = logger;
             _sessionServices = sessionServices;
         }
-        public async Task< List<Department>?> Getdepartments()
+        public async Task<List<Department>?> Getdepartments()
         {
-            var res = await _sessionServices.Permissioncheck();
-            Console.WriteLine(res);
-            if (res)
+            try
             {
-                return await _httpClient.GetFromJsonAsync<List<Department>>(ControllerName);
+                var res = await _sessionServices.Permissioncheck();
+                Console.WriteLine(res);
+                if (res)
+                {
+                    return await _httpClient.GetFromJsonAsync<List<Department>>(ControllerName);
+                }
+                return new List<Department>();
             }
-            return new List<Department>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Department>.Select(), x);
+            }
+            return null;
         }
         public async Task<Department?> GetById(int Id)
-        {         
-            return await _httpClient.GetFromJsonAsync<Department>($"{ControllerName}/{Id}");           
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Department>($"{ControllerName}/{Id}");
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Department>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(Department item)
-        {       
-            var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Create", item);
-            return res.IsSuccessStatusCode;
+        {
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Create", item);
+                return res.IsSuccessStatusCode;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Department>.Insert(), x);
+            }
+            return false;
         }
-         public async Task<bool> Update(Department item)
-        {       
-            var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Update", item);
-            return res.IsSuccessStatusCode;
+        public async Task<bool> Update(Department item)
+        {
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync<Department>($"{ControllerName}/Update", item);
+                return res.IsSuccessStatusCode;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Department>.Update(), x);
+            }
+            return false;
         }
 
     }

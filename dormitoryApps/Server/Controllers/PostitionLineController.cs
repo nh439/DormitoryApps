@@ -19,32 +19,64 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(int? id)
         {
-            if(id.HasValue)
+            try
             {
-                var ress = await _postitionLineServices.GetById(id.Value);
-                return Ok(ress);
+                if (id.HasValue)
+                {
+                    var ress = await _postitionLineServices.GetById(id.Value);
+                    return Ok(ress);
+                }
+                var res = await _postitionLineServices.Getall();
+                return Ok(res);
             }
-            var res = await _postitionLineServices.Getall();
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
 
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]PostitionLine item)
         {
-            var res = await _postitionLineServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _postitionLineServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody]PostitionLine item)
         {
-            var res = await _postitionLineServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _postitionLineServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody]int id)
         {
-            var res = await _postitionLineServices.Delete(id);
-            return Ok(res);
+            try
+            {
+                var res = await _postitionLineServices.Delete(id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
 

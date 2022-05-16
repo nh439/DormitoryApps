@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -19,69 +20,133 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<CurrentCustomer>> Get()
         {
-            var havepermission = true;
-            if(!havepermission)
+            try
             {
-                return new List<CurrentCustomer>();
+                var havepermission = true;
+                if (!havepermission)
+                {
+                    return new List<CurrentCustomer>();
+                }
+                var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>(ControllerName);
+                return result;
             }
-            var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>(ControllerName);
-            return result;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+            }
+            return null;
         }
          public async Task<List<CurrentCustomer>> Get(int page)
         {
-            var havepermission = true;
-            if (!havepermission)
+            try
             {
-                return new List<CurrentCustomer>();
+                var havepermission = true;
+                if (!havepermission)
+                {
+                    return new List<CurrentCustomer>();
+                }
+                var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}?page={page}");
+                return result;
             }
-            var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}?page={page}");
-            return result;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+            }
+            return null;
         }
 
         public async Task<CurrentCustomer> Get(string Id)
         {
-            var havepermission  = true;
-            if (!havepermission)
+            try
             {
-                return new CurrentCustomer();
+                var havepermission = true;
+                if (!havepermission)
+                {
+                    return new CurrentCustomer();
+                }
+                var result = await _httpClient.GetFromJsonAsync<CurrentCustomer>($"{ControllerName}/{Id}");
+                return result;
             }
-            var result = await _httpClient.GetFromJsonAsync<CurrentCustomer>($"{ControllerName}/{Id}");
-            return result;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<CurrentCustomer>> GetByRoom(int Id)
         {
-            var havepermission  = true;
-            if (!havepermission)
+            try
             {
-                return new List<CurrentCustomer>();
+                var havepermission = true;
+                if (!havepermission)
+                {
+                    return new List<CurrentCustomer>();
+                }
+                var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}/Room/{Id}");
+                return result;
             }
-            var result = await _httpClient.GetFromJsonAsync<List<CurrentCustomer>>($"{ControllerName}/Room/{Id}");
-            return result;
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+            }
+            return null; 
         }
         public async Task<string?> Create(CurrentCustomer customer)
         {
-            await _sessionServices.RequiredPermission();
-            var result = await _httpClient.PostAsJsonAsync(ControllerName, customer);
-            return await result.Content.ReadAsStringAsync();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var result = await _httpClient.PostAsJsonAsync(ControllerName, customer);
+                return await result.Content.ReadAsStringAsync();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Insert(), x);
+            }
+            return null;
         }
         public async Task<bool> Update(CurrentCustomer customer)
         {
-            await _sessionServices.RequiredPermission();
-            var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", customer);
-            return await result.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", customer);
+                return await result.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Update(), x);
+            }
+            return false;
         }
         public async Task<bool> Delete(string Id)
         {
-            await _sessionServices.RequiredPermission();
-            var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
-            return await result.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var result = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", Id);
+                return await result.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Delete(), x);
+            }
+            return false;
         }
 
         public async Task<string[]> GetIdList()
         {
-            await _sessionServices.RequiredPermission();
-            var result = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/idlist");
-            return result;
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var result = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/idlist");
+                return result;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<CurrentCustomer>.Select(), x);
+            }
+            return new string[0];
         }
     }
 }

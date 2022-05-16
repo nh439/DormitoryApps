@@ -25,69 +25,140 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index()
         {
-            var res = await _sessionService.Getall();
-            return Ok(res.OrderByDescending(x => x.LoggedIn));
+            try
+            {
+                var res = await _sessionService.Getall();
+                return Ok(res.OrderByDescending(x => x.LoggedIn));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost($"{BaseUrl}/Create")]
         public async Task<IActionResult> Create([FromBody] long UserId)
         {
-            var res = await _sessionService.Createlogin(UserId);
-            _accessor.HttpContext.Session.SetString("Id", res);
-            return Ok(res);
+            try
+            {
+                var res = await _sessionService.Createlogin(UserId);
+                _accessor.HttpContext.Session.SetString("Id", res);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl + "/Force/{Id}")]
         public async Task<IActionResult> Forcelogout(long Id)
         {
-            var res = await _sessionService.ForceLogout(Id);
-            _accessor.HttpContext.Session.Clear();
-            return Ok(res);
+            try
+            {
+                var res = await _sessionService.ForceLogout(Id);
+                _accessor.HttpContext.Session.Clear();
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/SuperForce")]
         public IActionResult SuperForcelogout([FromBody] int day)
         {
-            var res = _sessionService.SuperForcedlogout(day);
-            return Ok(res);
+            try
+            {
+                var res = _sessionService.SuperForcedlogout(day);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
         [HttpGet(BaseUrl + "/Get/{SessionId}")]
         public async Task<IActionResult> GetcurrentLogin(string SessionId)
         {
-
-            var res = await _sessionService.GetCurrentlogin(SessionId);
-            if (res != null)
+            try
             {
-                res.Password = "PA$$WORD";
-                res.Idx = "INDEX";
+                var res = await _sessionService.GetCurrentlogin(SessionId);
+                if (res != null)
+                {
+                    res.Password = "PA$$WORD";
+                    res.Idx = "INDEX";
+                }
+                return Ok(res);
             }
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl + "/GetUser/{Id}")]
         public async Task<IActionResult> GetByUser(long Id)
         {
-            var res = await _sessionService.GetByUser(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _sessionService.GetByUser(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost($"{BaseUrl}/Permissioncheck")]
         public IActionResult Getpermission([FromBody] string SessionId)
         {
-            var res = _permissionService.PermissionCheck(SessionId);
-            if (!res)
+            try
             {
-                return BadRequest("Authencation Failed");
+                var res = _permissionService.PermissionCheck(SessionId);
+                if (!res)
+                {
+                    return BadRequest("Authencation Failed");
+                }
+                return Ok(res);
             }
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> GetWithAdvancedSearch([FromBody] SessionAdvancedSearchCriteria criteria)
         {
-            var res = await _sessionService.GetWithAdvanceSearch(criteria);
-            return Ok(res);
+            try
+            {
+                var res = await _sessionService.GetWithAdvanceSearch(criteria);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost($"{BaseUrl}/Delete")]
         public IActionResult Delete([FromBody] int month)
         {
-            var res =  _sessionService.DeleteAfterMonth(month);
-            return Ok(res);
+            try
+            {
+                var res = _sessionService.DeleteAfterMonth(month);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
     }
 }

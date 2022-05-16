@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using dormitoryApps.Client.Enum;
+using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
 {
@@ -17,47 +18,95 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<InvoiceServices>> GetByInvoice(string invoiceId)
         {
-            var havePermission =await  _sessionServices.Permissioncheck();
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<InvoiceServices>>($"{ControllerName}/Invoice/{invoiceId}");
-                return res;
+                var havePermission = await _sessionServices.Permissioncheck();
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<InvoiceServices>>($"{ControllerName}/Invoice/{invoiceId}");
+                    return res;
+                }
+                return new List<InvoiceServices>();
             }
-            return new List<InvoiceServices>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<InvoiceServices>> GetByServices(long serviceId)
         {
-            var havePermission =await  _sessionServices.Permissioncheck();
-            if (havePermission)
+            try
             {
-                var res = await _httpClient.GetFromJsonAsync<List<InvoiceServices>>($"{ControllerName}/Service/{serviceId}");
-                return res;
+                var havePermission = await _sessionServices.Permissioncheck();
+                if (havePermission)
+                {
+                    var res = await _httpClient.GetFromJsonAsync<List<InvoiceServices>>($"{ControllerName}/Service/{serviceId}");
+                    return res;
+                }
+                return new List<InvoiceServices>();
             }
-            return new List<InvoiceServices>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(InvoiceServices item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Create", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Insert(), x);
+            }
+            return false;
         }
         public async Task<int> Create(IEnumerable< InvoiceServices> items)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
-            return await res.Content.ReadFromJsonAsync<int>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Creates", items);
+                return await res.Content.ReadFromJsonAsync<int>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Insert(), x);
+            }
+            return -1;
         }
         public async Task<bool> Update(InvoiceServices item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Update(), x);
+            }
+            return false;
         }
         public async Task<bool> Delete(InvoiceServices item)
         {
-            await _sessionServices.RequiredPermission();
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                await _sessionServices.RequiredPermission();
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Delete", item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<InvoiceServices>.Delete(), x);
+            }
+            return false;
         }
     }
 }

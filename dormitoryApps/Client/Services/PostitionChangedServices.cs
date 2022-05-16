@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -16,8 +17,16 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<PostitionChanged>> GetPostitionChanged()
         {
-            var res = await _httpClient.GetFromJsonAsync<List<PostitionChanged>>(ControllerName);
-            return res;
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<PostitionChanged>>(ControllerName);
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionChanged>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<PostitionChanged>> GetByOfficer(long officerId)
         {
@@ -34,8 +43,16 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<bool> Create(PostitionChanged item)
         {
-            var res = await _httpClient.PostAsJsonAsync(ControllerName,item);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync(ControllerName, item);
+                return await res.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<PostitionChanged>.Insert(), x);
+            }
+            return false;
         }
     }
 }

@@ -19,50 +19,106 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? Id)
         {
-            dynamic res;
-            if(Id.HasValue)
+            try
             {
-                res = await _roomFurnHeaderValuesServices.GetById(Id.Value);
+                dynamic res;
+                if (Id.HasValue)
+                {
+                    res = await _roomFurnHeaderValuesServices.GetById(Id.Value);
+                    return Ok(res);
+                }
+                res = await _roomFurnHeaderValuesServices.Getall();
                 return Ok(res);
             }
-            res = await _roomFurnHeaderValuesServices.Getall();
-            return Ok(res);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Header/{Id}")]
         public async Task<IActionResult> GetByHeader (long Id)
         {
-            var res = await _roomFurnHeaderValuesServices.GetByHeader(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.GetByHeader(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]RoomFurnHeaderValues value)
         {
-            var res = await _roomFurnHeaderValuesServices.Create(value);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.Create(value);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Create([FromBody]IEnumerable<RoomFurnHeaderValues> values)
         {
-            var res = await _roomFurnHeaderValuesServices.Create(values);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.Create(values);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody] RoomFurnHeaderValues value)
         {
-            var res = await _roomFurnHeaderValuesServices.Update(value);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.Update(value);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody] long valueId)
         {
-            var res = await _roomFurnHeaderValuesServices.Delete(valueId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.Delete(valueId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/DeleteByHeader")]
         public async Task<IActionResult> DeleteByHeader([FromBody] long HeaderId)
         {
-            var res = await _roomFurnHeaderValuesServices.DeleteByHeader(HeaderId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomFurnHeaderValuesServices.DeleteByHeader(HeaderId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

@@ -27,21 +27,37 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? userId)
         {
-            if (userId.HasValue) return Ok(await _changePasswordHistoryService.Get(userId.Value));
-            var current =await  _sessionServices.GetCurrentlogin(_accessor.HttpContext.Session.GetString("Id"));
-            if(current.Issuper) return Ok(await _changePasswordHistoryService.Get());
-            return Ok(new List<ChangePasswordHistory>());
+            try
+            {
+                if (userId.HasValue) return Ok(await _changePasswordHistoryService.Get(userId.Value));
+                var current = await _sessionServices.GetCurrentlogin(_accessor.HttpContext.Session.GetString("Id"));
+                if (current.Issuper) return Ok(await _changePasswordHistoryService.Get());
+                return Ok(new List<ChangePasswordHistory>());
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> Delete([FromBody]int month)
         {
-            var current = await _sessionServices.GetCurrentlogin(_accessor.HttpContext.Session.GetString("Id"));
-            if (current.Issuper)
+            try
             {
-                var res = await _changePasswordHistoryService.Delete(month);
-                return Ok(res);
+                var current = await _sessionServices.GetCurrentlogin(_accessor.HttpContext.Session.GetString("Id"));
+                if (current.Issuper)
+                {
+                    var res = await _changePasswordHistoryService.Delete(month);
+                    return Ok(res);
+                }
+                return Ok(0);
             }
-            return Ok(0);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

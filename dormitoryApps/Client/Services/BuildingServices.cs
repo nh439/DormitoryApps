@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.Entity;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.Entity;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -16,31 +17,63 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Buildings>?> Get()
         {
-            var buildings = await _httpClient.GetFromJsonAsync<List<Buildings>>(ControllerName);
-            return buildings;
+            try
+            {
+                var buildings = await _httpClient.GetFromJsonAsync<List<Buildings>>(ControllerName);
+                return buildings;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Buildings>.Select(), x);
+            }
+            return null;
         }
         public async Task<Buildings?> Get(int id)
         {
-            var buildings = await _httpClient.GetFromJsonAsync<Buildings>($"{ControllerName}/{id}");
-            return buildings;
+            try
+            {
+                var buildings = await _httpClient.GetFromJsonAsync<Buildings>($"{ControllerName}/{id}");
+                return buildings;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Buildings>.Select(), x);
+            }
+            return null;
         }
         public async Task<bool> Create(Buildings buildings)
         {
-            if (buildings == null)
+            try
             {
-                return false;
+                if (buildings == null)
+                {
+                    return false;
+                }
+                var res = await _httpClient.PostAsJsonAsync(ControllerName, buildings);
+                return await res.Content.ReadFromJsonAsync<bool>();
             }
-            var res = await  _httpClient.PostAsJsonAsync(ControllerName, buildings);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Buildings>.Insert(), x);
+            }
+            return false;
         }
         public async Task<bool> Update(Buildings buildings)
         {
-            if (buildings == null)
+            try
             {
-                return false;
+                if (buildings == null)
+                {
+                    return false;
+                }
+                var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", buildings);
+                return await res.Content.ReadFromJsonAsync<bool>();
             }
-            var res = await _httpClient.PostAsJsonAsync($"{ControllerName}/Update", buildings);
-            return await res.Content.ReadFromJsonAsync<bool>();
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Buildings>.Update(), x);
+            }
+            return false;
         }
 
     }

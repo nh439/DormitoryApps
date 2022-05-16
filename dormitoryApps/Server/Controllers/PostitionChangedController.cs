@@ -18,19 +18,35 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? officerId)
         {
-           if(officerId.HasValue)
+            try
             {
-                var res = await _postitionChangedService.GetByofficer(officerId.Value);
-                return Ok(res);
+                if (officerId.HasValue)
+                {
+                    var res = await _postitionChangedService.GetByofficer(officerId.Value);
+                    return Ok(res);
+                }
+                var resall = await _postitionChangedService.Getall();
+                return Ok(resall);
             }
-            var resall = await _postitionChangedService.Getall();
-            return Ok(resall);
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
 
         }
         [HttpPost(BaseUrl)]
         public async Task<IActionResult> Create([FromBody]PostitionChanged item)
         {
-            return Ok(await _postitionChangedService.Create(item));
+            try
+            {
+                return Ok(await _postitionChangedService.Create(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
     }
 }

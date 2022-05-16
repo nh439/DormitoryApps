@@ -1,4 +1,5 @@
-﻿using dormitoryApps.Shared.Model.location;
+﻿using dormitoryApps.Client.Enum;
+using dormitoryApps.Shared.Model.location;
 using System.Net.Http.Json;
 
 namespace dormitoryApps.Client.Services
@@ -16,33 +17,81 @@ namespace dormitoryApps.Client.Services
         }
         public async Task< List<Districts>?> Getall()
         {
-            var districts = await _httpClient.GetFromJsonAsync<List<Districts>>(ControllerName);
-            return districts;
+            try
+            {
+                var districts = await _httpClient.GetFromJsonAsync<List<Districts>>(ControllerName);
+                return districts;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return null;
         }
         public async Task<List<Districts>?> GetByProvince(string province)
         {
-            var districts = await _httpClient.GetFromJsonAsync<List<Districts>>($"{ControllerName}/{province}");
-            return districts;
+            try
+            {
+                var districts = await _httpClient.GetFromJsonAsync<List<Districts>>($"{ControllerName}/{province}");
+                return districts;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return null;
         }
         public async Task<string[]?> Getprovince()
         {
-            var provinces = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get");
-            return provinces;
+            try
+            {
+                var provinces = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get");
+                return provinces;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return null;
         }
         public async Task<string[]?> GetDistricts(string province)
         {
-            var districts = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get?province={province}");
-            return districts;
+            try
+            {
+                var districts = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get?province={province}");
+                return districts;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return null;
         }
         public async Task<string[]?> GetSubDistricts(string province,string district)
         {
-            var subdistricts = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get?province={province}&district={district}");
-            return subdistricts;
+            try
+            {
+                var subdistricts = await _httpClient.GetFromJsonAsync<string[]>($"{ControllerName}/Get?province={province}&district={district}");
+                return subdistricts;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return null;
         }
         public async Task<int?> GetPostalCode(string province, string district,string subdistrict)
         {
-            var postal = await _httpClient.GetFromJsonAsync<int>($"{ControllerName}/Get?province={province}&district={district}&subdistrict={subdistrict}");
-            return postal;
+            try
+            {
+                var postal = await _httpClient.GetFromJsonAsync<int>($"{ControllerName}/Get?province={province}&district={district}&subdistrict={subdistrict}");
+                return postal;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Districts>.Select(), x);
+            }
+            return 0;
         }
 
     }

@@ -1,4 +1,6 @@
-﻿namespace dormitoryApps.Client.Services
+﻿using dormitoryApps.Client.Enum;
+
+namespace dormitoryApps.Client.Services
 {
     public class EmailTemplateService
     {
@@ -17,14 +19,30 @@
         }
         public async Task<string> GetCustomTemplate(string templatefile)
         {
-            templatefile = templatefile.EndsWith(".txt") || templatefile.EndsWith(".html") ? templatefile : $"{templatefile}.txt";
-            string content = await _httpClient.GetStringAsync($"{ControllerName}/{templatefile}");
-            return content;
+            try
+            {
+                templatefile = templatefile.EndsWith(".txt") || templatefile.EndsWith(".html") ? templatefile : $"{templatefile}.txt";
+                string content = await _httpClient.GetStringAsync($"{ControllerName}/{templatefile}");
+                return content;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<string>.Select(), x);
+            }
+            return string.Empty;
         }
         public async Task<string> GetForgotPasswordWithToken()
         {
-            string content = await _httpClient.GetStringAsync($"{ControllerName}/ForgotEmail.txt");
-            return content;
+            try
+            {
+                string content = await _httpClient.GetStringAsync($"{ControllerName}/ForgotEmail.txt");
+                return content;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<string>.Select(), x);
+            }
+            return string.Empty;
         }
     }
 }
