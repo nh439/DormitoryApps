@@ -106,7 +106,7 @@ namespace dormitoryApps.Client.Services
             {
                 _logger.LogError(ServiceException<RoomFurnHeaderValues>.Update(), x);
             }
-            return null;
+            return -1;
         }
          public async Task<bool> Delete(long furnId)
         {

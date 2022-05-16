@@ -150,10 +150,12 @@ namespace dormitoryApps.Client.Services
         }
         public async Task<List<Session>> GetWithAdvanceSearch(SessionAdvancedSearchCriteria criteria)
         {
-            try { 
-            var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
-            return await res.Content.ReadFromJsonAsync<List<Session>>();
-                catch (Exception x)
+            try
+            {
+                var res = await _httpClient.PostAsJsonAsync(ControllerName, criteria);
+                return await res.Content.ReadFromJsonAsync<List<Session>>();
+            }
+            catch (Exception x)
             {
                 _logger.LogError(ServiceException<Session>.Select(), x);
             }

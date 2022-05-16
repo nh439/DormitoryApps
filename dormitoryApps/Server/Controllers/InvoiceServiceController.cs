@@ -17,38 +17,86 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl+"/Invoice/{id}")]
         public async Task<IActionResult> Index(string id)
         {
-            var res = await _iiServices.GetByInvoice(id);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.GetByInvoice(id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Service/{id}")]
         public async Task<IActionResult> GetByServices(long id)
         {
-            var res = await _iiServices.GetByService(id);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.GetByService(id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]dormitoryApps.Shared.Model.Entity.InvoiceService item)
         {
-            var res = await _iiServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
          [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Creates([FromBody]IEnumerable<dormitoryApps.Shared.Model.Entity.InvoiceService> items)
         {
-            var res = await _iiServices.Create(items);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.Create(items);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Update")]
         public async Task<IActionResult> Update([FromBody] dormitoryApps.Shared.Model.Entity.InvoiceService item)
         {
-            var res = await _iiServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
          [HttpPost(BaseUrl + "/Delete")]
         public async Task<IActionResult> Delete([FromBody] dormitoryApps.Shared.Model.Entity.InvoiceService item)
         {
-            var res = await _iiServices.Delete(item);
-            return Ok(res);
+            try
+            {
+                var res = await _iiServices.Delete(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }
