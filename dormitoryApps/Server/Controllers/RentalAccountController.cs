@@ -19,26 +19,58 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl+"/{Id}")]
         public async Task<IActionResult> Index(string Id)
         {
-            var res = await _rentalAccountServices.Get(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _rentalAccountServices.Get(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]RentalAccount item)
         {
-            var res = await _rentalAccountServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _rentalAccountServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody]RentalAccount item)
         {
-            var res = await _rentalAccountServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _rentalAccountServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody]string itemId)
         {
-            var res = await _rentalAccountServices.Delete(itemId);
-            return Ok(res);
+            try
+            {
+                var res = await _rentalAccountServices.Delete(itemId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

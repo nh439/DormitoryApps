@@ -20,47 +20,103 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(int? id)
         {
-            if (id.HasValue)
+            try
             {
-                return Ok(await _roomTemplateServices.GetById(id.Value));
+                if (id.HasValue)
+                {
+                    return Ok(await _roomTemplateServices.GetById(id.Value));
+                }
+                return Ok(await _roomTemplateServices.GetNames());
             }
-            return Ok(await _roomTemplateServices.GetNames());
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/all")]
         public async Task<IActionResult> Getall()
         {
-            var res = await _roomTemplateServices.Getall();
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.Getall();
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var res = await _roomTemplateServices.GetByName(name);
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.GetByName(name);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Create")]
         public async Task<IActionResult> Create([FromBody] RoomTemplate template)
         {
-            var res = await _roomTemplateServices.Create(template);
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.Create(template);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Update")]
         public async Task<IActionResult> Update([FromBody] RoomTemplate template)
         {
-            var res = await _roomTemplateServices.Update(template);
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.Update(template);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Delete")]
         public async Task<IActionResult> Delete([FromBody]int templateId)
         {
-            var res = await _roomTemplateServices.Delete(templateId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.Delete(templateId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/AddTemplate")]
         public async Task<IActionResult> AddTemplate([FromBody] RoomTemplateAddition addition)
         {
-            var res = await _roomTemplateServices.AddTemplate(addition.roomId,addition.roomName);
-            return Ok(res);
+            try
+            {
+                var res = await _roomTemplateServices.AddTemplate(addition.roomId, addition.roomName);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

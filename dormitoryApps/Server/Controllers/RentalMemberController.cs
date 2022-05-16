@@ -14,27 +14,67 @@ namespace dormitoryApps.Server.Controllers
         [HttpGet(BaseUrl+"/Rental/{Id}")]
         public async Task<IActionResult> Index(string Id)
         {
-            return Ok(await _rentalMemberServices.GetByRentalId(Id));
+            try
+            {
+                return Ok(await _rentalMemberServices.GetByRentalId(Id));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Member/{Id}")]
         public async Task<IActionResult> GetByMember(long Id)
         {
-            return Ok(await _rentalMemberServices.GetByMember(Id));
+            try
+            {
+                return Ok(await _rentalMemberServices.GetByMember(Id));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]RentalMember item)
         {
-            return Ok(await _rentalMemberServices.Create(item));
+            try
+            {
+                return Ok(await _rentalMemberServices.Create(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Create([FromBody]IEnumerable<RentalMember> items)
         {
-            return Ok(await _rentalMemberServices.Create(items));
+            try
+            {
+                return Ok(await _rentalMemberServices.Create(items));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Setmain")]
         public async Task<IActionResult> Setmain([FromBody] RentalMember item)
         {
-            return Ok(await _rentalMemberServices.SetnewRentalIsMain(item));
+            try
+            {
+                return Ok(await _rentalMemberServices.SetnewRentalIsMain(item));
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

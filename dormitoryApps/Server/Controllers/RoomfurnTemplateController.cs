@@ -17,54 +17,118 @@ namespace dormitoryApps.Server.Controllers
         }
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index(long? Id)
-        { 
-            if(Id.HasValue)
+        {
+            try
             {
-                return Ok(await _roomfurnTemplateServices.GetById(Id.Value));
+                if (Id.HasValue)
+                {
+                    return Ok(await _roomfurnTemplateServices.GetById(Id.Value));
+                }
+                return Ok(await _roomfurnTemplateServices.Getall());
             }
-            return Ok(await _roomfurnTemplateServices.Getall());
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Type/{name}")]
         public async Task<IActionResult> GetByTypeName(string typeName)
         {
-            var res = await _roomfurnTemplateServices.GetByType(typeName);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.GetByType(typeName);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpGet(BaseUrl+"/Template/{Id}")]
         public async Task<IActionResult> GetByTemplate(int Id)
         {
-            var res = await _roomfurnTemplateServices.GetByTemplate(Id);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.GetByTemplate(Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Create")]
         public async Task<IActionResult> Create([FromBody]RoomfurnTemplate template)
         {
-            var res = await _roomfurnTemplateServices.Create(template);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.Create(template);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Creates")]
         public async Task<IActionResult> Create([FromBody]IEnumerable<RoomfurnTemplate> templates)
         {
-            var res = await _roomfurnTemplateServices.Create(templates);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.Create(templates);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Update")]
         public async Task<IActionResult> Update([FromBody]RoomfurnTemplate template)
         {
-            var res = await _roomfurnTemplateServices.Update(template);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.Update(template);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+"/Delete")]
         public async Task<IActionResult> Delete([FromBody]long itemId)
         {
-            var res = await _roomfurnTemplateServices.Delete(itemId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.Delete(itemId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl+ "/DeleteTemplate")]
         public async Task<IActionResult> DeleteTemplate([FromBody]int roomId)
         {
-            var res = await _roomfurnTemplateServices.DeleteTemplate(roomId);
-            return Ok(res);
+            try
+            {
+                var res = await _roomfurnTemplateServices.DeleteTemplate(roomId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
 
