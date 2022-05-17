@@ -947,3 +947,6 @@ DELIMITER ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2022-05-16 20:50:09
+
+ALTER TABLE `dorm`.`notification` 
+ADD COLUMN `Secure` TINYINT(1) NOT NULL DEFAULT 0 AFTER `SendAll`;
