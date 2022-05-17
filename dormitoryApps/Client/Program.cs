@@ -62,4 +62,5 @@ builder.Services.AddScoped<ForgotPasswordServices>();
 builder.Services.AddScoped<EmailTemplateService>();
 builder.Services.AddScoped<EmailServices>();
 builder.Services.AddScoped<NotificationAttendeeServices>();
+builder.Services.AddScoped<NotificationAttachmentService>();
 await builder.Build().RunAsync();

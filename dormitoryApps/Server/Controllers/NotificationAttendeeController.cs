@@ -35,7 +35,7 @@ namespace dormitoryApps.Server.Controllers
                 }
                 else
                 {
-                    return Ok(await _notificationAttendeeServices.GetByNotification(notificationId))
+                    return Ok(await _notificationAttendeeServices.GetByNotification(notificationId));
                 }
             }
             catch (Exception x)
