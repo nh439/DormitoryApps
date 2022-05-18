@@ -8,6 +8,7 @@
 @inject InvoiceServices _invoiceServices;
 @inject MyServicesServices _myServicesServices;
 @inject OfficerServices _officerServices;
+@inject NotificationServices _notificationServices;
 @implements IDisposable
 <PageTitle>Index</PageTitle>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -22,18 +23,18 @@
             <div class="col ">
                 <div class="card bg-primary">
                     <h2>&nbsp;ห้องพักที่ว่าง</h2>
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     <h1 style="text-align:right">0  &nbsp;</h1>
                 </div>
-                
+
             </div>
             <div class="col">
                 <div class="card bg-warning">
                     <h2>&nbsp;ใบเสร็จที่ยังไม่จ่าย</h2>
-                    <br/>
-                    <br/>
-                    @if(!unpaidInvoices.HasValue)
+                    <br />
+                    <br />
+                    @if (!unpaidInvoices.HasValue)
                     {
                         <h2 style="text-align:right">Fetching... &nbsp; </h2>
                     }
@@ -41,15 +42,15 @@
                     {
                         <h1 style="text-align:right">@unpaidInvoices  &nbsp;</h1>
                     }
-                    
+
                 </div>
             </div>
             <div class="col ">
                 <div class="card bg-success">
-                     <h2>&nbsp;บริการทั้งหมด</h2>
-                    <br/>
-                    <br/>
-                     @if(!allService.HasValue)
+                    <h2>&nbsp;บริการทั้งหมด</h2>
+                    <br />
+                    <br />
+                    @if (!allService.HasValue)
                     {
 
                         <h2 style="text-align:right">Fetching... &nbsp;</h2>
@@ -62,23 +63,60 @@
             </div>
         </div>
     </div>
+    <br />
+    <br />
+    <br />
+    <div class="row">
+        <div class="col">
+            <center>
+                <h2>การแจ้งเตื่อน/ข่าวสาร</h2>
+            </center>
+            @if (notifications != null && notifications.Count > 0)
+            {
+                @foreach (var notification in notifications)
+                {
+                    string classes = notification.SendAll ? "bg-warning":"bg-danger";
+                    <div class="card @classes">
+                        <h3>@notification.SenderFrom</h3>
+                        <br>
+                        <h4>@notification.Detail</h4>
+                        <br>
+                        <a href="@($"/notification/{notification.Id}")">Read More</a>
+                        <br>
+                        @ConvertTime(notification.Date)
+                    </div>
+                }
+            }
+        </div>
+        <div class="col">
+            <center>
+                <h2>การประชุม/นัดพบ</h2>
+            </center>
+        </div>
+    </div>
 }
 
-@code{
-    bool IsloggedIn =false;
+@code {
+    bool IsloggedIn = false;
     DateTime now = new DateTime();
-    private static System.Timers.Timer aTimer=new System.Timers.Timer(1);
-    private static System.Timers.Timer bTimer=new System.Timers.Timer(2000);
+    private System.Timers.Timer aTimer = new System.Timers.Timer(1);
+    private System.Timers.Timer bTimer = new System.Timers.Timer(2000);
+    private System.Timers.Timer cTimer = new System.Timers.Timer(5000);
     int? availableRoom, unpaidInvoices, allService;
+    List<Notification> notifications = new List<Notification>();
     public void StartTimer()
     {
         aTimer = new System.Timers.Timer(1);
         aTimer.Elapsed += Refreshdate;
         aTimer.Enabled = true;
 
-        bTimer=new System.Timers.Timer(2000);
+        bTimer = new System.Timers.Timer(2000);
         bTimer.Elapsed += FetchData;
         bTimer.Enabled = true;
+
+        cTimer = new System.Timers.Timer(5000);
+        cTimer.Elapsed += FetchNotification;
+        cTimer.Enabled = true;
 
     }
     public void Refreshdate(Object source, ElapsedEventArgs e)
@@ -86,15 +124,43 @@
         now = DateTime.Now;
         InvokeAsync(StateHasChanged);
     }
-    private void Disposed(LocationChangedEventArgs e)
+    void FetchNotification(Object source, ElapsedEventArgs e)
     {
-        aTimer.Enabled = false ;
-        bTimer.Enabled= false;
+        GetNotification();
+        StateHasChanged();
+    }
+    string ConvertTime(DateTime input)
+    {
+        var span = DateTime.Now.Subtract(input);
+        if(span.TotalDays > 7)
+        {
+            return $"{(Math.Floor(span.TotalDays / 7))} Week ago";
+        }
+        else if(span.TotalDays >= 1)
+        {
+            return $"{(Math.Floor(span.TotalDays))} {(span.TotalDays > 1 ? "Days":"Day")} ago";
+        }
+        else if(span.TotalHours >=1)
+        {
+            return $"{span.Hours} Hours ago";
+        }
+        else if(span.TotalMinutes >=1)
+        {
+             return $"{span.Minutes} Minutes ago";
+        }
+        return $"{span.Seconds} Seconds ago";
+    }
+    private async void GetNotification()
+    {
+        var loginCheck = await _sessionServices.Permissioncheck();
+        if (!loginCheck) notifications = new List<Notification>();
+        notifications = await _notificationServices.Get();
     }
     void IDisposable.Dispose()
     {
-        aTimer.Enabled = false ;
-        bTimer.Enabled= false;
+        aTimer?.Dispose();
+        bTimer?.Dispose();
+        cTimer?.Dispose();
     }
     public async void FetchData(Object source, ElapsedEventArgs e)
     {
@@ -112,6 +178,7 @@
         var isExpired = await _sessionServices.ExpiredCheck();
         if (isExpired) await _officerServices.Logout();
         StartTimer();
+        GetNotification();
     }
 
 }

@@ -11,15 +11,23 @@ namespace dormitoryApps.Server.Services.Job
     public class JobServices : IJobServices
     {
         private readonly DBConnection _databases;
+        private readonly INotificationServices _notificationServices;
+        private readonly IConfiguration _configuration;
         private const string CurrentCustomerTable = "currentcustomer";
         private const string PastCustomerTable = "pastcustomer";
-        public JobServices(DBConnection databases)
+        public JobServices(DBConnection databases, 
+            INotificationServices notificationServices, 
+            IConfiguration configuration)
         {
             _databases = databases;
+            _notificationServices = notificationServices;
+            _configuration = configuration;
+
         }
         public void Run()
         {
             ExpiredBooking();
+            Clearnotification();
             Console.WriteLine($"Job at {DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss")}");
         }
         void ExpiredBooking()
@@ -50,6 +58,11 @@ namespace dormitoryApps.Server.Services.Job
             }
             _databases.Dorm.InsertEntities<PastCustomer>(pastCustomers);
             _databases.Dorm.Delete(CurrentCustomerTable, customerCondition);
+        }
+        async void Clearnotification()
+        {
+            int? deletedAfter = int.Parse( _configuration.GetSection("Notification:DeleteAfter").Value);
+            await _notificationServices.DeleteAfter(deletedAfter?? 730);
         }
     }
 }
