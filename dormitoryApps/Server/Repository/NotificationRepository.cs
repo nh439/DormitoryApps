@@ -49,6 +49,11 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<Notification>(TableName, condition);
             return res.OrderByDescending(x => x.Date).ToList();
         }
+        public async Task<List<Notification>> GetBySender(long senderUserId)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<Notification>(TableName, $"SenderId={senderUserId}");
+            return res.ToList();
+        }
         public async Task<Notification> GetNotification(string notificationId)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<Notification>(TableName, $"Id='{notificationId}'");

@@ -61,6 +61,19 @@ namespace dormitoryApps.Client.Services
             }
             return null;
         }
+        public async Task<List<Notification>> GetSent()
+        {
+            try
+            {
+                var res = await _httpClient.GetFromJsonAsync<List<Notification>>(ControllerName + "/Sender");
+                return res;
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(ServiceException<Notification>.Select(), x);
+            }
+            return null;
+        }
         public async Task<Notification> GetById(string notificationId)
         {
             try

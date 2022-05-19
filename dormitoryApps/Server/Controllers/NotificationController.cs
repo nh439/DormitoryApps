@@ -162,5 +162,24 @@ namespace dormitoryApps.Server.Controllers
                 return StatusCode(500, "Something Went Wrong");
             }
         }
+        [HttpGet(BaseUrl+"/Sender")]
+        public async Task<IActionResult> GetBySender()
+        {
+            try
+            {
+                string sessionId = _contextAccessor.HttpContext.Session.GetString("Id");
+                bool permission = _permissionService.PermissionCheck(sessionId);
+                if (!permission) return BadRequest();
+                var currentuser = await _sessionServices.GetCurrentlogin(sessionId);
+                if (!currentuser.Issuper) return BadRequest();
+                var res = await _notificationServices.GetBySender(currentuser.Id);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
+        }
     }
 }

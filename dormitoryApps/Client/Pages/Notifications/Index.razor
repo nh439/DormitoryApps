@@ -1,8 +1,33 @@
 ﻿@page "/Notification"
-@using Blazorise.RichTextEdit;
-<h3>Notification</h3>
+@using dormitoryApps.Client.Services;
+@inject SessionServices _sessionServices;
+<center>
+    <h1>การแจ้งเตือน</h1>
+</center>
 
 @code {
-
+    int mode = 1;
+    protected override async void OnInitialized()
+    {
+        await _sessionServices.RequiredPermission();
+    }
 }
-<RichTextEdit></RichTextEdit>
+
+<div class="ui three item menu">
+  <a class="item @(mode==1 ? "active":"")" @onclick="()=>{mode=1;StateHasChanged();}">ได้รับ</a>
+  <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">ที่ส่งไป</a>
+  <a class="item @(mode==3 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">สร้างการแจ้งเตือน</a>
+</div>
+<br />
+@if(mode==1)
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Receive />
+}
+else if(mode==2) 
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Sent />
+}
+else if(mode==3)
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Create />
+}

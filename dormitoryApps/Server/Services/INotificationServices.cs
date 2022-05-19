@@ -12,6 +12,7 @@ namespace dormitoryApps.Server.Services
         Task<List<Notification>> Getall();
         Task<List<Notification>> GetForUserId(long userId);
         Task<Notification> GetNotification(string notificationId);
+        Task<List<Notification>> GetBySender(long senderUserId);
     }
     public class NotificationServices : INotificationServices
     {
@@ -86,6 +87,16 @@ namespace dormitoryApps.Server.Services
             if (res == null) return new Notification();
             res.Attendees = await _attendeeRepository.GetByNotification(notificationId);
             res.Attachments = await _attachmentRepository.GetByNotification(notificationId);
+            return res;
+        }
+        public async Task<List<Notification>> GetBySender(long senderUserId)
+        {
+            var res =await _repository.GetBySender(senderUserId);
+            var attendee = await _attendeeRepository.Getall();
+            res.ForEach(x =>
+            {
+                x.Attendees = attendee.Where(y => y.NotificationId == x.Id).ToList();
+            });
             return res;
         }
 
