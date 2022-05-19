@@ -1,5 +1,142 @@
-﻿<h3>Create</h3>
+﻿@using Blazorise;
+@using Blazorise.RichTextEdit;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@inject NotificationServices _notificationServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+<h2>สร้างการแจ้งเตือน</h2>
 
 @code {
-
+    Officer currentUser = new Officer();
+    Notification item = new Notification();
+    RichTextEdit details;
+    protected override async void OnInitialized()
+    {
+        currentUser = await _sessionServices.GetCurrentLogin();
+        item = new Notification()
+            {
+                SenderId = currentUser.Id,
+                SenderFrom = $"{currentUser.Firstname} {currentUser.Surname}"
+            };
+        StateHasChanged();
+    }
+    async void SaveDetail()
+    {
+        item.Detail = await details.GetHtmlAsync();
+    }
 }
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div class="form-group">
+    <label for="text">จาก</label>
+    <input id="text" @bind-value="item.SenderFrom" type="text" class="form-control" readonly>
+</div>
+<br />
+<div class="form-group">
+    <label for="select">ถึง</label>
+    <div>
+        <select id="select" name="select" class="custom-select">
+            <option disabled selected>Officer Filter</option>
+            <option value="1">ทุกคน</option>
+            <option value="2">แผนก</option>
+            <option value="2">สายงาน</option>
+        </select>
+    </div>
+</div>
+<br />
+<div class="form-group">
+    <label for="text1">หัวเรื่อง</label>
+    <input id="text1" @bind-value="item.Header" type="text" class="form-control">
+</div>
+<div class="form-group">
+    <label for="textarea">รายละเอียด</label>
+    <RichTextEdit style="background-color:wheat;color:black" @ref="details" ContentChanged="SaveDetail">
+        <Toolbar>
+            <RichTextEditToolbarGroup>
+                <RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Italic" />
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Size">
+                    <RichTextEditToolbarSelectItem Value="small" />
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="large" />
+                    <RichTextEditToolbarSelectItem Value="huge">Very Big</RichTextEditToolbarSelectItem>
+                </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Color">
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="red" />
+                    <RichTextEditToolbarSelectItem Value="black" />
+                    <RichTextEditToolbarSelectItem Value="silver" />
+                    <RichTextEditToolbarSelectItem Value="gray" />
+                    <RichTextEditToolbarSelectItem Value="white" />
+                    <RichTextEditToolbarSelectItem Value="maroon" />
+                    <RichTextEditToolbarSelectItem Value="purple" />
+                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                    <RichTextEditToolbarSelectItem Value="green" />
+                    <RichTextEditToolbarSelectItem Value="lime" />
+                    <RichTextEditToolbarSelectItem Value="olive" />
+                    <RichTextEditToolbarSelectItem Value="yellow" />
+                    <RichTextEditToolbarSelectItem Value="navy" />
+                    <RichTextEditToolbarSelectItem Value="blue" />
+                    <RichTextEditToolbarSelectItem Value="teal" />
+                    <RichTextEditToolbarSelectItem Value="aqua" />
+
+                </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Background" >
+                     <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="red" />
+                    <RichTextEditToolbarSelectItem Value="black" />
+                    <RichTextEditToolbarSelectItem Value="silver" />
+                    <RichTextEditToolbarSelectItem Value="gray" />
+                    <RichTextEditToolbarSelectItem Value="white" />
+                    <RichTextEditToolbarSelectItem Value="maroon" />
+                    <RichTextEditToolbarSelectItem Value="purple" />
+                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                    <RichTextEditToolbarSelectItem Value="green" />
+                    <RichTextEditToolbarSelectItem Value="lime" />
+                    <RichTextEditToolbarSelectItem Value="olive" />
+                    <RichTextEditToolbarSelectItem Value="yellow" />
+                    <RichTextEditToolbarSelectItem Value="navy" />
+                    <RichTextEditToolbarSelectItem Value="blue" />
+                    <RichTextEditToolbarSelectItem Value="teal" />
+                    <RichTextEditToolbarSelectItem Value="aqua" />
+                    </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Align">
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="center" />
+                    <RichTextEditToolbarSelectItem Value="right" />
+                </RichTextEditToolbarSelect>
+
+
+                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="ordered" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.CodeBlock" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Font" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Image" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Underline" />
+            </RichTextEditToolbarGroup>
+        </Toolbar>
+    </RichTextEdit>
+</div>
+<br />
+<div class="form-group">
+    <label for="text2">เอกสาร</label>
+    <input id="text2" name="text2" type="file" class="form-control" multiple>
+</div>
+<br />
+<div class="form-group">
+    <div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+            <input @bind="item.SendAll" id="checkbox_0" type="checkbox" class="custom-control-input" value="true">
+            <label for="checkbox_0" class="custom-control-label">ส่งถึงทุกคน</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+            <input @bind="item.Secure" id="checkbox_1" type="checkbox" class="custom-control-input" value="true">
+            <label for="checkbox_1" class="custom-control-label">ส่วนตัว</label>
+        </div>
+    </div>
+</div>
+
+<Button Class="btn btn-primary" @onclick="()=>{Console.WriteLine(item.Detail);}">Send Notification</Button>
+
