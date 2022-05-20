@@ -7,6 +7,7 @@
 @inject SessionServices _sessionServices;
 @inject PostitionServices _postitionServices;
 @inject PostitionLineService _postitionLineService;
+@inject DepartmentServices _departmentService;
 <h2>สร้างการแจ้งเตือน</h2>
 
 @code {
@@ -15,6 +16,9 @@
     RichTextEdit details;
     List<Officer> allOfficer = new List<Officer>();
     officerChecked[] sendTo = new officerChecked[0];
+    List<Department> departments = new List<Department>();
+    List<Postition> postitions = new List<Postition>();
+    List<PostitionLine> postitionLines = new List<PostitionLine>();
     protected override async void OnInitialized()
     {
         currentUser = await _sessionServices.GetCurrentLogin();
@@ -25,6 +29,9 @@
             };
         allOfficer = await _officerServices.GetEmployee();
         sendTo = new officerChecked[allOfficer.Count];
+        departments = await _departmentService.Getdepartments();
+        postitionLines = await _postitionLineService.GetPostitionLines();
+        postitions = await _postitionServices.GetPostitions();
         StateHasChanged();
     }
     async void SaveDetail()
@@ -40,6 +47,7 @@
             List<NotificationAttachment> attachments = new List<NotificationAttachment>();
             foreach (var file in files)
             {
+                await Task.Delay(10);
                 NotificationAttachment attachment = new NotificationAttachment()
                     {
                         FileCreateDate = file.LastModified.DateTime,
@@ -48,16 +56,8 @@
                         FileSize = file.Size,
                         FileType = file.ContentType
                     };
-                var stream = file.OpenReadStream(int.MaxValue);
-                MemoryStream memory = new MemoryStream();
-                await stream.CopyToAsync(memory);
-                attachment.FileContent = memory.ToArray();
-                await stream.DisposeAsync();
-                stream.Close();
-                memory.Dispose();
-                memory.Close();
-                attachments.Add(attachment);
-                await Task.Delay(10);
+                await file.OpenReadStream(int.MaxValue).ReadAsync(attachment.FileContent);
+                attachments.Add(attachment);              
             }
             item.Attachments = attachments;
             StateHasChanged();
@@ -78,6 +78,38 @@
         item.Attachments = item.Attachments.Where(x => x.Id != attachmentId).ToList();
         StateHasChanged();
     }
+    async void FilterChanges(ChangeEventArgs e)
+    {
+        switch(e.Value.ToString())
+        {
+            case "1":
+                allOfficer = await _officerServices.GetEmployee();break;
+            case"2" :
+                var mydepartment = departments.Where(x => x.Id == postitions.Where(y => y.Id == currentUser.Postition).FirstOrDefault().Department).FirstOrDefault();
+                allOfficer = await _officerServices.GetEmployee();
+                var officerPostition = (from all in allOfficer
+                                        join pos in postitions on all.Postition equals pos.Id
+                                        select new { Officer = all, Position = pos }).Where(x => x.Position.Department == mydepartment?.Id).Select(x => x.Officer).ToList();
+                allOfficer = officerPostition;
+                break;
+            case "3":
+                var mylines = postitionLines.Where(x => x.Id == postitions.Where(y => y.Id == currentUser.Postition).FirstOrDefault().Line).FirstOrDefault();
+                allOfficer = await _officerServices.GetEmployee();
+                var officerLines = (from all in allOfficer
+                                    join pos in postitions on all.Postition equals pos.Id
+                                    select new { Officer = all, Position = pos }).Where(x => x.Position.Line == mylines.Id).Select(x => x.Officer).ToList();
+                allOfficer = officerLines;
+                break; 
+            case "4":
+                allOfficer = await _officerServices.GetEmployee();
+                allOfficer = allOfficer.Where(x => !x.Expired).ToList();
+                break;
+            default:
+                allOfficer = await _officerServices.GetEmployee();break;
+
+        }
+        StateHasChanged();
+    }
     class officerChecked
     {
         public long OfficerId { get; set; }
@@ -95,11 +127,12 @@
 <div class="form-group">
     <label for="select">ตัวกรอง</label>
     <div>
-        <select id="select" name="select" class="custom-select">
+        <select id="select" name="select" class="custom-select" @onchange="FilterChanges">
             <option disabled selected>Officer Filter</option>
             <option value="1">ทุกคน</option>
+            <option value="4">ทุกคน(ที่ยังทำงาน)</option>
             <option value="2">แผนก</option>
-            <option value="2">สายงาน</option>
+            <option value="3">สายงาน</option>
         </select>
     </div>
 </div>
@@ -112,11 +145,15 @@
         {
             var officer = officerData.Data;
             var index = officerData.Index;
+            var myposition = postitions.Where(x=>x.Id==officer.Postition).FirstOrDefault();
+            var myline = postitionLines.Where(x=>x.Id == myposition?.Line).FirstOrDefault();
+            var mydepartment = departments.Where(x => x.Id == myposition?.Department).FirstOrDefault();
             sendTo[index] = new officerChecked();
             sendTo[index].OfficerId = officer.Id;
+            string officerLabel = $"{officer.Firstname} {officer.Surname} <{myposition.Name} - {myline.Name} - {mydepartment.Name}> "+(officer.Expired ? " <ลาออกแล้ว>":"") ;
             <div class="custom-control custom-checkbox custom-control-inline">
                 <input @bind-value="sendTo[index].Checked" id="@officer.Id" type="checkbox" class="custom-control-input" disabled="@(item.SendAll || officer.Expired)" />
-                <label for="@officer.Id" class="custom-control-label">@($"{officer.Firstname} {officer.Surname}")</label>
+                <label for="@officer.Id" class="custom-control-label"> @officerLabel</label>
             </div>
         }
 
