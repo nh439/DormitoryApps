@@ -10,6 +10,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using dormitoryApps.Server.Services.Job;
 using dormitoryApps.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,15 @@ builder.Services.AddSingleton<DBConnection>();
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
 builder.Services.AddSession();
 builder.Services.AddScoped<PermissionService>();
+
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = int.MaxValue;
+});
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+});
 
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();

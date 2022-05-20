@@ -5,12 +5,16 @@
 @inject NotificationServices _notificationServices;
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
+@inject PostitionServices _postitionServices;
+@inject PostitionLineService _postitionLineService;
 <h2>สร้างการแจ้งเตือน</h2>
 
 @code {
     Officer currentUser = new Officer();
     Notification item = new Notification();
     RichTextEdit details;
+    List<Officer> allOfficer = new List<Officer>();
+    officerChecked[] sendTo = new officerChecked[0];
     protected override async void OnInitialized()
     {
         currentUser = await _sessionServices.GetCurrentLogin();
@@ -19,11 +23,65 @@
                 SenderId = currentUser.Id,
                 SenderFrom = $"{currentUser.Firstname} {currentUser.Surname}"
             };
+        allOfficer = await _officerServices.GetEmployee();
+        sendTo = new officerChecked[allOfficer.Count];
         StateHasChanged();
     }
     async void SaveDetail()
     {
         item.Detail = await details.GetHtmlAsync();
+    }
+    async void FileChanged(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            item.Attachments = new List<NotificationAttachment>();
+            var files = e.GetMultipleFiles();
+            List<NotificationAttachment> attachments = new List<NotificationAttachment>();
+            foreach (var file in files)
+            {
+                NotificationAttachment attachment = new NotificationAttachment()
+                    {
+                        FileCreateDate = file.LastModified.DateTime,
+                        FileExtension = Path.GetExtension(file.Name),
+                        FileName = Path.GetFileNameWithoutExtension(file.Name),
+                        FileSize = file.Size,
+                        FileType = file.ContentType
+                    };
+                var stream = file.OpenReadStream(int.MaxValue);
+                MemoryStream memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+                attachment.FileContent = memory.ToArray();
+                await stream.DisposeAsync();
+                stream.Close();
+                memory.Dispose();
+                memory.Close();
+                attachments.Add(attachment);
+                await Task.Delay(10);
+            }
+            item.Attachments = attachments;
+            StateHasChanged();
+        }
+        catch (Exception x)
+        {
+            auto.OpenFailed(x.Message);
+        }
+        StateHasChanged();
+    }
+    void ClearAttachment()
+    {
+        item.Attachments = new List<NotificationAttachment>();
+        StateHasChanged();
+    }
+    void ClearAttachment(string attachmentId)
+    {
+        item.Attachments = item.Attachments.Where(x => x.Id != attachmentId).ToList();
+        StateHasChanged();
+    }
+    class officerChecked
+    {
+        public long OfficerId { get; set; }
+        public bool Checked { get; set; } = false;
     }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -35,7 +93,7 @@
 </div>
 <br />
 <div class="form-group">
-    <label for="select">ถึง</label>
+    <label for="select">ตัวกรอง</label>
     <div>
         <select id="select" name="select" class="custom-select">
             <option disabled selected>Officer Filter</option>
@@ -45,6 +103,26 @@
         </select>
     </div>
 </div>
+<br />
+
+<div class="form-group">
+    <label>รายชื่อพนักงานที่จะส่งไป</label>
+    <div>
+        @foreach (var officerData in allOfficer.Select((x, y) => new { Data = x, Index = y }))
+        {
+            var officer = officerData.Data;
+            var index = officerData.Index;
+            sendTo[index] = new officerChecked();
+            sendTo[index].OfficerId = officer.Id;
+            <div class="custom-control custom-checkbox custom-control-inline">
+                <input @bind-value="sendTo[index].Checked" id="@officer.Id" type="checkbox" class="custom-control-input" disabled="@(item.SendAll || officer.Expired)" />
+                <label for="@officer.Id" class="custom-control-label">@($"{officer.Firstname} {officer.Surname}")</label>
+            </div>
+        }
+
+    </div>
+</div>
+
 <br />
 <div class="form-group">
     <label for="text1">หัวเรื่อง</label>
@@ -83,8 +161,8 @@
                     <RichTextEditToolbarSelectItem Value="aqua" />
 
                 </RichTextEditToolbarSelect>
-                <RichTextEditToolbarSelect Action="RichTextEditAction.Background" >
-                     <RichTextEditToolbarSelectItem Selected />
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Background">
+                    <RichTextEditToolbarSelectItem Selected />
                     <RichTextEditToolbarSelectItem Value="red" />
                     <RichTextEditToolbarSelectItem Value="black" />
                     <RichTextEditToolbarSelectItem Value="silver" />
@@ -101,7 +179,7 @@
                     <RichTextEditToolbarSelectItem Value="blue" />
                     <RichTextEditToolbarSelectItem Value="teal" />
                     <RichTextEditToolbarSelectItem Value="aqua" />
-                    </RichTextEditToolbarSelect>
+                </RichTextEditToolbarSelect>
                 <RichTextEditToolbarSelect Action="RichTextEditAction.Align">
                     <RichTextEditToolbarSelectItem Selected />
                     <RichTextEditToolbarSelectItem Value="center" />
@@ -115,6 +193,7 @@
                 <RichTextEditToolbarButton Action="RichTextEditAction.Font" />
                 <RichTextEditToolbarButton Action="RichTextEditAction.Image" />
                 <RichTextEditToolbarButton Action="RichTextEditAction.Underline" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Script" />
             </RichTextEditToolbarGroup>
         </Toolbar>
     </RichTextEdit>
@@ -122,8 +201,38 @@
 <br />
 <div class="form-group">
     <label for="text2">เอกสาร</label>
-    <input id="text2" name="text2" type="file" class="form-control" multiple>
+    <InputFile class="form-control" OnChange="FileChanged" multiple />
+    <Button Class="btn btn-danger" @onclick="ClearAttachment"><i class="trash alternate outline icon"></i></Button>
 </div>
+<br />
+@if (item.Attachments != null && item.Attachments.Count > 0)
+{
+    <center>
+        <h3>เอกสารที่แนบไป</h3>
+    </center>
+    <Table Class="table" Style="text-align:center">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>ชื่อเอกสาร</th>
+                <th>ขนาด(Bytes)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var itm in item.Attachments.Select((x, y) => new { Data = x, Index = y }))
+            {
+                <tr class="@(itm.Index % 2==0 ? "table-primary":"table-info" )">
+                    <td>@(1+itm.Index)</td>
+                    <td>@($"{itm.Data.FileName}{itm.Data.FileExtension}")</td>
+                    <td>@itm.Data.FileSize</td>
+                    <td><Button Class="btn btn-danger" @onclick="()=> ClearAttachment(itm.Data.Id)"><i class="trash alternate outline icon"></i></Button></td>
+                </tr>
+            }
+        </tbody>
+    </Table>
+
+}
 <br />
 <div class="form-group">
     <div>
@@ -138,5 +247,9 @@
     </div>
 </div>
 
-<Button Class="btn btn-primary" @onclick="()=>{Console.WriteLine(item.Detail);}">Send Notification</Button>
+<Button Class="btn btn-primary" @onclick="()=>{Console.WriteLine(item.Attachments.Count);}">Send Notification</Button>
 
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}
