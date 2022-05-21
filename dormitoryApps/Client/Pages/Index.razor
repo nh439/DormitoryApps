@@ -79,12 +79,14 @@
                     <div class="card @classes">
                         <h3>@notification.SenderFrom</h3>
                         <br>
-                        <h4>@notification.Detail</h4>
+                        <h4>@notification.Header</h4>
                         <br>
                         <a href="@($"/notification/{notification.Id}")">Read More</a>
                         <br>
                         @ConvertTime(notification.Date)
                     </div>
+                    <br />
+                    <br />
                 }
             }
         </div>

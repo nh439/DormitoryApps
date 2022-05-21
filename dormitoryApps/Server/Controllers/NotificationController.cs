@@ -171,7 +171,6 @@ namespace dormitoryApps.Server.Controllers
                 bool permission = _permissionService.PermissionCheck(sessionId);
                 if (!permission) return BadRequest();
                 var currentuser = await _sessionServices.GetCurrentlogin(sessionId);
-                if (!currentuser.Issuper) return BadRequest();
                 var res = await _notificationServices.GetBySender(currentuser.Id);
                 return Ok(res);
             }

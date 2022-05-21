@@ -63,7 +63,7 @@
                     long attendeeId = attendee.attendee.UserId;
                     if (attendee.index <= 5)
                     {
-                        sentTo += officers.Where(x => x.Id == attendeeId).Select(x => $"{x.Firstname} {x.Surname}").FirstOrDefault()+",";
+                        sentTo += officers.Where(x => x.Id == attendeeId).Select(x => $"{x.Firstname} {x.Surname}").FirstOrDefault() + ",";
                     }
                     else
                     {
@@ -71,16 +71,28 @@
                         break;
                     }
                 }
-                @if(sentTo.EndsWith(','))
+                @if (sentTo.EndsWith(','))
                 {
                     sentTo = sentTo.Remove(sentTo.Length - 1, 1);
                 }
                 <tr class="@(data.index % 2==0? "table-success":"table-info")">
                     <td>@notification.Id</td>
-                    <td><button class="btn btn-link">@sentTo</button></td>
+                    <td>
+                        @if (!notification.SendAll)
+                        {
+                            <button class="btn btn-link">@sentTo</button>
+                        }
+                        else
+                        {
+                            @("ทุกคน")
+                        }
+                    </td>
                     <td>@notification.Header</td>
                     <td>@notification.Date.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                    <td><a class="btn btn-info" href="@($"/notification{notification.Id}")"><i class="eye icon"></i></a></td>
+                    <td>
+                        <a class="btn btn-info" href="@($"/notification/{notification.Id}")"><i class="eye icon"></i></a>
+                        <button class="btn btn-info" ><i class="trash icon"></i></button>
+                    </td>
                 </tr>
             }
         }
