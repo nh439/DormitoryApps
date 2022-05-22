@@ -27,6 +27,33 @@
     {
         timer?.Dispose();
     }
+    void DeleteClick(string id)
+    {
+        auto.AfterSubmitAction(async () =>
+        {
+            try
+            {
+                auto.Processing("Deleteing...");
+                await Task.Delay(1);
+                var res = await _notificationServices.Delete(id);
+                if (res)
+                {
+                    auto.Success("Deleted Completed");
+                    await Task.Delay(1);
+                    return;
+                }
+                auto.Failed("Deleted Incompleted");
+                await Task.Delay(1);
+            }
+            catch (Exception x)
+            {
+                auto.Failed(x.Message);
+                await Task.Delay(1);
+            }
+
+        });
+        auto.OpenWarning($"คุณแน่ใจว่าจะลบการแจ้งเตือนที่ {id}");
+    }
 }
 <br />
 <table class="table" style="text-align:center">
@@ -91,10 +118,14 @@
                     <td>@notification.Date.ToString("dd/MM/yyyy HH:mm:ss")</td>
                     <td>
                         <a class="btn btn-info" href="@($"/notification/{notification.Id}")"><i class="eye icon"></i></a>
-                        <button class="btn btn-info" ><i class="trash icon"></i></button>
+                        <button class="btn btn-danger" @onclick="()=>DeleteClick(notification.Id)" ><i class="trash icon"></i></button>
                     </td>
                 </tr>
             }
         }
     </tbody>
 </table>
+<dormitoryApps.Client.Pages.Modal.Auto @ref ="auto"/>
+@code{
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}

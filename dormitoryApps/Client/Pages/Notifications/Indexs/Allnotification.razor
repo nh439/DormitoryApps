@@ -3,7 +3,7 @@
 @using System.Timers;
 @inject NotificationServices _notificationServices;
 @implements IDisposable;
-<h2>การแจ้งเตือนที่ได้รับ</h2>
+<h2>การแจ้งเตือนทั้งหมด</h2>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 @code {
     List<Notification> notifications;
@@ -16,7 +16,7 @@
     }
     async void Get(object sender,ElapsedEventArgs e)
     {
-        notifications = await _notificationServices.Get();
+        notifications = await _notificationServices.Getall();
         if (notifications == null) notifications = new List<Notification>();
         StateHasChanged();
     }
@@ -54,6 +54,10 @@
             @foreach(var data in notifications.OrderByDescending(x=>x.Date).Select((a,b)=> new { notification=a,index=b}))
             {
                 var notification = data.notification;
+                @if(notification.Secure)
+                {
+                    continue;
+                }
                 <tr class="@(data.index % 2==0? "table-success":"table-info")">
                     <td>@notification.Id</td>
                     <td>@notification.SenderFrom</td>

@@ -42,6 +42,8 @@
     }
     async void FileChanged(InputFileChangeEventArgs e)
     {
+        auto.NextRequired = false;
+        auto.ForceLoad = false;
         await Task.Delay(5);
         auto.Open("Uploading");
         await Task.Delay(5);
@@ -123,6 +125,8 @@
     }
     async void SaveChanges()
     {
+        auto.NextRequired = false;
+        auto.ForceLoad = false;
         auto.Open("Sending..");
         try
         {
@@ -147,16 +151,11 @@
             var result = await _notificationServices.Create(item);
             if (result)
             {
+                auto.NextRequired = true;
+                auto.NextLink = "/Notification";
+                auto.ForceLoad = true;
                 auto.Success("Send Complete");
                 await Task.Delay(5);
-                item = new Notification()
-                    {
-                        SenderId = currentUser.Id,
-                        SenderFrom = $"{currentUser.Firstname} {currentUser.Surname}",
-                        Attendees = new List<NotificationAttendee>(),
-                        Attachments = new List<NotificationAttachment>()
-                    };
-                StateHasChanged();
                 return;
             }
             auto.Failed("Send Incomplete");
@@ -207,8 +206,8 @@
             var myline = postitionLines.Where(x => x.Id == myposition?.Line).FirstOrDefault();
             var mydepartment = departments.Where(x => x.Id == myposition?.Department).FirstOrDefault();
             @if (sendTo[index] == null)
-            { 
-                sendTo[index] = new officerChecked(); 
+            {
+                sendTo[index] = new officerChecked();
             }
             sendTo[index].OfficerId = officer.Id;
             string officerLabel = $"{officer.Firstname} {officer.Surname} <{myposition.Name} - {myline.Name} - {mydepartment.Name}> " + (officer.Expired ? " <ลาออกแล้ว>" : "");
