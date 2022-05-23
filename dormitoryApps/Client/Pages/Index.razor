@@ -75,7 +75,7 @@
             {
                 @foreach (var notification in notifications)
                 {
-                    string classes = notification.SendAll ? "bg-warning":"bg-danger";
+                    string classes = notification.SendAll ? "bg-warning" : "bg-danger";
                     <div class="card @classes">
                         <h3>@notification.SenderFrom</h3>
                         <br>
@@ -134,28 +134,32 @@
     string ConvertTime(DateTime input)
     {
         var span = DateTime.Now.Subtract(input);
-        if(span.TotalDays > 7)
+        if (span.TotalDays > 7)
         {
             return $"{(Math.Floor(span.TotalDays / 7))} Week ago";
         }
-        else if(span.TotalDays >= 1)
+        else if (span.TotalDays >= 1)
         {
-            return $"{(Math.Floor(span.TotalDays))} {(span.TotalDays > 1 ? "Days":"Day")} ago";
+            return $"{(Math.Floor(span.TotalDays))} {(span.TotalDays > 1 ? "Days" : "Day")} ago";
         }
-        else if(span.TotalHours >=1)
+        else if (span.TotalHours >= 1)
         {
             return $"{span.Hours} Hours ago";
         }
-        else if(span.TotalMinutes >=1)
+        else if (span.TotalMinutes >= 1)
         {
-             return $"{span.Minutes} Minutes ago";
+            return $"{span.Minutes} Minutes ago";
         }
         return $"{span.Seconds} Seconds ago";
     }
     private async void GetNotification()
     {
         var loginCheck = await _sessionServices.Permissioncheck();
-        if (!loginCheck) notifications = new List<Notification>();
+        if (!loginCheck)
+        {
+            notifications = new List<Notification>();
+            return;
+        }
         notifications = await _notificationServices.Get();
     }
     void IDisposable.Dispose()
@@ -180,7 +184,7 @@
         var isExpired = await _sessionServices.ExpiredCheck();
         if (isExpired) await _officerServices.Logout();
         StartTimer();
-        GetNotification();
+        if (IsloggedIn) GetNotification();
     }
 
 }

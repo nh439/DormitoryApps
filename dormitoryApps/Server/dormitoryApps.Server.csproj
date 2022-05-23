@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.3" />
     <PackageReference Include="NETCore.MailKit" Version="2.0.3" />
     <PackageReference Include="PagedList.Mvc" Version="4.5.0" />
-    <PackageReference Include="RocketSQL" Version="1.2.0" />
+    <PackageReference Include="RocketSQL" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>

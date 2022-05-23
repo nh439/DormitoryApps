@@ -26,9 +26,11 @@ namespace dormitoryApps.Server.Services.Job
         }
         public void Run()
         {
+            DateTime starttime = DateTime.Now;
             ExpiredBooking();
             Clearnotification();
-            Console.WriteLine($"Job at {DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss")}");
+            ClearForgotPassword();
+            Console.WriteLine($"Job at {DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss")} use {DateTime.Now.Subtract(starttime).TotalSeconds} sec");
         }
         void ExpiredBooking()
         {
@@ -63,6 +65,11 @@ namespace dormitoryApps.Server.Services.Job
         {
             int? deletedAfter = int.Parse( _configuration.GetSection("Notification:DeleteAfter").Value);
             await _notificationServices.DeleteAfter(deletedAfter?? 730);
+        }
+        async void ClearForgotPassword()
+        {
+            StoredProcedureContrainer storedProcedure = new StoredProcedureContrainer("sp_clearExpiredForgotpassword");
+            var res = await _databases.Dorm.ExecuteStoredProcedureAsync(storedProcedure);
         }
     }
 }

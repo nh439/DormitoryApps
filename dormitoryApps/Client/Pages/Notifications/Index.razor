@@ -12,16 +12,17 @@
     {
         await _sessionServices.RequiredPermission();
         isadmin = await _sessionServices.IsAdmin();
+        StateHasChanged();
     }
 }
 
-<div class="ui three item menu">
+<div class="ui @( isadmin ? "four":"three") item menu">
   <a class="item @(mode==1 ? "active":"")" @onclick="()=>{mode=1;StateHasChanged();}">ได้รับ</a>
   <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">ที่ส่งไป</a>
   <a class="item @(mode==3 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">สร้างการแจ้งเตือน</a>
   @if (isadmin)
     {
-        <a class="item @(mode==4 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">การแจ้งเตือนทั้งหมด</a>
+        <a class="item @(mode==4 ? "active":"")" @onclick="()=>{mode=4;StateHasChanged();}">การแจ้งเตือนทั้งหมด</a>
     }
 </div>
 <br />
