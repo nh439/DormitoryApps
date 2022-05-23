@@ -10,6 +10,7 @@ using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Blazorise.Components;
+using Blazorise.RichTextEdit;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -24,7 +25,9 @@ builder.Services.AddBlazorise()
     .AddBlazoredModal()
 .AddBootstrapComponents()
 .AddBootstrapProviders()
-.AddFontAwesomeIcons();
+.AddFontAwesomeIcons()
+.AddBlazoriseRichTextEdit();
+
 
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
@@ -61,4 +64,7 @@ builder.Services.AddScoped<ChangePasswordHistoryService>();
 builder.Services.AddScoped<ForgotPasswordServices>();
 builder.Services.AddScoped<EmailTemplateService>();
 builder.Services.AddScoped<EmailServices>();
+builder.Services.AddScoped<NotificationAttendeeServices>();
+builder.Services.AddScoped<NotificationAttachmentService>();
+builder.Services.AddScoped<NotificationServices>();
 await builder.Build().RunAsync();

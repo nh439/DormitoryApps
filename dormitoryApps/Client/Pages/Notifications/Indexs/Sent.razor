@@ -1,0 +1,131 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject NotificationServices _notificationServices;
+@inject OfficerServices _officerServices;
+@implements IDisposable;
+<h2>การแจ้งเตือนที่ส่งออก</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+@code {
+    List<Notification> notifications;
+    List<Officer> officers = new List<Officer>();
+    Timer timer = new Timer();
+    protected override async void OnInitialized()
+    {
+        timer = new Timer(1000);
+        timer.Elapsed += Get;
+        timer.Enabled = true;
+        officers = await _officerServices.GetEmployee();
+    }
+    async void Get(object sender, ElapsedEventArgs e)
+    {
+        notifications = await _notificationServices.GetSent();
+        if (notifications == null) notifications = new List<Notification>();
+        StateHasChanged();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+    void DeleteClick(string id)
+    {
+        auto.AfterSubmitAction(async () =>
+        {
+            try
+            {
+                auto.Processing("Deleteing...");
+                await Task.Delay(1);
+                var res = await _notificationServices.Delete(id);
+                if (res)
+                {
+                    auto.Success("Deleted Completed");
+                    await Task.Delay(1);
+                    return;
+                }
+                auto.Failed("Deleted Incompleted");
+                await Task.Delay(1);
+            }
+            catch (Exception x)
+            {
+                auto.Failed(x.Message);
+                await Task.Delay(1);
+            }
+
+        });
+        auto.OpenWarning($"คุณแน่ใจว่าจะลบการแจ้งเตือนที่ {id}");
+    }
+}
+<br />
+<table class="table" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>Id</th>
+            <th>ส่งถึง</th>
+            <th>ชื่อเรื่อง</th>
+            <th>วันที่ส่ง</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (notifications == null)
+        {
+            <tr class="table-warning">
+                <td colspan="5">Loading...</td>
+            </tr>
+        }
+        else if (notifications.Count == 0)
+        {
+            <tr class="table-success">
+                <td colspan="5">ไม่พบการแจ้งเตือน</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var data in notifications.OrderByDescending(x => x.Date).Select((a, b) => new { notification = a, index = b }))
+            {
+                string sentTo = "";
+                var notification = data.notification;
+                @foreach (var attendee in notification.Attendees.Select((x, y) => new { attendee = x, index = y }))
+                {
+                    long attendeeId = attendee.attendee.UserId;
+                    if (attendee.index <= 5)
+                    {
+                        sentTo += officers.Where(x => x.Id == attendeeId).Select(x => $"{x.Firstname} {x.Surname}").FirstOrDefault() + ",";
+                    }
+                    else
+                    {
+                        sentTo += "...";
+                        break;
+                    }
+                }
+                @if (sentTo.EndsWith(','))
+                {
+                    sentTo = sentTo.Remove(sentTo.Length - 1, 1);
+                }
+                <tr class="@(data.index % 2==0? "table-success":"table-info")">
+                    <td>@notification.Id</td>
+                    <td>
+                        @if (!notification.SendAll)
+                        {
+                            <button class="btn btn-link">@sentTo</button>
+                        }
+                        else
+                        {
+                            @("ทุกคน")
+                        }
+                    </td>
+                    <td>@notification.Header</td>
+                    <td>@notification.Date.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                    <td>
+                        <a class="btn btn-info" href="@($"/notification/{notification.Id}")"><i class="eye icon"></i></a>
+                        <button class="btn btn-danger" @onclick="()=>DeleteClick(notification.Id)" ><i class="trash icon"></i></button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<dormitoryApps.Client.Pages.Modal.Auto @ref ="auto"/>
+@code{
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+}

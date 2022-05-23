@@ -11,6 +11,7 @@
         public bool PermissionCheck(string sessionId)
         {
             string serverSession = _contextAccessor.HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(serverSession)) return false;
             if (sessionId.Equals(serverSession))
             {
                 return true;

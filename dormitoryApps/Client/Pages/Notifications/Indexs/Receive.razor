@@ -1,0 +1,67 @@
+﻿@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using System.Timers;
+@inject NotificationServices _notificationServices;
+@implements IDisposable;
+<h2>การแจ้งเตือนที่ได้รับ</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+@code {
+    List<Notification> notifications;
+    Timer timer = new Timer();
+    protected override async void OnInitialized()
+    {
+        timer = new Timer(1000);
+        timer.Elapsed += Get;
+        timer.Enabled = true;
+    }
+    async void Get(object sender,ElapsedEventArgs e)
+    {
+        notifications = await _notificationServices.Get();
+        if (notifications == null) notifications = new List<Notification>();
+        StateHasChanged();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+}
+ <br />
+ <table class="table" style="text-align:center">
+     <thead class="table-dark">
+         <tr>
+             <th>Id</th>
+             <th>จาก</th>
+             <th>ชื่อเรื่อง</th>
+             <th>วันที่ส่ง</th>
+             <th></th>
+         </tr>
+     </thead>
+     <tbody>
+         @if(notifications==null)
+        {
+            <tr class="table-warning">
+               <td colspan="5">Loading...</td> 
+            </tr>
+        }
+        else if(notifications.Count ==0)
+        {
+            <tr class="table-success">
+               <td colspan="5">ไม่พบการแจ้งเตือน</td> 
+            </tr>
+        }
+        else
+        {
+            @foreach(var data in notifications.OrderByDescending(x=>x.Date).Select((a,b)=> new { notification=a,index=b}))
+            {
+                var notification = data.notification;
+                <tr class="@(data.index % 2==0? "table-success":"table-info")">
+                    <td>@notification.Id</td>
+                    <td>@notification.SenderFrom</td>
+                    <td>@notification.Header</td>
+                    <td>@notification.Date.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                    <td><a class="btn btn-info" href="@($"/notification/{notification.Id}")"><i class="eye icon"></i></a></td>
+                </tr>
+            }
+        }
+    </tbody>
+ </table>

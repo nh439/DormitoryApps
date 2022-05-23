@@ -10,6 +10,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using dormitoryApps.Server.Services.Job;
 using dormitoryApps.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,15 @@ builder.Services.AddSingleton<DBConnection>();
 builder.Services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
 builder.Services.AddSession();
 builder.Services.AddScoped<PermissionService>();
+
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = int.MaxValue;
+});
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+});
 
 #region Repository
 builder.Services.AddScoped<DepartmentRepository>();
@@ -56,6 +66,9 @@ builder.Services.AddScoped<RentalAccountRepository>();
 builder.Services.AddScoped<BankRepository>();
 builder.Services.AddScoped<ChangePasswordHistoryRepository>();
 builder.Services.AddScoped<ForgotPasswordRepository>();
+builder.Services.AddSingleton<NotificationAttendeeRepository>();
+builder.Services.AddSingleton<NotificationAttachmentRepository>();
+builder.Services.AddSingleton<NotificationRepository>();
 #endregion
 
 #region Services
@@ -91,6 +104,9 @@ builder.Services.AddScoped<IBankServices,BankServices>();
 builder.Services.AddScoped<IChangePasswordHistoryService,ChangePasswordHistoryService>();
 builder.Services.AddScoped<IForgotPasswordServices,ForgotPasswordServices>();
 builder.Services.AddScoped<IEmailServices,EmailService>();
+builder.Services.AddSingleton<INotificationAttendeeServices,NotificationAttendeeServices>();
+builder.Services.AddSingleton<INotificationAttachmentServices,NotificationAttachmentService>();
+builder.Services.AddSingleton<INotificationServices,NotificationServices>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));

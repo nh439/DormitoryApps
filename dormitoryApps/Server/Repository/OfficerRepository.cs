@@ -74,8 +74,11 @@ namespace dormitoryApps.Server.Repository
             set.Add("Email", Username, SqlOperator.Equal);
             var officer = await _databases.Dorm.SelectEntitiesAsync<Officer>(TableName, set);
             var res = officer.FirstOrDefault();
-            res.Password = "PASSWORD";
-            res.Idx = "INDEX";
+            if (res != null)
+            {
+                res.Password = "PASSWORD";
+                res.Idx = "INDEX";
+            }
             return res;
         }
 

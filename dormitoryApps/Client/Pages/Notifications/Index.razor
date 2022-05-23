@@ -1,0 +1,44 @@
+﻿@page "/Notification"
+@using dormitoryApps.Client.Services;
+@inject SessionServices _sessionServices;
+<center>
+    <h1>การแจ้งเตือน</h1>
+</center>
+
+@code {
+    int mode = 1;
+    bool isadmin = false;
+    protected override async void OnInitialized()
+    {
+        await _sessionServices.RequiredPermission();
+        isadmin = await _sessionServices.IsAdmin();
+        StateHasChanged();
+    }
+}
+
+<div class="ui @( isadmin ? "four":"three") item menu">
+  <a class="item @(mode==1 ? "active":"")" @onclick="()=>{mode=1;StateHasChanged();}">ได้รับ</a>
+  <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">ที่ส่งไป</a>
+  <a class="item @(mode==3 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">สร้างการแจ้งเตือน</a>
+  @if (isadmin)
+    {
+        <a class="item @(mode==4 ? "active":"")" @onclick="()=>{mode=4;StateHasChanged();}">การแจ้งเตือนทั้งหมด</a>
+    }
+</div>
+<br />
+@if(mode==1)
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Receive />
+}
+else if(mode==2) 
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Sent />
+}
+else if(mode==3)
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Create />
+}
+else if(mode==4 && isadmin)
+{
+    <dormitoryApps.Client.Pages.Notifications.Indexs.Allnotification />
+}
