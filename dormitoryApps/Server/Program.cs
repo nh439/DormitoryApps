@@ -69,6 +69,8 @@ builder.Services.AddScoped<ForgotPasswordRepository>();
 builder.Services.AddSingleton<NotificationAttendeeRepository>();
 builder.Services.AddSingleton<NotificationAttachmentRepository>();
 builder.Services.AddSingleton<NotificationRepository>();
+builder.Services.AddSingleton<MeetingAttendeeRepository>();
+builder.Services.AddSingleton<MeetingAttachmentRepository>();
 #endregion
 
 #region Services
@@ -107,6 +109,7 @@ builder.Services.AddScoped<IEmailServices,EmailService>();
 builder.Services.AddSingleton<INotificationAttendeeServices,NotificationAttendeeServices>();
 builder.Services.AddSingleton<INotificationAttachmentServices,NotificationAttachmentService>();
 builder.Services.AddSingleton<INotificationServices,NotificationServices>();
+builder.Services.AddSingleton<IMeetingAttendeeServices,MeetingAttendeeServices>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
