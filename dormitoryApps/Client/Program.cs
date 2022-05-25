@@ -67,4 +67,5 @@ builder.Services.AddScoped<EmailServices>();
 builder.Services.AddScoped<NotificationAttendeeServices>();
 builder.Services.AddScoped<NotificationAttachmentService>();
 builder.Services.AddScoped<NotificationServices>();
+builder.Services.AddScoped<MeetingAttachmentServices>();
 await builder.Build().RunAsync();

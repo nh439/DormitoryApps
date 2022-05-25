@@ -110,6 +110,7 @@ builder.Services.AddSingleton<INotificationAttendeeServices,NotificationAttendee
 builder.Services.AddSingleton<INotificationAttachmentServices,NotificationAttachmentService>();
 builder.Services.AddSingleton<INotificationServices,NotificationServices>();
 builder.Services.AddSingleton<IMeetingAttendeeServices,MeetingAttendeeServices>();
+builder.Services.AddSingleton<IMeetingAttachmentServices,MeetingAttachmentServices>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));
