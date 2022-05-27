@@ -8,6 +8,7 @@ namespace dormitoryApps.Server.Services
         Task<int> Create(IEnumerable<MeetingAttachment> attachments);
         Task<List<MeetingAttachment>> GetList(long meetingId);
         Task<MeetingAttachment> GetAttachment(string attachmentId);
+        Task DeleteByMeetingId(long meetingId);
     }
     public class MeetingAttachmentServices : IMeetingAttachmentServices
     {
@@ -28,6 +29,10 @@ namespace dormitoryApps.Server.Services
         public async Task<MeetingAttachment> GetAttachment(string attachmentId)
         {
             return await _repository.GetAttachment(attachmentId);
+        }
+        public async Task DeleteByMeetingId(long meetingId)
+        {
+            return
         }
 
     }

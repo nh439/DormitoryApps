@@ -32,6 +32,9 @@ namespace dormitoryApps.Server.Repository
             var res = await _databases.Dorm.SelectEntitiesAsync<MeetingAttendee>(TableName, $"OfficerId={userId}");
             return res.ToList();
         }
-
+        public async Task DeleteByMeetingId(long meetingId)
+        {
+            var res = await _databases.Dorm.DeleteAsync(TableName, $"MeetingId={meetingId}");
+        }
     }
 }
