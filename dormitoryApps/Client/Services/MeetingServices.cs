@@ -50,8 +50,8 @@ namespace dormitoryApps.Client.Services
             try
             {
                 await _sessionServices.RequiredPermission();
-                Meeting meeting = await _httpClient.PostAsJsonAsync<Meeting>(ControllerName, meetingId);
-                return meeting;
+                var meetingResult = await _httpClient.PostAsJsonAsync(ControllerName, meetingId);
+                return await meetingResult.Content.ReadFromJsonAsync<Meeting>();
             }
             catch (Exception x)
             {

@@ -9,7 +9,7 @@ namespace dormitoryApps.Server.Services
         Task<int> Create(IEnumerable<MeetingAttendee> attendees);
         Task<List<MeetingAttendee>> GetByMeetingId(long meetingId);
         Task<List<MeetingAttendee>> GetByUserId(long userId);
-        Task DeleteByMeetingId(long meetingId)
+        Task DeleteByMeetingId(long meetingId);
     }
     public class MeetingAttendeeServices : IMeetingAttendeeServices
     {

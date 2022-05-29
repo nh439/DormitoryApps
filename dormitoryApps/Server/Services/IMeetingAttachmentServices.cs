@@ -32,7 +32,7 @@ namespace dormitoryApps.Server.Services
         }
         public async Task DeleteByMeetingId(long meetingId)
         {
-            return
+            await _repository.DeleteByMeetingId(meetingId);
         }
 
     }
