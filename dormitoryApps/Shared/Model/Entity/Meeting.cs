@@ -20,6 +20,7 @@ namespace dormitoryApps.Shared.Model.Entity
 		public Int64 CreateBy { get; set; }
 		public bool IsCompleted { get; set; }
 		public string Remark { get; set; }
+		public bool IsCancel { get; set; }
 		public List<MeetingAttachment>? Attachments { get; set; }
 		public List<MeetingAttendee> Attendees { get; set; }
 	}

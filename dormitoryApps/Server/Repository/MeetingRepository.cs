@@ -44,6 +44,12 @@ namespace dormitoryApps.Server.Repository
             var res= await _databases.Dorm.SelectEntitiesAsync<Meeting>(TableName, set);
             return res.ToList();
         }
+        public async Task<List<Meeting>> GetBySender(long senderId)
+        {
+            var res = await _databases.Dorm.SelectEntitiesAsync<Meeting>(TableName, $"CreateBy={senderId}");
+            return res.ToList();
+
+        }
         public async Task<Meeting> Get(long id)
         {
             var res = await _databases.Dorm.SelectEntitiesAsync<Meeting>(TableName, $"Id={id}");

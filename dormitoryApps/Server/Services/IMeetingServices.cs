@@ -6,6 +6,11 @@ namespace dormitoryApps.Server.Services
     public interface IMeetingServices
     {
         Task<bool> Create(Meeting item);
+        Task<bool> Update(Meeting item);
+        Task<bool> Delete(long id);
+        Task<List<Meeting>> GetBySender(long senderId);
+        Task<List<Meeting>> GetInvites(long userId);
+        Task<Meeting> GetMeeting(long meetingId);
     }
     public class MeetingServices : IMeetingServices
     {
@@ -44,6 +49,42 @@ namespace dormitoryApps.Server.Services
             }
             await Task.Delay(100);
             return true;
+        }
+        public async Task<bool> Delete(long id)
+        {
+            return await _repository.Delete(id);
+        }
+        public async Task<List<Meeting>> GetBySender(long senderId)
+        {
+            var res = await _repository.GetBySender(senderId);
+            if (res==null) return null;
+            res.ForEach(async x =>
+            {
+                x.Attendees = await _attendeeRepository.GetByMeetingId(x.Id);
+            });
+            return res;
+        }
+        public async Task<List<Meeting>> GetInvites(long userId)
+        {
+            long[] Id = new long[0];
+            await _attendeeRepository.GetByUserId(userId).ContinueWith(x =>
+            {
+                Id = x.Result.Select(x => x.MeetingId).ToArray();
+            });
+            var res = await _repository.GetRelated(Id);
+            res.ForEach(async x =>
+            {
+                x.Attendees = await _attendeeRepository.GetByMeetingId(x.Id);
+            });
+            return res;
+        }
+        public async Task<Meeting> GetMeeting(long meetingId)
+        {
+            var res = await _repository.Get(meetingId);
+            if (res == null) return null;
+            res.Attachments = await _attachmentService.GetList(meetingId);
+            res.Attendees = await _attendeeRepository.GetByMeetingId(meetingId);
+            return res;
         }
     }
 }
