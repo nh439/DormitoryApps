@@ -97,7 +97,7 @@ namespace dormitoryApps.Client.Services
             }
             catch (Exception x)
             {
-                _logger.LogError(ServiceException<Notification>.Update(), x);
+                _logger.LogError(ServiceException<Notification>.Delete(), x);
             }
             return false;
         }
