@@ -89,5 +89,18 @@ namespace dormitoryApps.Server.Controllers
             var res = await _meetingServices.Create(item);
             return Ok(res);
         }
+        [HttpPost(BaseUrl + "/Update")]
+        public async Task<IActionResult> Update([FromBody] Meeting item)
+        {
+            var res = await _meetingServices.Update(item);
+            return Ok(res);
+        }
+        [HttpPost(BaseUrl + "/Delete")]
+        public async Task<IActionResult> Delete([FromBody] long meetingId)
+        {
+            var res = await _meetingServices.Delete(meetingId);
+            return Ok(res);
+        }
+
     }
 }
