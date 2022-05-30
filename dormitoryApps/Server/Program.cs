@@ -71,6 +71,7 @@ builder.Services.AddSingleton<NotificationAttachmentRepository>();
 builder.Services.AddSingleton<NotificationRepository>();
 builder.Services.AddSingleton<MeetingAttendeeRepository>();
 builder.Services.AddSingleton<MeetingAttachmentRepository>();
+builder.Services.AddSingleton<MeetingRepository>();
 #endregion
 
 #region Services
@@ -111,6 +112,7 @@ builder.Services.AddSingleton<INotificationAttachmentServices,NotificationAttach
 builder.Services.AddSingleton<INotificationServices,NotificationServices>();
 builder.Services.AddSingleton<IMeetingAttendeeServices,MeetingAttendeeServices>();
 builder.Services.AddSingleton<IMeetingAttachmentServices,MeetingAttachmentServices>();
+builder.Services.AddSingleton<IMeetingServices,MeetingServices>();
 builder.Services.AddSingleton<IJobServices, JobServices>();
 #endregion
 builder.Services.AddHangfire(x => x.UseStorage(new Hangfire.SQLite.SQLiteStorage(conString, new Hangfire.SQLite.SQLiteStorageOptions())));

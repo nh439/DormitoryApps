@@ -15,13 +15,13 @@ namespace dormitoryApps.Server.Services
     public class MeetingServices : IMeetingServices
     {
         private readonly MeetingRepository _repository;
-        private readonly MeetingAttachmentServices _attachmentService;
+        private readonly MeetingAttachmentRepository _attachmentRepository;
         private readonly MeetingAttendeeRepository _attendeeRepository;
 
-        public MeetingServices(MeetingRepository repository, MeetingAttachmentServices attachmentService, MeetingAttendeeRepository attendeeRepository)
+        public MeetingServices(MeetingRepository repository, MeetingAttachmentRepository attachmentRepository, MeetingAttendeeRepository attendeeRepository)
         {
             _repository = repository;
-            _attachmentService = attachmentService;
+            _attachmentRepository = attachmentRepository;
             _attendeeRepository = attendeeRepository;
         }
         public async Task<bool> Create(Meeting item)
@@ -32,7 +32,7 @@ namespace dormitoryApps.Server.Services
             await _attendeeRepository.Create(item.Attendees);
             if(item.Attachments != null && item.Attachments.Count > 0)
             {
-                await _attachmentService.Create(item.Attachments);
+                await _attachmentRepository.Create(item.Attachments);
             }
             return res;
         }
@@ -42,10 +42,10 @@ namespace dormitoryApps.Server.Services
             if (!res) return false;
             await _attendeeRepository.DeleteByMeetingId(item.Id);
             await _attendeeRepository.Create(item.Attendees);
-            await _attachmentService.DeleteByMeetingId(item.Id);
+            await _attachmentRepository.DeleteByMeetingId(item.Id);
             if(item.Attachments != null && item.Attachments.Count > 0)
             {
-                await _attachmentService.Create(item.Attachments);
+                await _attachmentRepository.Create(item.Attachments);
             }
             await Task.Delay(100);
             return true;
@@ -82,7 +82,7 @@ namespace dormitoryApps.Server.Services
         {
             var res = await _repository.Get(meetingId);
             if (res == null) return null;
-            res.Attachments = await _attachmentService.GetList(meetingId);
+            res.Attachments = await _attachmentRepository.GetList(meetingId);
             res.Attendees = await _attendeeRepository.GetByMeetingId(meetingId);
             return res;
         }

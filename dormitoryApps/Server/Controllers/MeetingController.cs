@@ -14,12 +14,30 @@ namespace dormitoryApps.Server.Controllers
         private readonly PermissionService _permissionService;
         private const string BaseUrl = "/api/Meeting";
 
+        public MeetingController(IMeetingServices meetingServices, ISessionServices sessionServices, ILogger<NotificationController> logger, IHttpContextAccessor contextAccessor, PermissionService permissionService)
+        {
+            _meetingServices = meetingServices;
+            _sessionServices = sessionServices;
+            _logger = logger;
+            _contextAccessor = contextAccessor;
+            _permissionService = permissionService;
+        }
+
+
         [HttpGet(BaseUrl)]
         public async Task<IActionResult> Index()
         {
             try
             {
-                string sessionId = _contextAccessor.HttpContext.Session.GetString("Id");
+                string sessionId;
+                try
+                {
+                    sessionId = _contextAccessor.HttpContext.Session.GetString("Id");
+                }
+                catch
+                {
+                    return BadRequest();
+                }
                 bool permission = _permissionService.PermissionCheck(sessionId);
                 if (!permission) return BadRequest();
                 long userId = new long();

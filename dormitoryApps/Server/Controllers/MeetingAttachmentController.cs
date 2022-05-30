@@ -6,11 +6,11 @@ namespace dormitoryApps.Server.Controllers
 {
     public class MeetingAttachmentController : Controller
     {
-        private readonly MeetingAttachmentServices _meetingAttachmentServices;
+        private readonly IMeetingAttachmentServices _meetingAttachmentServices;
         private readonly ILogger<MeetingAttachmentController> _logger;
         private const string BaseUrl = "/api/meetingattachment";
 
-        public MeetingAttachmentController(MeetingAttachmentServices meetingAttachmentServices, ILogger<MeetingAttachmentController> logger)
+        public MeetingAttachmentController(IMeetingAttachmentServices meetingAttachmentServices, ILogger<MeetingAttachmentController> logger)
         {
             _meetingAttachmentServices = meetingAttachmentServices;
             _logger = logger;

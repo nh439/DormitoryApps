@@ -9,6 +9,7 @@
 @inject MyServicesServices _myServicesServices;
 @inject OfficerServices _officerServices;
 @inject NotificationServices _notificationServices;
+@inject MeetingServices _meetingServices;
 @implements IDisposable
 <PageTitle>Index</PageTitle>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -93,6 +94,22 @@
         <div class="col">
             <center>
                 <h2>การประชุม/นัดพบ</h2>
+                @if (meetings != null && meetings.Count > 0)
+                {
+
+                    @foreach (var meeting in meetings)
+                    {
+                        <div class="card bg-primary">
+                            <h3>@meeting.Name</h3>
+                            <br>
+                            <h4>@officers.Where(x=>x.Id==meeting.CreateBy).Select(x=>$"{x.Firstname} {x.Surname}")</h4>
+                            <br>
+                            <a href="@($"/meeting/{meeting.Id}")">Read More</a>
+                            <br>
+                            @GetRemaining(meeting.StartTime)
+                        </div>
+                    }
+                }
             </center>
         </div>
     </div>
@@ -106,6 +123,8 @@
     private System.Timers.Timer cTimer = new System.Timers.Timer(5000);
     int? availableRoom, unpaidInvoices, allService;
     List<Notification> notifications = new List<Notification>();
+    List<Meeting> meetings = new List<Meeting>();
+    List<dormitoryApps.Shared.Model.Entity.Officer> officers = new List<dormitoryApps.Shared.Model.Entity.Officer>();
     public void StartTimer()
     {
         aTimer = new System.Timers.Timer(1);
@@ -129,6 +148,7 @@
     void FetchNotification(Object source, ElapsedEventArgs e)
     {
         GetNotification();
+        GetMeeting();
         StateHasChanged();
     }
     string ConvertTime(DateTime input)
@@ -152,6 +172,24 @@
         }
         return $"{span.Seconds} Seconds ago";
     }
+    string GetRemaining(DateTime input)
+    {
+        var now = input.Subtract(DateTime.Now);
+        if (now.TotalDays > 1)
+        {
+            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.TotalMinutes} นาที";
+        }
+        else if (now.TotalHours > 1)
+        {
+            return $" เริ่มในอีก {now.Hours} ชม {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        else if (now.TotalMinutes > 1)
+        {
+            return $" เริ่มในอีก {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        return $" เริ่มในอีก {now.Seconds} วินาที";
+
+    }
     private async void GetNotification()
     {
         var loginCheck = await _sessionServices.Permissioncheck();
@@ -162,6 +200,19 @@
         }
         notifications = await _notificationServices.Get();
     }
+    private async void GetMeeting()
+    {
+        var loginCheck = await _sessionServices.Permissioncheck();
+        if (!loginCheck)
+        {
+            meetings = new List<Meeting>();
+            return;
+        }
+        meetings = await _meetingServices.GetInvites();
+        if (meetings == null) meetings = new List<Meeting>();
+        meetings = meetings.Where(x => !x.IsCancel && DateTime.Now.Subtract(x.StartTime).TotalSeconds <= 0).OrderBy(x => x.StartTime).ToList();
+    }
+
     void IDisposable.Dispose()
     {
         aTimer?.Dispose();
@@ -184,7 +235,13 @@
         var isExpired = await _sessionServices.ExpiredCheck();
         if (isExpired) await _officerServices.Logout();
         StartTimer();
-        if (IsloggedIn) GetNotification();
+        if (IsloggedIn)
+        {
+            officers = await _officerServices.GetEmployee();
+            GetNotification();
+            GetMeeting();
+        }
+
     }
 
 }
