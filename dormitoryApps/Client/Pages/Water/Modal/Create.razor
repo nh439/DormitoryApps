@@ -30,6 +30,7 @@
     bool waterExist = false;
     bool calculated = false;
     bool submitting = false;
+    bool lastestExist =false;
     public async void Open()
     {
 
@@ -68,6 +69,8 @@
         pastUsage = oldData != null && oldData.Count > 0 ? oldData.Select(x => x.CurrentUnit).Max() : 0;
         item.BeforeUnit = pastUsage;
         isCustomerLoading = false;
+        DateTime current = DateTime.Now;
+        lastestExist = oldData.Where(x => x.month == current.Month && x.Year == current.Year).FirstOrDefault() != null && oldData.Where(x => x.month == DateTime.Now.Month && x.Year == DateTime.Now.Year).FirstOrDefault() != new Water(); 
         await Task.Delay(1);
         StateHasChanged();
     }
@@ -281,7 +284,7 @@
             }
         </ModalBody>
         <ModalFooter>
-            <button  class="btn btn-outline-primary" @onclick="SaveChanges" disabled="@(waterExist || !calculated || submitting)">Save Changes</button>
+            <button  class="btn btn-outline-primary" @onclick="SaveChanges" disabled="@(waterExist || !calculated || submitting || lastestExist)">Save Changes</button>
             <button  class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</button>
                       
         </ModalFooter>

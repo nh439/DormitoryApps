@@ -78,7 +78,7 @@
         }
         else
         {
-            @foreach (var w in water)
+            @foreach (var w in water.OrderByDescending(x=>x.RentalId).OrderByDescending(x=>x.month).OrderByDescending(x=>x.Year))
             {
                 <tr>
                     <td>@w.RentalId</td>

@@ -78,7 +78,7 @@
         }
         else
         {
-            @foreach (var e in electricity)
+            @foreach (var e in electricity.OrderByDescending(x=>x.RentalId).OrderByDescending(x=>x.month).OrderByDescending(x=>x.Year))
             {
                 <tr>
                     <td>@e.RentalId</td>
