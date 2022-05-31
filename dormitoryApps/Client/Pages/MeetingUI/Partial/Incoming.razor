@@ -1,0 +1,106 @@
+﻿@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using System.Timers;
+@inject MeetingServices _meetingServices;
+@inject OfficerServices _officerServices;
+@implements IDisposable;
+
+@code {
+    List<Meeting> incoming = new List<Meeting>();
+    List<Meeting> cancelledMeeting = new List<Meeting>();
+    List<Officer> officers = new List<Officer>();
+    Timer timer = new Timer();
+    protected override async void OnInitialized()
+    {
+        List<Meeting> incoming = null;
+        List<Meeting> cancelledMeeting = null;
+        timer = new Timer(1000);
+        timer.Elapsed += Tick;
+        timer.Enabled = true;
+        Get();
+    }
+    void Tick(object sender, ElapsedEventArgs e)
+    {
+        Get();
+    }
+    async void Get()
+    {
+        await _meetingServices.GetInvites().ContinueWith(raw =>
+        {
+            incoming = raw.Result.Where(x => x.StartTime.Subtract(DateTime.Now).TotalSeconds > 1 && !x.IsCancel && !x.IsCompleted).ToList();
+            cancelledMeeting = raw.Result.Where(x => !(x.StartTime.Subtract(DateTime.Now).TotalSeconds > 1 && !x.IsCancel && !x.IsCompleted)).ToList();
+        });
+        if (incoming == null) incoming = new List<Meeting>();
+        if (cancelledMeeting == null) cancelledMeeting = new List<Meeting>();
+        StateHasChanged();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
+    string GetRemaining(DateTime input)
+    {
+        var now = input.Subtract(DateTime.Now);
+        if (now.TotalDays > 1)
+        {
+            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.TotalMinutes} นาที";
+        }
+        else if (now.TotalHours > 1)
+        {
+            return $" เริ่มในอีก {now.Hours} ชม {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        else if (now.TotalMinutes > 1)
+        {
+            return $" เริ่มในอีก {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        return $" เริ่มในอีก {now.Seconds} วินาที";
+
+    }
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<h1>การประชุม/นัดพบที่กำลังจะเริ่ม</h1>
+
+<table class="table table-bordered" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>เริ่มต้น</th>
+            <th>ชื่อเรื่อง</th>
+            <th>ผู้จัด</th>
+            <th>เวลา</th>
+            <th>สถานที่</th>
+            <th>ลิ้งค์ประชุม</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (incoming == null)
+        {
+            <tr>
+                <td class="table-warning" colspan="6"><i class="asterisk loading icon"></i> Loading</td>
+            </tr>
+        }
+        else if (incoming.Count == 0)
+        {
+            <tr>
+                <td class="table-warning" colspan="6">ไม่พบการประชุม</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var income in incoming.Select((x, y) => new { Data = x, Index = y }))
+            {
+                string tableClass = income.Index % 2 == 0 ? "table-success" : "table-info";
+                var data = income.Data;
+            <tbody class="@tableClass">
+                <tr>
+                    <td>@GetRemaining(data.StartTime)</td>
+                    <td><a href="@($"/meeting/{data.Id}")"></a></td>
+                    <td>@officers.Where(x=>x.Id==data.CreateBy).Select(x=>$"{x.Firstname} {x.Prefix}").FirstOrDefault()</td>
+                    <td>@(data.StartTime.Date==data.EndTime.Date ? $"{data.StartTime.Hour}:{data.StartTime.Minute} - {data.EndTime.Hour}:{data.EndTime.Minute}" :$"{data.StartTime.ToString("dd/MM/yyyy HH:mm")} - {data.EndTime.ToString("dd/MM/yyyy HH:mm")}")</td>
+                    <td>@data.Place</td>
+                    <td><a href="@data.Link"> คลิกที่นี่ </a></td>
+                </tr>
+            </tbody>
+            }
+        }
+    </tbody>
+</table>

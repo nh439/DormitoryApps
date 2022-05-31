@@ -76,6 +76,7 @@ namespace dormitoryApps.Server.Services
             {
                 x.Attendees = await _attendeeRepository.GetByMeetingId(x.Id);
             });
+            res = res.Union(await _repository.GetBySender(userId)).ToList();
             return res;
         }
         public async Task<Meeting> GetMeeting(long meetingId)

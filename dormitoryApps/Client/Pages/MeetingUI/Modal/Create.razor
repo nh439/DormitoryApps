@@ -1,0 +1,24 @@
+﻿@using Blazorise;
+
+@code {
+    Modal e;
+    public async void Open()
+    {
+        await e.Show();
+    }
+}
+
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+    <ModalHeader>
+        สร้างการประชุม
+        <CloseButton></CloseButton>
+    </ModalHeader>
+    <ModalBody></ModalBody>
+    <ModalFooter>
+        <Button class="btn btn-outline-primary">สร้าง</Button>
+        <Button class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
+    </ModalFooter>
+</ModalContent>
+
+</Modal>

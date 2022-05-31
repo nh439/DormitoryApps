@@ -1,7 +1,7 @@
 ﻿@page "/meeting"
 @using dormitoryApps.Client.Services;
 @inject SessionServices _sessionServices;
-<h3>MeetingIndex</h3>
+
 @code{
   int mode = 1;
     bool isadmin = false;
@@ -12,10 +12,27 @@
         StateHasChanged();
     }
 }
-
-<div class="ui @( isadmin ? "four":"three") item menu">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<center>
+    <h1>การประชุม/นัดพบ</h1>
+</center>
+<button class="btn btn-primary" @onclick="()=>create.Open()"><i class="plus icon"></i> Create</button>
+<div class="ui two item menu">
   <a class="item @(mode==1 ? "active":"")" @onclick="()=>{mode=1;StateHasChanged();}">Incoming</a>
-  <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">Sent</a>
-  <a class="item @(mode==3 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">จัดการประชุม</a>
+  <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">Sent</a> 
 </div>
 <br />
+@if(mode==1)
+{
+    <dormitoryApps.Client.Pages.MeetingUI.Partial.Incoming/>
+}
+else if(mode==2)
+{
+    <dormitoryApps.Client.Pages.MeetingUI.Partial.MySent/>
+}
+
+<dormitoryApps.Client.Pages.MeetingUI.Modal.Create @ref="create"/>
+
+@code{
+    dormitoryApps.Client.Pages.MeetingUI.Modal.Create create;
+}
