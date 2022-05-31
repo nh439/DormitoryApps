@@ -1,0 +1,21 @@
+﻿@page "/meeting"
+@using dormitoryApps.Client.Services;
+@inject SessionServices _sessionServices;
+<h3>MeetingIndex</h3>
+@code{
+  int mode = 1;
+    bool isadmin = false;
+    protected override async void OnInitialized()
+    {
+        await _sessionServices.RequiredPermission();
+        isadmin = await _sessionServices.IsAdmin();
+        StateHasChanged();
+    }
+}
+
+<div class="ui @( isadmin ? "four":"three") item menu">
+  <a class="item @(mode==1 ? "active":"")" @onclick="()=>{mode=1;StateHasChanged();}">Incoming</a>
+  <a class="item @(mode==2 ? "active":"")" @onclick="()=>{mode=2;StateHasChanged();}">Sent</a>
+  <a class="item @(mode==3 ? "active":"")" @onclick="()=>{mode=3;StateHasChanged();}">จัดการประชุม</a>
+</div>
+<br />
