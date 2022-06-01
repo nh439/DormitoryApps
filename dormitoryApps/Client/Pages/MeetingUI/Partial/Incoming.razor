@@ -14,6 +14,7 @@
     {
         List<Meeting> incoming = null;
         List<Meeting> cancelledMeeting = null;
+        StateHasChanged();
         timer = new Timer(1000);
         timer.Elapsed += Tick;
         timer.Enabled = true;
@@ -66,6 +67,7 @@
             <th>เริ่มต้น</th>
             <th>ชื่อเรื่อง</th>
             <th>ผู้จัด</th>
+            <th>วัน</th>
             <th>เวลา</th>
             <th>สถานที่</th>
             <th>ลิ้งค์ประชุม</th>
@@ -75,13 +77,13 @@
         @if (incoming == null)
         {
             <tr>
-                <td class="table-warning" colspan="6"><i class="asterisk loading icon"></i> Loading</td>
+                <td class="table-warning" colspan="7"><i class="asterisk loading icon"></i> Loading</td>
             </tr>
         }
         else if (incoming.Count == 0)
         {
             <tr>
-                <td class="table-warning" colspan="6">ไม่พบการประชุม</td>
+                <td class="table-warning" colspan="7">ไม่พบการประชุม</td>
             </tr>
         }
         else
@@ -95,11 +97,68 @@
                     <td>@GetRemaining(data.StartTime)</td>
                     <td><a href="@($"/meeting/{data.Id}")"></a></td>
                     <td>@officers.Where(x=>x.Id==data.CreateBy).Select(x=>$"{x.Firstname} {x.Prefix}").FirstOrDefault()</td>
+                    <td>@(data.StartTime.Date==data.EndTime.Date ? data.StartTime.ToLongDateString():"ดูที่เวลา")</td>
                     <td>@(data.StartTime.Date==data.EndTime.Date ? $"{data.StartTime.Hour}:{data.StartTime.Minute} - {data.EndTime.Hour}:{data.EndTime.Minute}" :$"{data.StartTime.ToString("dd/MM/yyyy HH:mm")} - {data.EndTime.ToString("dd/MM/yyyy HH:mm")}")</td>
                     <td>@data.Place</td>
                     <td><a href="@data.Link"> คลิกที่นี่ </a></td>
                 </tr>
             </tbody>
+            }
+        }
+    </tbody>
+</table>
+<h1>การประชุม/นัดพบที่ถูกยกเลิกหรือเสร็จสิ้น</h1>
+<table class="table table-bordered" style="text-align:center">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัส</th>
+            <th>ชื่อเรื่อง</th>
+            <th>ผู้จัด</th>
+            <th>วัน</th>
+            <th>เวลา</th>
+            <th>สถานะ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (cancelledMeeting == null)
+        {
+            <tr>
+                <td class="table-warning" colspan="7"><i class="asterisk loading icon"></i> Loading</td>
+            </tr>
+        }
+        else if (cancelledMeeting.Count == 0)
+        {
+            <tr>
+                <td class="table-warning" colspan="7">ไม่พบการประชุม</td>
+            </tr>
+        }
+        else
+        {
+            var outComing = cancelledMeeting.Select((x, y) => new
+            {
+                Data = x,
+                Index = y,
+                IsMeeting = DateTime.Now > x.StartTime && DateTime.Now < x.EndTime,
+                IsCompleted = x.IsCompleted,
+                IsCancel = x.IsCancel,
+                Status = (DateTime.Now > x.StartTime && DateTime.Now < x.EndTime) ? "กำลังจัดประชุม" : (x.IsCancel ? "ถูกยกเลิก" : x.IsCompleted ? "ประชุมเสร็จสิ้น" : "ผ่านพ้นเวลาประชุม"),
+                EndInDay = x.StartTime.Date == x.EndTime.Date,
+                Time = x.StartTime.Date == x.EndTime.Date ? $"{x.StartTime.ToString("HH:mm")} - {x.EndTime.ToString("HH:mm")}" : $"{x.StartTime.ToString("dd/MM/yyyy HH:mm")} - {x.EndTime.ToString("dd/MM/yyyy HH:mm")}",
+        }).ToList();
+            @foreach (var item in outComing.OrderBy(x=>x.Time).OrderBy(x=>x.IsMeeting))
+            {
+                 string tableClass = item.Index % 2 == 0 ? "table-success" : "table-info";
+                var data = item.Data;
+                <tr class="@tableClass">
+                    <td>@data.Id</td>
+                    <td><a href="@($"meeting/{data.Id}")">@data.Name</a></td>
+                    <td>@officers.Where(x=>x.Id==data.CreateBy).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()</td>
+                    <td>@(item.EndInDay ? data.StartTime.ToLongDateString():"ดูที่เวลา")</td>
+                    <td>@item.Time</td>
+                    <td>@item.Status</td>
+                    <td>@(item.IsMeeting ? (data.OnLine ? $"<a href='{data.Link}'>คลิกที่นี่</a>" : data.Place):string.Empty)</td>
+                </tr>
             }
         }
     </tbody>
