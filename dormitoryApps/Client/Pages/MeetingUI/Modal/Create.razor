@@ -1,24 +1,76 @@
 ﻿@using Blazorise;
+@using Blazorise.RichTextEdit;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@inject MeetingServices _meetingServices;
+@inject OfficerServices _officerServices;
 
 @code {
     Modal e;
+    Meeting item = new Meeting();
     public async void Open()
     {
         await e.Show();
+        item = new Meeting();
     }
 }
-
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <Modal @ref="e" Style="color:black">
     <ModalContent>
-    <ModalHeader>
-        สร้างการประชุม
-        <CloseButton></CloseButton>
-    </ModalHeader>
-    <ModalBody></ModalBody>
-    <ModalFooter>
-        <Button class="btn btn-outline-primary">สร้าง</Button>
-        <Button class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
-    </ModalFooter>
-</ModalContent>
+        <ModalHeader>
+            สร้างการประชุม
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>สร้างการประชุม</h1>
+            </center>
+            <br />
+            <div class="form-group">
+                <label for="text">ชื่อการประชุม</label>
+                <input id="text" name="text" type="text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="text1">วันประชุม</label>
+                <input id="text1" name="text1" type="date" class="form-control">
+            </div>
+            <div class="input-group">
+                <span class="input-group-text">เริ่มประชุม</span>
+                <select  class="form-control">
+                    @for(int i =0 ;i<24;i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>&nbsp;&nbsp; : &nbsp;&nbsp; 
+                <select  class="form-control">
+                    @for(int i =0 ;i<60;i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>
+            </div>
+              <div class="input-group">
+                <span class="input-group-text">ถึง</span>
+                <select  class="form-control">
+                    @for(int i =0 ;i<24;i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>&nbsp;&nbsp; : &nbsp;&nbsp; 
+                <select  class="form-control">
+                    @for(int i =0 ;i<60;i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>
+            </div>
+
+        </ModalBody>
+        <ModalFooter>
+            <Button class="btn btn-outline-primary">สร้าง</Button>
+            <Button class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
 
 </Modal>
