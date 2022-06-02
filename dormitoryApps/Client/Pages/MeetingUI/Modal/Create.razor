@@ -1,21 +1,48 @@
 ﻿@using Blazorise;
 @using Blazorise.RichTextEdit;
+@using Blazored.Typeahead;
 @using dormitoryApps.Shared.Model.Entity;
 @using dormitoryApps.Client.Services;
+@using System.Collections;
 @inject MeetingServices _meetingServices;
 @inject OfficerServices _officerServices;
 
 @code {
+
+
     Modal e;
     Meeting item = new Meeting();
+    MeetingAttendee attendee = new MeetingAttendee();
+    bool showAttendee = false;
+    RichTextEdit details;
+    IList<Officer> selectedOfficer = new List<Officer>();
+    List<Officer> officers = new List<Officer>();
+
     public async void Open()
     {
         await e.Show();
+        officers = await _officerServices.GetEmployee();
+        await Task.Delay(100);
+        if (officers == null) officers = new List<Officer>();
         item = new Meeting();
+        StateHasChanged();
+    }
+    async Task<IEnumerable<Officer>> GetEmployees(string searchText)
+    {
+        return await Task.FromResult(officers.Where(x => $"{x.Firstname} {x.Surname}".ToLower().Contains(searchText.ToLower())));
+    }
+    async void SaveDetail()
+    {
+        item.Description = await details.GetHtmlAsync();
+    }
+    void SaveChanges()
+    {
+        Console.WriteLine(selectedOfficer);
     }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 <Modal @ref="e" Style="color:black">
     <ModalContent>
         <ModalHeader>
@@ -35,40 +62,152 @@
                 <label for="text1">วันประชุม</label>
                 <input id="text1" name="text1" type="date" class="form-control">
             </div>
+            เริ่มประชุม
+            <br />
             <div class="input-group">
-                <span class="input-group-text">เริ่มประชุม</span>
-                <select  class="form-control">
-                    @for(int i =0 ;i<24;i++)
+                <select class="form-control">
+                    @for (int i = 0; i < 24; i++)
                     {
                         <option value="@i">@(i < 10 ? $"0{i}":i)</option>
                     }
-                </select>&nbsp;&nbsp; : &nbsp;&nbsp; 
-                <select  class="form-control">
-                    @for(int i =0 ;i<60;i++)
-                    {
-                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
-                    }
-                </select>
-            </div>
-              <div class="input-group">
-                <span class="input-group-text">ถึง</span>
-                <select  class="form-control">
-                    @for(int i =0 ;i<24;i++)
-                    {
-                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
-                    }
-                </select>&nbsp;&nbsp; : &nbsp;&nbsp; 
-                <select  class="form-control">
-                    @for(int i =0 ;i<60;i++)
+                </select>&nbsp;&nbsp; ชั่วโมง &nbsp;&nbsp;
+                <select class="form-control">
+                    @for (int i = 0; i < 60; i++)
                     {
                         <option value="@i">@(i < 10 ? $"0{i}":i)</option>
                     }
                 </select>
+                &nbsp;&nbsp; นาที
             </div>
+            <br />
+            <br />
+            ถึง
+            <br />
+            <div class="input-group">
+                <select class="form-control">
+                    @for (int i = 0; i < 24; i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>&nbsp;&nbsp; ชั่วโมง &nbsp;&nbsp;
+                <select class="form-control">
+                    @for (int i = 0; i < 60; i++)
+                    {
+                        <option value="@i">@(i < 10 ? $"0{i}":i)</option>
+                    }
+                </select>
+                &nbsp;&nbsp; นาที
+            </div>
+            <h2>
+                ผู้เข้าร่วม
+            </h2>
+            <Button Class="btn btn-success" @onclick="async ()=>{ showAttendee = !showAttendee; await Task.Delay(10);  StateHasChanged();}">
+                @if (!showAttendee)
+                {
+                    <i class='plus icon'></i>
+
+                    @(" แสดง")
+                }
+                else
+                {
+                    <i class='minus icon'></i>
+
+                    @(" ซ่อน")
+                }
+            </Button>
+            <br />
+            <br />
+            @if (showAttendee)
+            {
+                <BlazoredTypeahead SearchMethod="GetEmployees" 
+                @bind-Values="@selectedOfficer"
+                Disabled="false"
+                EnableDropDown="true">
+                <SelectedTemplate>
+                    @context.Firstname @context.Surname
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context.Firstname @context.Surname (Id: @context.Id)
+                </ResultTemplate>
+                </BlazoredTypeahead>
+              
+            }
+            <br />
+            <div class="form-group">
+    <label for="textarea">รายละเอียด</label>
+    <RichTextEdit style="background-color:wheat;color:black" @ref="details" ContentChanged="SaveDetail">
+        <Toolbar>
+            <RichTextEditToolbarGroup>
+                <RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Italic" />
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Size">
+                    <RichTextEditToolbarSelectItem Value="small" />
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="large" />
+                    <RichTextEditToolbarSelectItem Value="huge">Very Big</RichTextEditToolbarSelectItem>
+                </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Color">
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="red" />
+                    <RichTextEditToolbarSelectItem Value="black" />
+                    <RichTextEditToolbarSelectItem Value="silver" />
+                    <RichTextEditToolbarSelectItem Value="gray" />
+                    <RichTextEditToolbarSelectItem Value="white" />
+                    <RichTextEditToolbarSelectItem Value="maroon" />
+                    <RichTextEditToolbarSelectItem Value="purple" />
+                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                    <RichTextEditToolbarSelectItem Value="green" />
+                    <RichTextEditToolbarSelectItem Value="lime" />
+                    <RichTextEditToolbarSelectItem Value="olive" />
+                    <RichTextEditToolbarSelectItem Value="yellow" />
+                    <RichTextEditToolbarSelectItem Value="navy" />
+                    <RichTextEditToolbarSelectItem Value="blue" />
+                    <RichTextEditToolbarSelectItem Value="teal" />
+                    <RichTextEditToolbarSelectItem Value="aqua" />
+
+                </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Background">
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="red" />
+                    <RichTextEditToolbarSelectItem Value="black" />
+                    <RichTextEditToolbarSelectItem Value="silver" />
+                    <RichTextEditToolbarSelectItem Value="gray" />
+                    <RichTextEditToolbarSelectItem Value="white" />
+                    <RichTextEditToolbarSelectItem Value="maroon" />
+                    <RichTextEditToolbarSelectItem Value="purple" />
+                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                    <RichTextEditToolbarSelectItem Value="green" />
+                    <RichTextEditToolbarSelectItem Value="lime" />
+                    <RichTextEditToolbarSelectItem Value="olive" />
+                    <RichTextEditToolbarSelectItem Value="yellow" />
+                    <RichTextEditToolbarSelectItem Value="navy" />
+                    <RichTextEditToolbarSelectItem Value="blue" />
+                    <RichTextEditToolbarSelectItem Value="teal" />
+                    <RichTextEditToolbarSelectItem Value="aqua" />
+                </RichTextEditToolbarSelect>
+                <RichTextEditToolbarSelect Action="RichTextEditAction.Align">
+                    <RichTextEditToolbarSelectItem Selected />
+                    <RichTextEditToolbarSelectItem Value="center" />
+                    <RichTextEditToolbarSelectItem Value="right" />
+                </RichTextEditToolbarSelect>
+
+
+                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="ordered" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.CodeBlock" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Font" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Image" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Underline" />
+                <RichTextEditToolbarButton Action="RichTextEditAction.Script" />
+            </RichTextEditToolbarGroup>
+        </Toolbar>
+    </RichTextEdit>
+</div>
+<h1>เอกสารที่เกี่ยวข้อง</h1>
 
         </ModalBody>
         <ModalFooter>
-            <Button class="btn btn-outline-primary">สร้าง</Button>
+            <Button class="btn btn-outline-primary" @onclick="SaveChanges">สร้าง</Button>
             <Button class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
         </ModalFooter>
     </ModalContent>
