@@ -94,23 +94,25 @@
         <div class="col">
             <center>
                 <h2>การประชุม/นัดพบ</h2>
-                @if (meetings != null && meetings.Count > 0)
-                {
-
-                    @foreach (var meeting in meetings)
-                    {
-                        <div class="card bg-primary">
-                            <h3>@meeting.Name</h3>
-                            <br>
-                            <h4>@officers.Where(x=>x.Id==meeting.CreateBy).Select(x=>$"{x.Firstname} {x.Surname}")</h4>
-                            <br>
-                            <a href="@($"/meeting/{meeting.Id}")">Read More</a>
-                            <br>
-                            @GetRemaining(meeting.StartTime)
-                        </div>
-                    }
-                }
             </center>
+            @if (meetings != null && meetings.Count > 0)
+            {
+
+                @foreach (var meeting in meetings)
+                {
+                    <div class="card bg-info">
+                        <h3>@meeting.Name</h3>
+                        <br>
+                        <h4>@officers.Where(x=>x.Id==meeting.CreateBy).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()</h4>
+                        <br>
+                        <a href="@($"/meeting/{meeting.Id}")">Read More</a>
+                        <br>
+                        @GetRemaining(meeting.StartTime)
+                    </div>
+                    <br />
+                    <br />
+                }
+            }
         </div>
     </div>
 }
@@ -177,7 +179,7 @@
         var now = input.Subtract(DateTime.Now);
         if (now.TotalDays > 1)
         {
-            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.TotalMinutes} นาที";
+            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.Minutes} นาที";
         }
         else if (now.TotalHours > 1)
         {
@@ -199,6 +201,7 @@
             return;
         }
         notifications = await _notificationServices.Get();
+        notifications = notifications.Where(x => DateTime.Now.Subtract(x.Date).TotalDays <= 7).ToList();
     }
     private async void GetMeeting()
     {

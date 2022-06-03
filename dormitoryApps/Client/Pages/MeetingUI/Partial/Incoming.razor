@@ -12,8 +12,9 @@
     Timer timer = new Timer();
     protected override async void OnInitialized()
     {
-        List<Meeting> incoming = null;
-        List<Meeting> cancelledMeeting = null;
+        incoming = null;
+        cancelledMeeting = null;
+        officers = await _officerServices.GetEmployee();
         StateHasChanged();
         timer = new Timer(1000);
         timer.Elapsed += Tick;
@@ -44,7 +45,7 @@
         var now = input.Subtract(DateTime.Now);
         if (now.TotalDays > 1)
         {
-            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.TotalMinutes} นาที";
+            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.Minutes} นาที";
         }
         else if (now.TotalHours > 1)
         {
@@ -88,22 +89,26 @@
         }
         else
         {
-            @foreach (var income in incoming.Select((x, y) => new { Data = x, Index = y }))
+                
+            @foreach (var income in incoming.Select((x, y) => new { Data = x, Index = y }).OrderBy(x=>x.Data.StartTime))
             {
                 string tableClass = income.Index % 2 == 0 ? "table-success" : "table-info";
                 var data = income.Data;
-            <tbody class="@tableClass">
-                <tr>
+                <tr class="@tableClass">
                     <td>@GetRemaining(data.StartTime)</td>
-                    <td><a href="@($"/meeting/{data.Id}")"></a></td>
-                    <td>@officers.Where(x=>x.Id==data.CreateBy).Select(x=>$"{x.Firstname} {x.Prefix}").FirstOrDefault()</td>
+                    <td><a href="@($"/meeting/{data.Id}")">@data.Name</a></td>
+                    <td>@officers.Where(x=>x.Id==data.CreateBy).Select(x=>$"{x.Firstname} {x.Surname}").FirstOrDefault()</td>
                     <td>@(data.StartTime.Date==data.EndTime.Date ? data.StartTime.ToLongDateString():"ดูที่เวลา")</td>
-                    <td>@(data.StartTime.Date==data.EndTime.Date ? $"{data.StartTime.Hour}:{data.StartTime.Minute} - {data.EndTime.Hour}:{data.EndTime.Minute}" :$"{data.StartTime.ToString("dd/MM/yyyy HH:mm")} - {data.EndTime.ToString("dd/MM/yyyy HH:mm")}")</td>
+                    <td>@(data.StartTime.Date==data.EndTime.Date ? $"{data.StartTime.Hour.ToString("00")}:{data.StartTime.Minute.ToString("00")} - {data.EndTime.Hour.ToString("00")}:{data.EndTime.Minute.ToString("00")}" :$"{data.StartTime.ToString("dd/MM/yyyy HH:mm")} - {data.EndTime.ToString("dd/MM/yyyy HH:mm")}")</td>
                     <td>@data.Place</td>
-                    <td><a href="@data.Link"> คลิกที่นี่ </a></td>
+                    <td>
+                        @if(!string.IsNullOrEmpty(data.Link))
+                        {
+                        <a href="@data.Link"> คลิกที่นี่ </a>
+                        }
+                    </td>
                 </tr>
-            </tbody>
-            }
+                 }        
         }
     </tbody>
 </table>

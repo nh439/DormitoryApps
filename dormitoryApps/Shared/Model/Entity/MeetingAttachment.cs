@@ -14,6 +14,6 @@ namespace dormitoryApps.Shared.Model.Entity
 		public string FileExtension { get; set; }
 		public string FileType { get; set; }
 		public Int64 FileSize { get; set; }
-		public string FileContent { get; set; }
+		public byte[] FileContent { get; set; }
 	}
 }

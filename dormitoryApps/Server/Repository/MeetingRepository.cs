@@ -14,10 +14,12 @@ namespace dormitoryApps.Server.Repository
             _databases = databases;
         }
 
-        public async Task<bool> Create(Meeting item)
+        public async Task<long> Create(Meeting item)
         {
+            item.Id = _databases.Dorm.GenerateId(TableName, "Id");
             var res = await _databases.Dorm.InsertEntitiesAsync<Meeting>(item);
-            return res;
+            if (!res) return -1;
+            return item.Id;
         }
         public async Task<bool> Update(Meeting item)
         {
@@ -34,7 +36,7 @@ namespace dormitoryApps.Server.Repository
         public async Task<List<Meeting>> GetRelated(long[] idSet)
         {
             ConditionSet set = new ConditionSet();
-            if (idSet != null || idSet.Length == 0) return new List<Meeting>();
+            if (idSet == null || idSet.Length == 0) return new List<Meeting>();
             object[] idEnumerable = new object[idSet.Length];
             foreach(var id in idSet.Select((x, y) => new { MeetingId=x,Index=y}))
             {

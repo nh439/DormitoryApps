@@ -28,13 +28,21 @@ namespace dormitoryApps.Server.Services
 
         {
             var res = await _repository.Create(item);
-            if (!res) return false;
+            if (res==-1) return false;
+            item.Attendees.ForEach(x =>
+            {
+                x.MeetingId = res;
+            });
             await _attendeeRepository.Create(item.Attendees);
             if(item.Attachments != null && item.Attachments.Count > 0)
             {
+                item.Attachments.ForEach(x =>
+                {
+                    x.MeetingId = res;
+                });
                 await _attachmentRepository.Create(item.Attachments);
             }
-            return res;
+            return true;
         }
         public async Task<bool> Update(Meeting item)
         {
@@ -67,10 +75,8 @@ namespace dormitoryApps.Server.Services
         public async Task<List<Meeting>> GetInvites(long userId)
         {
             long[] Id = new long[0];
-            await _attendeeRepository.GetByUserId(userId).ContinueWith(x =>
-            {
-                Id = x.Result.Select(x => x.MeetingId).ToArray();
-            });
+            var attendee = await _attendeeRepository.GetByUserId(userId);
+            Id = attendee.Select(x => x.MeetingId).ToArray();
             var res = await _repository.GetRelated(Id);
             res.ForEach(async x =>
             {
