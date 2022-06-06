@@ -16,6 +16,7 @@
     {
         await e.Show();
         item = await _meetingServices.GetMeeting(meetingId);
+        StateHasChanged();
 
     }
 }
