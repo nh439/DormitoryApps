@@ -1,5 +1,130 @@
-﻿<h3>MySent</h3>
-
+﻿@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Entity;
+@using System.Timers;
+@inject MeetingServices _meetingServices;
+@inject OfficerServices _officerServices;
+@implements IDisposable;
 @code {
+    Timer timer = new Timer();
+    List<Meeting> myMeeting = new List<Meeting>();
+    bool isloading = false;
+    protected override void OnInitialized()
+    {
+        isloading = true;
+        timer = new Timer(1000);
+        timer.Elapsed += Tick;
+        timer.Enabled = true;
+
+    }
+    async void Get()
+    {
+        myMeeting = await _meetingServices.GetSent();
+        if (myMeeting == null) myMeeting = new List<Meeting>();
+        if (isloading) isloading = false;
+        StateHasChanged();
+    }
+    void Tick(object sender, ElapsedEventArgs e)
+    {
+        Get();
+    }
+    void IDisposable.Dispose()
+    {
+        timer?.Dispose();
+    }
 
 }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<h1>การประชุมของฉัน</h1>
+<br />
+<br />
+<br />
+<table class="table">
+    <thead class="table-dark">
+        <tr>
+            <th>รหัส</th>
+            <th>ชื่อ</th>
+            <th>ประชุมวันที่</th>
+            <th>เวลา</th>
+            <th>สถานะ</th>
+            <th>ประชุมออนไลน์</th>
+            <th>สถานที่/ลิ้งค์</th>
+            <th>สร้างเมื่อ</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (isloading)
+        {
+            <tr class="table-warning">
+                <td colspan="9"><i class="large notched circle loading icon"></i> Loading...</td>
+            </tr>
+        }
+        else
+        {
+            @if (myMeeting == null || myMeeting.Count == 0)
+            {
+                <tr class="table-warning">
+                    <td colspan="9">ไม่พบการประชุม</td>
+                </tr>
+            }
+            else
+            {
+                string[] statues = { "ยังไม่ประชุม","กำลังประชุม", "สรุปผลสำเร็จ", "ผ่านการประชุม(ยังไม่สรุปผล)", "ถูกยกเลิก" };
+                var meetings = myMeeting.Select((x,y) => new
+                {
+                    Index=y,
+                    Id=x.Id,
+                    Name = x.Name,
+                    MeetingDate = x.StartTime.Date,
+                    StartTime = x.StartTime.ToShortTimeString(),
+                    EndTime = x.EndTime.ToShortTimeString(),
+                    EndDate = x.EndTime,
+                    EndTimeNextDay= x.EndTime.Date.Subtract(x.StartTime.Date).Days >= 1,
+                    Completed=x.IsCompleted,
+                    Rejected = x.IsCancel,
+                    Online = x.OnLine,
+                    Location = x.OnLine ? x.Link:x.Place,
+                    CreateDate = x.CreateDate,
+                    Status = x.EndTime.Subtract(DateTime.Now).Seconds > 0 ?
+                    (x.StartTime.Subtract(DateTime.Now).Seconds > 0 ? 0 : 1) : (x.IsCompleted ? 2 : x.IsCancel ? 4 : 3)
+                }).ToList();
+                @foreach (var meeting in meetings.OrderBy(x => x.Status))
+                {
+                    <tr class="@(meeting.Index % 2 ==0? "table-success":"table-primary")">
+                        <td>@meeting.Id</td>
+                        <td><a href="@($"/meeting/{meeting.Id}")">@meeting.Name</a></td>
+                        <td>@meeting.MeetingDate.ToLongDateString()</td>
+                        <td>@(!meeting.EndTimeNextDay ? $"{meeting.StartTime} - {meeting.EndTime}":$"{meeting.StartTime} - {meeting.EndTime}(ของอีกวัน)")</td>
+                        <td>@statues[meeting.Status]</td>
+                        <td>@if (meeting.Online) { <i class="check icon"></i>}</td>
+                        <td>@if (meeting.Online) 
+                            { 
+                                <a href="@meeting.Location">คลิกที่นี่</a>
+                            }
+                            else
+                            {
+                                @meeting.Location
+                            }
+                        </td>
+                        <td>@meeting.CreateDate</td>
+                        <td>
+                            @if(meeting.Status==0)
+                            {
+                                <button class="btn btn-info mx-1" data-toggle="tooltip" data-placement="bottom" title="แก้ไข"><i class="edit outline icon"></i></button>
+                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ยกเลิกการประชุม"><i class="x icon"></i></button>
+                            }
+                            else if((meeting.Status==2 || meeting.Status==4) )
+                            {
+                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบการประชุม (ต้องพ้นจากวันประชุมไป 5 วัน)" disabled="@( DateTime.Now.Subtract(meeting.EndDate).TotalDays < 5)"><i class="x icon"></i></button>
+                            }
+                            else if(meeting.Status==3)
+                            {
+                                <button class="btn btn-success" data-toggle="tooltip" data-placement="bottom" title="สรุปการประชุม"><i class="check icon"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
