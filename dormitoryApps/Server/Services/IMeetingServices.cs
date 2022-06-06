@@ -49,10 +49,18 @@ namespace dormitoryApps.Server.Services
             var res = await _repository.Update(item);
             if (!res) return false;
             await _attendeeRepository.DeleteByMeetingId(item.Id);
+            item.Attendees.ForEach(x =>
+            {
+                x.MeetingId = item.Id;
+            });
             await _attendeeRepository.Create(item.Attendees);
             await _attachmentRepository.DeleteByMeetingId(item.Id);
             if(item.Attachments != null && item.Attachments.Count > 0)
             {
+                item.Attachments.ForEach(x =>
+                {
+                    x.MeetingId = item.Id;
+                });
                 await _attachmentRepository.Create(item.Attachments);
             }
             await Task.Delay(100);

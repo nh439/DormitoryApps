@@ -13,6 +13,7 @@ namespace dormitoryApps.Shared.Model.Json
         public string NameEN { get; set; }
         public string NameSET { get; set; }
         public string Description { get; set; }
+        public string ApplicationName { get; set; }
         public int TaxIdentification { get; set; }
         public string Type { get; set; }//บริษัท ห้างหุ้นส่วน
         public decimal RegisteredCapital { get; set; }
