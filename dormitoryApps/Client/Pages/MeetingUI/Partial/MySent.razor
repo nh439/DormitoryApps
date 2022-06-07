@@ -27,6 +27,32 @@
     {
         Get();
     }
+    async void ClearMeeting(long itemId)
+    {
+        Meeting item = await _meetingServices.GetMeeting(itemId);
+        auto.AfterSubmitAction(async () =>
+        {
+            auto.Processing("Deleting");
+            await Task.Delay(10);
+            try
+            {
+                var res = await _meetingServices.Delete(meetingId: itemId);
+                if (res)
+                { 
+                    auto.Success("Delete Completed"); 
+                    return; 
+                }
+                auto.Failed("Delete Incomplete");
+
+            }
+            catch(Exception x)
+            {
+                auto.Failed(x.Message);
+            }
+        });
+        auto.OpenWarning($"คุณแน่ใจว่าจะลบ {item.Name}");
+
+    }
     void IDisposable.Dispose()
     {
         timer?.Dispose();
@@ -85,8 +111,7 @@
                     Online = x.OnLine,
                     Location = x.OnLine ? x.Link:x.Place,
                     CreateDate = x.CreateDate,
-                    Status = x.EndTime.Subtract(DateTime.Now).Seconds > 0 ?
-                    (x.StartTime.Subtract(DateTime.Now).Seconds > 0 ? 0 : 1) : (x.IsCompleted ? 2 : x.IsCancel ? 4 : 3)
+                    Status =(x.IsCompleted || x.IsCancel) ? (x.IsCompleted ? 2:4) :(DateTime.Now.Subtract(x.EndTime).TotalSeconds > 0) ? 3:(x.StartTime.Subtract(DateTime.Now).TotalSeconds > 0 ? 0:1 )
                 }).ToList();
                 @foreach (var meeting in meetings.OrderBy(x => x.Status))
                 {
@@ -115,7 +140,7 @@
                             }
                             else if((meeting.Status==2 || meeting.Status==4) )
                             {
-                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบการประชุม (ต้องพ้นจากวันประชุมไป 5 วัน)" disabled="@( DateTime.Now.Subtract(meeting.EndDate).TotalDays < 5)"><i class="x icon"></i></button>
+                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบการประชุม (ต้องพ้นจากวันประชุมไป 5 วัน)" disabled="@( DateTime.Now.Subtract(meeting.EndDate).TotalDays < 5)"><i class="trash icon"></i></button>
                             }
                             else if(meeting.Status==3)
                             {
@@ -130,7 +155,9 @@
 </table>
 <dormitoryApps.Client.Pages.MeetingUI.Modal.Edit @ref="edit"/>
 <dormitoryApps.Client.Pages.MeetingUI.Modal.Cancellation @ref="cancellation"/>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
 @code{
     dormitoryApps.Client.Pages.MeetingUI.Modal.Edit edit;
     dormitoryApps.Client.Pages.MeetingUI.Modal.Cancellation cancellation;
+    dormitoryApps.Client.Pages.Modal.Auto auto;
 }

@@ -87,7 +87,7 @@ namespace dormitoryApps.Client.Services
             }
             return false;
         }
-         public async Task<bool> Update(long meetingId)
+         public async Task<bool> Delete(long meetingId)
         {
             try
             {

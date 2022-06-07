@@ -86,7 +86,7 @@ namespace dormitoryApps.Server.Controllers
                 var currentuser = await _sessionServices.GetCurrentlogin(sessionId);
                 var res = await _notificationServices.GetNotification(id);
                 var attendee = res.Attendees.Where(x => x.UserId == currentuser.Id).FirstOrDefault() != null;
-                if (!attendee && !currentuser.Issuper && !res.SendAll) return BadRequest();
+                if (!attendee && !currentuser.Issuper && !res.SendAll && res.SenderId != currentuser.Id) return BadRequest();
                 return Ok(res);
             }
             catch (Exception x)
