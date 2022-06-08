@@ -144,7 +144,7 @@
                             }
                             else if(meeting.Status==3)
                             {
-                                <button class="btn btn-success" data-toggle="tooltip" data-placement="bottom" title="สรุปการประชุม"><i class="check icon"></i></button>
+                                <button class="btn btn-success" data-toggle="tooltip" data-placement="bottom" title="สรุปการประชุม" @onclick="()=>summary.Open(meeting.Id)"><i class="check icon"></i></button>
                             }
                         </td>
                     </tr>
@@ -155,9 +155,11 @@
 </table>
 <dormitoryApps.Client.Pages.MeetingUI.Modal.Edit @ref="edit"/>
 <dormitoryApps.Client.Pages.MeetingUI.Modal.Cancellation @ref="cancellation"/>
+<dormitoryApps.Client.Pages.MeetingUI.Modal.MeetingSummary @ref="summary"/>
 <dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
 @code{
     dormitoryApps.Client.Pages.MeetingUI.Modal.Edit edit;
     dormitoryApps.Client.Pages.MeetingUI.Modal.Cancellation cancellation;
+    dormitoryApps.Client.Pages.MeetingUI.Modal.MeetingSummary summary;
     dormitoryApps.Client.Pages.Modal.Auto auto;
 }
