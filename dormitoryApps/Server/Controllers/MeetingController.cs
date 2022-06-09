@@ -104,20 +104,44 @@ namespace dormitoryApps.Server.Controllers
         [HttpPost(BaseUrl + "/Create")]
         public async Task<IActionResult> Create([FromBody] Meeting item)
         {
-            var res = await _meetingServices.Create(item);
-            return Ok(res);
+            try
+            {
+                var res = await _meetingServices.Create(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Update")]
         public async Task<IActionResult> Update([FromBody] Meeting item)
         {
-            var res = await _meetingServices.Update(item);
-            return Ok(res);
+            try
+            {
+                var res = await _meetingServices.Update(item);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
         [HttpPost(BaseUrl + "/Delete")]
         public async Task<IActionResult> Delete([FromBody] long meetingId)
         {
-            var res = await _meetingServices.Delete(meetingId);
-            return Ok(res);
+            try
+            {
+                var res = await _meetingServices.Delete(meetingId);
+                return Ok(res);
+            }
+            catch (Exception x)
+            {
+                _logger.LogError(x.Message, x);
+                return StatusCode(500, "Something Went Wrong");
+            }
         }
 
     }

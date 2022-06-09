@@ -3,10 +3,121 @@
 @using dormitoryApps.Shared.Model.Entity;
 @inject MeetingServices _meetingServices;
 @inject OfficerServices _officerServices;
-
-<h3>GetMeeting</h3>
+@inject SessionServices _sessionServices;
+@inject ExportServices _exportServices;
 
 @code {
     [Parameter]
     public long Id { get; set; }
+    Meeting item = new Meeting();
+    List<Officer> officers = new List<Officer>();
+    Officer currentUser = new Officer();
+    bool isInvalid = true;
+    int status;
+    string[] statues = { "ยังไม่ประชุม", "กำลังประชุม", "สรุปผลสำเร็จ", "ผ่านการประชุม(ยังไม่สรุปผล)", "ถูกยกเลิก" };
+    string meetingTime;
+    protected override async void OnInitialized()
+    {
+        await _sessionServices.RequiredPermission();
+        item = await _meetingServices.GetMeeting(Id);
+        if (item == null || item == new Meeting())
+        {
+            isInvalid = true;
+            return;
+        }
+        status = (item.IsCompleted || item.IsCancel) ? (item.IsCompleted ? 2 : 4) : (DateTime.Now.Subtract(item.EndTime).TotalSeconds > 0) ? 3 : (item.StartTime.Subtract(DateTime.Now).TotalSeconds > 0 ? 0 : 1);
+        officers = await _officerServices.GetEmployee();
+        currentUser = await _sessionServices.GetCurrentLogin();
+        isInvalid = item.Attendees.Where(x => x.OfficerId == currentUser.Id) == null || item.CreateBy != currentUser.Id;
+        meetingTime = $"{item.StartTime.ToString("HH:mm")} - {item.EndTime.ToString("HH:mm")} {(item.EndTime.Date > item.StartTime.Date ? "(ของอีกวัน)" : "")}";
+        StateHasChanged();
+    }
+}
+<center>
+    <h1>การประชุม</h1>
+</center>
+@if (isInvalid)
+{
+    <br />
+    <br />
+    <br />
+    <center>
+        <h1>ไม่พบการประชุม</h1>
+    </center>
+}
+else
+{
+    <div class="form-group">
+        <label for="text">รหัส</label>
+        <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text1">ชื่อ</label>
+        <input id="text1" @bind-value="item.Name" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text22">จัดโดย</label>
+        <input id="text22" value="@officers.Where(x=>x.Id==item.CreateBy).Select(s=>$"{s.Firstname} {s.Surname}").FirstOrDefault()" type="text" class="form-control" readonly>
+    </div>   
+    <div class="form-group">
+        <label for="text">วันประชุม</label>
+        <input id="text" value="@item.StartTime.Date.ToLongDateString()" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text12">เวลา</label>
+        <input id="text12" value="@meetingTime" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text11">รูปแบบการประชุม</label>
+        <input id="text11" value="@(item.OnLine ? "ประชุมออนไลน์":"ประชุมแบบนัดเจอ")" type="text" class="form-control" readonly>
+    </div>
+    <div class="form-group">
+        <label for="text10">@( item.OnLine ?"ลิ้งค์ประชุม":"สถานที่")</label>
+        <input id="text10" value="@(item.OnLine ? item.Link : item.Place)" type="text" class="form-control" readonly>
+    </div>
+
+    <br />
+    <div class="form-group">
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>ชื่อผู้เข้าร่วม</th>
+                </tr>
+            </thead>
+            <tbody class="table-info">
+                @foreach (var a in item.Attendees.Select((x, y) => new { Data = x, Index =1+ y }))
+                {
+                    <tr>
+                        <td>@a.Index</td>
+                        <td>@officers.Where(x=>x.Id==a.Data.OfficerId).Select(s=>$"{s.Firstname} {s.Surname}").FirstOrDefault()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="form-group">
+        <label for="text4">สถานะ</label>
+        <input id="text4" value="@statues[status]" type="text" class="form-control" readonly>
+    </div>
+    @("รายละเอียด")
+    <div class="form-group" style="background-color:#FFFFCC">
+        <div class="container">
+            <br>
+            @((MarkupString)item.Description)
+            <br>
+        </div>
+    </div>
+    @if (status == 2 || status == 4)
+    {
+        <div class="form-group">
+            <label for="textarea">@(status==4 ?"เหตุผลในการยกเลิก":"ข้อสรุปผล")</label>
+            <textarea id="textarea" name="textarea" cols="40" rows="5" class="form-control" readonly>@item.Remark</textarea>
+        </div>
+    }
+    <div class="form-group">
+        <label for="text21">สร้างเมื่อ</label>
+        <input id="text21" @bind-value="item.CreateDate" type="text" class="form-control" readonly>
+    </div>
+    <br />
 }
