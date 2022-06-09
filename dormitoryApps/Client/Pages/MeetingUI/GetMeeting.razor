@@ -32,6 +32,43 @@
         meetingTime = $"{item.StartTime.ToString("HH:mm")} - {item.EndTime.ToString("HH:mm")} {(item.EndTime.Date > item.StartTime.Date ? "(ของอีกวัน)" : "")}";
         StateHasChanged();
     }
+     string GetRemaining(DateTime input)
+    {
+        var now = input.Subtract(DateTime.Now);
+        if (now.TotalDays > 1)
+        {
+            return $" เริ่มในอีก {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.Minutes} นาที";
+        }
+        else if (now.TotalHours > 1)
+        {
+            return $" เริ่มในอีก {now.Hours} ชม {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        else if (now.TotalMinutes > 1)
+        {
+            return $" เริ่มในอีก {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        return $" เริ่มในอีก {now.Seconds} วินาที";
+
+    }
+     string GetOverDue(DateTime input)
+    {
+        var now = DateTime.Now.Subtract(input);
+        if (now.TotalDays > 1)
+        {
+            return $" ผ่านไป {Math.Floor(now.TotalDays)} วัน {now.Hours} ชม {now.Minutes} นาที";
+        }
+        else if (now.TotalHours > 1)
+        {
+            return $" ผ่านไป {now.Hours} ชม {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        else if (now.TotalMinutes > 1)
+        {
+            return $" ผ่านไป {now.TotalMinutes} นาที {now.Seconds} วินาที";
+        }
+        return $" ผ่านไป {now.Seconds} วินาที";
+
+    }
+
 }
 <center>
     <h1>การประชุม</h1>
@@ -67,6 +104,21 @@ else
         <label for="text12">เวลา</label>
         <input id="text12" value="@meetingTime" type="text" class="form-control" readonly>
     </div>
+    @if (status == 0)
+    {
+        <div class="form-group">
+            <label for="text13">เริ่มต้นใน</label>
+            <input id="text13" value="@GetRemaining(item.StartTime)" type="text" class="form-control" readonly>
+        </div>
+    }
+    else if(new int[]{2,3}.Contains(status))
+    {
+         <div class="form-group">
+            <label for="text13">เริ่มต้นใน</label>
+            <input id="text13" value="@GetOverDue(item.EndTime)" type="text" class="form-control" readonly>
+        </div>
+    }
+
     <div class="form-group">
         <label for="text11">รูปแบบการประชุม</label>
         <input id="text11" value="@(item.OnLine ? "ประชุมออนไลน์":"ประชุมแบบนัดเจอ")" type="text" class="form-control" readonly>
