@@ -156,7 +156,7 @@
     </table>
     <h2>การเปลี่ยนรหัสผ่าน</h2>
     <button class="btn btn-primary" @onclick="()=>password.Open()">เปลี่ยนรหัสผ่าน</button>
-    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+    <a class="btn btn-warning" href="/forgotpassword">ลืมรหัสผ่าน</a>
     <button class="btn btn-info" @onclick="ChangePasswordHistoryRefresh"><i class="sync icon"></i></button>
     <br />
     <br />
@@ -292,8 +292,8 @@
             }
         </tbody>
     </table>
-    <button class="btn btn-primary">เปลี่ยนรหัสผ่าน</button>
-    <button class="btn btn-warning">ลืมรหัสผ่าน</button>
+    <a class="btn btn-primary" href="/ChangepasswordM">เปลี่ยนรหัสผ่าน</a>
+    <a class="btn btn-warning" href="/forgotpassword">ลืมรหัสผ่าน</a>
 
 </div>
 <dormitoryApps.Client.Pages.Profile.Modal.ChangePasswordModal @ref="password" />

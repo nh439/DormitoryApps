@@ -16,16 +16,18 @@ namespace dormitoryApps.Client.Services
             _logger = logger;
         }
 
-        public async void SendAsync(MailRequest item)
+        public async Task<bool> SendAsync(MailRequest item)
         {
             try
             {
-                await _httpClient.PostAsJsonAsync(ControllerName, item);
+              var res =  await _httpClient.PostAsJsonAsync(ControllerName, item);
+              return res.IsSuccessStatusCode;
             }
             catch (Exception x)
             {
                 _logger.LogError(ServiceException<MailRequest>.Insert(), x);
             }
+            return false;
         }
     }
 }
