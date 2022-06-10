@@ -2,6 +2,7 @@
 @using Blazorise.RichTextEdit;
 @using dormitoryApps.Client.Services;
 @using dormitoryApps.Shared.Model.Entity;
+@using Blazored.Typeahead;
 @inject NotificationServices _notificationServices;
 @inject OfficerServices _officerServices;
 @inject SessionServices _sessionServices;
@@ -16,11 +17,12 @@
     Notification item = new Notification();
     RichTextEdit details;
     List<Officer> allOfficer = new List<Officer>();
-    officerChecked[] sendTo = new officerChecked[0];
     List<Department> departments = new List<Department>();
     List<Postition> postitions = new List<Postition>();
     List<PostitionLine> postitionLines = new List<PostitionLine>();
+    IList<Officer> selectedOfficer = new List<Officer>();
     bool headerValidate = false;
+    bool attendeeValidate = false;
     protected override async void OnInitialized()
     {
         currentUser = await _sessionServices.GetCurrentLogin();
@@ -30,7 +32,6 @@
                 SenderFrom = $"{currentUser.Firstname} {currentUser.Surname}"
             };
         allOfficer = await _officerServices.GetEmployee();
-        sendTo = new officerChecked[allOfficer.Count];
         departments = await _departmentService.Getdepartments();
         postitionLines = await _postitionLineService.GetPostitionLines();
         postitions = await _postitionServices.GetPostitions();
@@ -90,58 +91,26 @@
     {
         item.Attachments = item.Attachments.Where(x => x.Id != attachmentId).ToList();
         StateHasChanged();
-    }
-    async void FilterChanges(ChangeEventArgs e)
-    {
-        switch (e.Value.ToString())
-        {
-            case "1":
-                allOfficer = await _officerServices.GetEmployee(); break;
-            case "2":
-                var mydepartment = departments.Where(x => x.Id == postitions.Where(y => y.Id == currentUser.Postition).FirstOrDefault().Department).FirstOrDefault();
-                allOfficer = await _officerServices.GetEmployee();
-                var officerPostition = (from all in allOfficer
-                                        join pos in postitions on all.Postition equals pos.Id
-                                        select new { Officer = all, Position = pos }).Where(x => x.Position.Department == mydepartment?.Id).Select(x => x.Officer).ToList();
-                allOfficer = officerPostition;
-                break;
-            case "3":
-                var mylines = postitionLines.Where(x => x.Id == postitions.Where(y => y.Id == currentUser.Postition).FirstOrDefault().Line).FirstOrDefault();
-                allOfficer = await _officerServices.GetEmployee();
-                var officerLines = (from all in allOfficer
-                                    join pos in postitions on all.Postition equals pos.Id
-                                    select new { Officer = all, Position = pos }).Where(x => x.Position.Line == mylines.Id).Select(x => x.Officer).ToList();
-                allOfficer = officerLines;
-                break;
-            case "4":
-                allOfficer = await _officerServices.GetEmployee();
-                allOfficer = allOfficer.Where(x => !x.Expired).ToList();
-                break;
-            default:
-                allOfficer = await _officerServices.GetEmployee(); break;
-
-        }
-        StateHasChanged();
-    }
+    }   
     async void SaveChanges()
     {
+        attendeeValidate = !item.SendAll && (selectedOfficer == null || selectedOfficer.Count == 0);
+        headerValidate = string.IsNullOrEmpty(item.Header);
+        if (headerValidate || attendeeValidate) return;
         auto.NextRequired = false;
         auto.ForceLoad = false;
         auto.Open("Sending..");
         try
         {
-            headerValidate = string.IsNullOrEmpty(item.Header);
-            if (headerValidate) return;
             if (!item.SendAll)
             {
                 List<NotificationAttendee> attendees = new List<NotificationAttendee>();
-                var sendTochecked = sendTo.Where(x => x.Checked).ToList();
-                foreach (var i in sendTochecked)
+                foreach (var i in selectedOfficer)
                 {
                     attendees.Add(new NotificationAttendee
                         {
                             NotificationId = item.Id,
-                            UserId = i.OfficerId
+                            UserId = i.Id
                         });
                 }
                 item.Attendees = attendees;
@@ -167,10 +136,9 @@
         }
 
     }
-    class officerChecked
+    async Task<IEnumerable<Officer>> GetEmployees(string searchText)
     {
-        public long OfficerId { get; set; }
-        public bool Checked { get; set; }
+        return await Task.FromResult(allOfficer.Where(x => $"{x.Firstname} {x.Surname}".ToLower().Contains(searchText.ToLower())));
     }
 }
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -181,43 +149,22 @@
     <input id="text" @bind-value="item.SenderFrom" type="text" class="form-control" readonly>
 </div>
 <br />
-<div class="form-group">
-    <label for="select">ตัวกรอง</label>
-    <div>
-        <select id="select" name="select" class="custom-select" @onchange="FilterChanges">
-            <option disabled selected>Officer Filter</option>
-            <option value="1">ทุกคน</option>
-            <option value="4">ทุกคน(ที่ยังทำงาน)</option>
-            <option value="2">แผนก</option>
-            <option value="3">สายงาน</option>
-        </select>
-    </div>
-</div>
-<br />
+
 
 <div class="form-group">
-    <label>รายชื่อพนักงานที่จะส่งไป</label>
-    <div>
-        @foreach (var officerData in allOfficer.Select((x, y) => new { Data = x, Index = y }))
-        {
-            var officer = officerData.Data;
-            var index = officerData.Index;
-            var myposition = postitions.Where(x => x.Id == officer.Postition).FirstOrDefault();
-            var myline = postitionLines.Where(x => x.Id == myposition?.Line).FirstOrDefault();
-            var mydepartment = departments.Where(x => x.Id == myposition?.Department).FirstOrDefault();
-            @if (sendTo[index] == null)
-            {
-                sendTo[index] = new officerChecked();
-            }
-            sendTo[index].OfficerId = officer.Id;
-            string officerLabel = $"{officer.Firstname} {officer.Surname} <{myposition.Name} - {myline.Name} - {mydepartment.Name}> " + (officer.Expired ? " <ลาออกแล้ว>" : "");
-            <div class="custom-control custom-checkbox custom-control-inline">
-                <input @bind-value="sendTo[index].Checked" id="@officer.Id" type="checkbox" class="custom-control-input" disabled="@(item.SendAll || officer.Expired)" />
-                <label for="@officer.Id" class="custom-control-label"> @officerLabel</label>
-            </div>
-        }
-
-    </div>
+    <label>ถึง</label>
+  <BlazoredTypeahead SearchMethod="GetEmployees"
+                               @bind-Values="@selectedOfficer"
+                               Disabled="false"
+                               EnableDropDown="true">
+                    <SelectedTemplate>
+                        @context.Firstname @context.Surname
+                    </SelectedTemplate>
+                    <ResultTemplate>
+                        @context.Firstname @context.Surname (Id: @context.Id)
+                    </ResultTemplate>
+                </BlazoredTypeahead>
+                <small style="color:red;display:@(attendeeValidate? "block":"none")">ต้องมีผู้เข้าร่วม</small>
 </div>
 
 <br />
