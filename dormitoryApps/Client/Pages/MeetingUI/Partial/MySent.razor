@@ -140,7 +140,7 @@
                             }
                             else if((meeting.Status==2 || meeting.Status==4) )
                             {
-                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" title="ลบการประชุม (ต้องพ้นจากวันประชุมไป 5 วัน)" disabled="@( DateTime.Now.Subtract(meeting.EndDate).TotalDays < 5)"><i class="trash icon"></i></button>
+                                <button class="btn btn-danger mx-1" data-toggle="tooltip" data-placement="bottom" @onclick="()=> ClearMeeting(meeting.Id)" title="ลบการประชุม (ต้องพ้นจากวันประชุมไป 5 วัน)" disabled="@( DateTime.Now.Subtract(meeting.EndDate).TotalDays < 5)"><i class="trash icon"></i></button>
                             }
                             else if(meeting.Status==3)
                             {
