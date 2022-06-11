@@ -1,0 +1,117 @@
+﻿@using Blazorise;
+@using Blazorise.RichTextEdit;
+@using Blazored.Typeahead;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Client.Services;
+@using dormitoryApps.Shared.Model.Json;
+@using System.Collections;
+@inject MeetingServices _meetingServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject NotificationServices _notificationServices;
+@inject ClientdataServices _clientdataServices;
+
+@code {
+    Modal e;
+    Meeting item = new Meeting();
+    MyCompany myCompany = new MyCompany();
+
+    public async void Open(long meetingId)
+    {
+        await e.Show();
+        myCompany = await _clientdataServices.GetMyCompany();
+        if (myCompany == null) myCompany = new MyCompany();
+        item = await _meetingServices.GetMeeting(meetingId);
+        StateHasChanged();
+
+    }
+    async void SaveChanges()
+    {
+        auto.Open("Processing");
+        try
+        {
+            if(string.IsNullOrEmpty(item.Remark))item.Remark ="No Summary Message";
+            item.IsCompleted = true;
+            var res= await _meetingServices.Update(item);
+            if(res)
+            {
+                 string senderFrom = $"{myCompany.ApplicationName} Meeting Services";
+                Notification notification = new Notification()
+                    {
+                        Date = DateTime.Now,
+                        Detail = string.Format(notificationDetail, item.Name, item.Remark),
+                        Secure = true,
+                        SenderId = item.CreateBy,
+                        SenderFrom = senderFrom,
+                        Header=$"การประชุม {item.Name}({item.Id}) ถูกยกเลิก"
+                    };
+                notification.Attendees = new List<NotificationAttendee>();
+                foreach (var sentId in item.Attendees)
+                {
+                    notification.Attendees.Add(new NotificationAttendee
+                        {
+                            UserId = sentId.OfficerId
+                        });
+                }
+                notification.Attendees.Add(new NotificationAttendee
+                    {
+                        UserId = item.CreateBy
+                    });
+                await _notificationServices.Create(notification);
+                await e.Hide();
+                auto.Success("Summary Completed");
+                item = new Meeting();
+                return;
+            }
+            auto.Failed("Summary Incompleted");
+        }
+        catch(Exception s)
+        {
+            auto.Failed(s.Message);
+        }
+        StateHasChanged();
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            ยกเลิกการประชุม <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            <center>
+                <h1>สรุปผลหลังประชุม</h1>
+            </center>
+            <div class="form-group">
+                <label for="text">รหัส</label>
+                <input id="text" @bind-value="item.Id" type="text" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label for="text1">ชื่อ</label>
+                <input id="text1" @bind-value="item.Name" type="text" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label for="textarea">ข้อสรุป</label>
+                <textarea id="textarea" @bind="item.Remark" cols="40" rows="5" class="form-control"></textarea>
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-outline-danger" @onclick="SaveChanges">ยืนยันการสรุปผล</Button>
+            <Button Class="btn btn-outline-info" @onclick="()=>e.Hide()">ปิดหน้าต่างนี้</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+    const string notificationDetail = @"<h1> สรุปการประชุม {0}  </h1>
+    <br>
+    <br>
+    <h1>รายละเอียดการสรุป</h1>
+    <br>
+    <h2> {1} </h2>
+    <br>
+    ";
+}

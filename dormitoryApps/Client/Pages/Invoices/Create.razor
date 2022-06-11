@@ -36,6 +36,7 @@
     bool isNotElectricity = true;
     bool isNotWater = true;
     bool isCalculating = false;
+    bool isSubmitted = false;
     bool rentalLoading = false;
     bool invoiceCalculate = false;
     bool hasTax = false;
@@ -43,7 +44,7 @@
     string fetchIng = string.Empty;
     int serviceCounter = 0;
     decimal taxPercentage = 1;
-   
+
     Invoice item = new Invoice()
         {
             Ispaid = false
@@ -221,8 +222,7 @@
     }
     private async void SaveChanges()
     {
-        processing.Detail="Invoice Creating";
-        processing.Open();
+        auto.Open("Invoice Creating");
         await Task.Delay(1);
         try
         {
@@ -236,28 +236,21 @@
             var actionResult = await _invoiceServices.Create(item);
             if(actionResult)
             {
-                processing.Close();
+                isSubmitted = true;
                 await Task.Delay(1);
-                success.NextLink="/invoices";
-                success.NextRequired=true;
-                success.Details = "Create Completed";
-                success.Open();
+                auto.Success("Create Completed");
                 StateHasChanged();
                 await Task.Delay(5000);
                 await jsRuntime.InvokeAsync<object>("close");
                 return;
             }
-            processing.Close();
             await Task.Delay(1);
-            error.Details = "Something Went Wrong";
-            error.Open(); 
+            auto.Failed("Something Went Wrong");
         }
         catch(Exception x)
         {
-        processing.Close();
+        auto.Failed(x.Message);
         await Task.Delay(1);
-            error.Details = x.Message;
-            error.Open(); 
         }
         StateHasChanged();
     }
@@ -656,7 +649,7 @@ else
         </Div>
         <Div Class="d-flex flex-row-reverse">
             <Div Class="p-2">
-                <Button Class="btn btn-success btn-lg" Disabled="@(!invoiceCalculate)" @onclick="SaveChanges"><i class="money bill alternate outline icon"></i> ออกรายการชำระเงิน</Button>
+                <Button Class="btn btn-success btn-lg" Disabled="@(!invoiceCalculate || isSubmitted)" @onclick="SaveChanges"><i class="money bill alternate outline icon"></i> ออกรายการชำระเงิน</Button>
             </Div>
         </Div>
         @if(isCalculating)
@@ -676,11 +669,9 @@ else
         text-align: center;
     }
 </style>
-<dormitoryApps.Client.Pages.Modal.Error @ref="error"/>
-<dormitoryApps.Client.Pages.Modal.Success @ref="success"/>
-<dormitoryApps.Client.Pages.Modal.Processing @ref="processing"/>
+
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto"/>
 @code{
-    private dormitoryApps.Client.Pages.Modal.Error error;
-    private dormitoryApps.Client.Pages.Modal.Success success;
-    private dormitoryApps.Client.Pages.Modal.Processing processing;
+
+    private dormitoryApps.Client.Pages.Modal.Auto auto;
 }

@@ -1,0 +1,456 @@
+﻿@using Blazorise;
+@using Blazorise.RichTextEdit;
+@using Blazored.Typeahead;
+@using dormitoryApps.Shared.Model.Entity;
+@using dormitoryApps.Shared.Model.Json;
+@using dormitoryApps.Client.Services;
+@using System.Collections;
+@inject MeetingServices _meetingServices;
+@inject OfficerServices _officerServices;
+@inject SessionServices _sessionServices;
+@inject MeetingAttachmentServices _meetingAttachmentServices;
+@inject NotificationServices _notificationServices;
+@inject ClientdataServices _clientdataServices;
+
+@code {
+
+
+    Modal e;
+    Meeting item = new Meeting();
+    MeetingAttendee attendee = new MeetingAttendee();
+    bool showAttendee = false;
+    bool nameValidate = false;
+    bool placeOrLinkValidate = false;
+    bool attendeeValidate = false;
+    RichTextEdit details;
+    IList<Officer> selectedOfficer = new List<Officer>();
+    List<Officer> officers = new List<Officer>();
+    int startHours = 0;
+    int startMinute = 0;
+    int endHours = 0;
+    int endMinute = 0;
+    DateTime meetingDate;
+    bool isLoading = false;
+    string loadingString = string.Empty;
+    MyCompany myCompany = new MyCompany();
+    public async void Open(long meetingId)
+    {
+        await e.Show();
+        myCompany = await _clientdataServices.GetMyCompany();
+        isLoading = true;
+        loadingString = "กำลังโหลดข้อมูลการประชุม";
+        await Task.Delay(1);
+        StateHasChanged();
+        officers = await _officerServices.GetEmployee();
+        await Task.Delay(100);
+        if (officers == null) officers = new List<Officer>();
+        item = await _meetingServices.GetMeeting(meetingId);
+        meetingDate = item.StartTime.Date;
+        startHours = item.StartTime.Hour;
+        startMinute = item.StartTime.Minute;
+        endHours = item.EndTime.Hour;
+        endMinute = item.EndTime.Minute;      
+        if (item.Attachments != null && item.Attachments.Count > 0)
+        {
+            loadingString = "กำลังโหลดเอกสารที่เกี่ยวข้อง";
+            await Task.Delay(1);
+            StateHasChanged();
+            foreach (var x in item.Attachments.Select((x, y) => new { att = x, Index = y }))
+            {
+                await _meetingAttachmentServices.GetAttachment(x.att.Id).ContinueWith(s =>
+                {
+                    item.Attachments[x.Index].FileContent = s.Result.FileContent;
+                });
+                await Task.Delay(5);
+            }
+        }
+        loadingString = "กำลังโหลดข้อมูลผู้เข้าร่วม";
+        await Task.Delay(1);
+        StateHasChanged();
+        long[] attendees = item.Attendees.Select(x => x.OfficerId).ToArray();
+        selectedOfficer = officers.Where(x => attendees.Contains(x.Id)).ToList();
+        isLoading = false;
+        await Task.Delay(1);
+        StateHasChanged();
+    }
+    async Task<IEnumerable<Officer>> GetEmployees(string searchText)
+    {
+        return await Task.FromResult(officers.Where(x => $"{x.Firstname} {x.Surname}".ToLower().Contains(searchText.ToLower())));
+    }
+    async void SaveDetail()
+    {
+        item.Description = await details.GetHtmlAsync();
+    }
+    async void FileChanges(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            item.Attachments = new List<MeetingAttachment>();
+            var files = e.GetMultipleFiles(5);
+            foreach (var file in files)
+            {
+                var stream = file.OpenReadStream(200000000);
+                MemoryStream ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                MeetingAttachment attachment = new MeetingAttachment()
+                    {
+                        FileExtension = Path.GetExtension(file.Name),
+                        FileName = Path.GetFileNameWithoutExtension(file.Name),
+                        FileSize = file.Size,
+                        FileType = file.ContentType,
+                    };
+                attachment.FileContent = ms.ToArray();
+                item.Attachments.Add(attachment);
+                stream.Close();
+                ms.Close();
+            }
+
+        }
+        catch (Exception x)
+        {
+            auto.OpenFailed(x.Message);
+        }
+        StateHasChanged();
+
+    }
+    string GetValidate(bool validateResult)
+    {
+        return validateResult ? "is-invalid" : "";
+    }
+    string ShowInvalidMessage(bool validateResult)
+    {
+        return validateResult ? "block" : "none";
+    }
+    void ClearAttachment()
+    {
+        item.Attachments = new List<MeetingAttachment>();
+        StateHasChanged();
+    }
+    void RemoveAttachment(int index)
+    {
+        item.Attachments = item.Attachments.Where((x, y) => y != index).ToList();
+        StateHasChanged();
+    }
+    async void SaveChanges()
+    {
+        nameValidate = string.IsNullOrEmpty(item.Name);
+        placeOrLinkValidate = string.IsNullOrEmpty(item.OnLine ? item.Link : item.Place);
+        attendeeValidate = selectedOfficer == null || selectedOfficer.Count == 0;
+        if (nameValidate || placeOrLinkValidate || attendeeValidate)
+        {
+            return;
+        }
+        auto.Open("Updating");
+        try
+        {
+            item.StartTime = new DateTime(meetingDate.Year, meetingDate.Month, meetingDate.Day, startHours, startMinute, 0);
+            item.EndTime = new DateTime(meetingDate.Year, meetingDate.Month, endHours < startHours ? meetingDate.Day + 1 : meetingDate.Day, endHours, endMinute, 0);
+            item.Attendees = new List<MeetingAttendee>();
+            if (item.OnLine) item.Place = string.Empty;
+            else
+            {
+                item.Link = string.Empty;
+            }
+            await Task.Delay(50);
+            foreach (var so in selectedOfficer)
+            {
+                item.Attendees.Add(new MeetingAttendee
+                    {
+                        OfficerId = so.Id
+                    });
+            }
+            var res = await _meetingServices.Update(item);
+            if (res)
+            {
+                string senderFrom = $"{myCompany.ApplicationName} Meeting Services";
+                Notification notification = new Notification()
+                    {
+                        Date = DateTime.Now,
+                        Detail = string.Format(notificationDetail, item.Name, item.Id, DateTime.Now),
+                        Secure = true,
+                        SenderId = item.CreateBy,
+                        SenderFrom = senderFrom,
+                        Header=$"อัพเดทการประชุม {item.Name}({item.Id})"
+                    };
+                notification.Attendees = new List<NotificationAttendee>();
+                foreach (var sentId in item.Attendees)
+                {
+                    notification.Attendees.Add(new NotificationAttendee
+                        {
+                            UserId = sentId.OfficerId
+                        });
+                }
+                notification.Attendees.Add(new NotificationAttendee
+                    {
+                        UserId = item.CreateBy
+                    });
+                await _notificationServices.Create(notification);
+                await e.Hide();
+                auto.Success("Update Completed");
+                item = new Meeting();
+                return;
+            }
+            auto.Failed("Update Incompleted");
+        }
+        catch (Exception x)
+        {
+            auto.Failed(x.Message);
+        }
+        StateHasChanged();
+
+    }
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+<Modal @ref="e" Style="color:black">
+    <ModalContent>
+        <ModalHeader>
+            สร้างการประชุม
+            <CloseButton></CloseButton>
+        </ModalHeader>
+        <ModalBody>
+            @if (isLoading)
+            {
+                <br />
+                <br />
+                <br />
+                <br />
+                <center>
+                    <Div Class="loader"></Div>
+                    <h1>@loadingString</h1>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <h1>สร้างการประชุม</h1>
+                </center>
+                <br />
+                <div class="form-group">
+                    <label for="text">ชื่อการประชุม</label>
+                    <input id="text" @bind-value="item.Name" type="text" class="form-control @GetValidate(nameValidate)">
+                </div>
+                <div class="form-group">
+                    <label for="text1">วันประชุม</label>
+                    <input id="text1" @bind-value="meetingDate" type="date" class="form-control" min="@DateTime.Now.Date">
+                </div>
+                @("เริ่มประชุม")
+                <br />
+                <div class="input-group">
+                    <select @bind="startHours" class="form-control">
+                        @for (int i = 0; i < 24; i++)
+                        {
+                            <option value="@i" selected="@(i==startHours)">@(i < 10 ? $"0{i}":i)</option>
+                        }
+                    </select>&nbsp;&nbsp; ชั่วโมง &nbsp;&nbsp;
+                    <select @bind="startMinute" class="form-control">
+                        @for (int i = 0; i < 60; i++)
+                        {
+                            <option value="@i" selected="@(i==startMinute)">@(i < 10 ? $"0{i}":i)</option>
+                        }
+                    </select>
+                    &nbsp;&nbsp; นาที
+                </div>
+                <br />
+                <br />
+                @("ถึง")
+                <br />
+                <div class="input-group">
+                    <select @bind="endHours" class="form-control">
+                        @for (int i = 0; i < 24; i++)
+                        {
+                            <option value="@i" selected="@(i==endHours)">@(i < 10 ? $"0{i}":i)</option>
+                        }
+                    </select>&nbsp;&nbsp; ชั่วโมง &nbsp;&nbsp;
+                    <select @bind="endMinute" class="form-control">
+                        @for (int i = 0; i < 60; i++)
+                        {
+                            <option value="@i" selected="@(i==endMinute)">@(i < 10 ? $"0{i}":i)</option>
+                        }
+                    </select>
+                    &nbsp;&nbsp; นาที
+                </div>
+                <h2>
+                    ผู้เข้าร่วม
+                </h2>
+                <Button Class="btn btn-success" @onclick="async ()=>{ showAttendee = !showAttendee; await Task.Delay(10);  StateHasChanged();}">
+                    @if (!showAttendee)
+                    {
+                        <i class='plus icon'></i>
+
+                        @(" แสดง")
+                    }
+                    else
+                    {
+                        <i class='minus icon'></i>
+
+                        @(" ซ่อน")
+                    }
+                </Button>
+                <br />
+                <br />
+                @if (showAttendee)
+                {
+                    <BlazoredTypeahead SearchMethod="GetEmployees"
+                               @bind-Values="@selectedOfficer"
+                               Disabled="false"
+                               EnableDropDown="true">
+                        <SelectedTemplate>
+                            @context.Firstname @context.Surname
+                        </SelectedTemplate>
+                        <ResultTemplate>
+                            @context.Firstname @context.Surname (Id: @context.Id)
+                        </ResultTemplate>
+                    </BlazoredTypeahead>
+                    <small style="color:red;display:@ShowInvalidMessage(attendeeValidate)">ต้องมีผู้เข้าร่วม</small>
+
+                }
+                <br />
+                <div class="form-group">
+                    <label for="textarea">รายละเอียด</label>
+                    <RichTextEdit style="background-color:wheat;color:black" @ref="details" ContentChanged="SaveDetail">
+                        <Toolbar>
+                            <RichTextEditToolbarGroup>
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Bold" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Italic" />
+                                <RichTextEditToolbarSelect Action="RichTextEditAction.Size">
+                                    <RichTextEditToolbarSelectItem Value="small" />
+                                    <RichTextEditToolbarSelectItem Selected />
+                                    <RichTextEditToolbarSelectItem Value="large" />
+                                    <RichTextEditToolbarSelectItem Value="huge">Very Big</RichTextEditToolbarSelectItem>
+                                </RichTextEditToolbarSelect>
+                                <RichTextEditToolbarSelect Action="RichTextEditAction.Color">
+                                    <RichTextEditToolbarSelectItem Selected />
+                                    <RichTextEditToolbarSelectItem Value="red" />
+                                    <RichTextEditToolbarSelectItem Value="black" />
+                                    <RichTextEditToolbarSelectItem Value="silver" />
+                                    <RichTextEditToolbarSelectItem Value="gray" />
+                                    <RichTextEditToolbarSelectItem Value="white" />
+                                    <RichTextEditToolbarSelectItem Value="maroon" />
+                                    <RichTextEditToolbarSelectItem Value="purple" />
+                                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                                    <RichTextEditToolbarSelectItem Value="green" />
+                                    <RichTextEditToolbarSelectItem Value="lime" />
+                                    <RichTextEditToolbarSelectItem Value="olive" />
+                                    <RichTextEditToolbarSelectItem Value="yellow" />
+                                    <RichTextEditToolbarSelectItem Value="navy" />
+                                    <RichTextEditToolbarSelectItem Value="blue" />
+                                    <RichTextEditToolbarSelectItem Value="teal" />
+                                    <RichTextEditToolbarSelectItem Value="aqua" />
+
+                                </RichTextEditToolbarSelect>
+                                <RichTextEditToolbarSelect Action="RichTextEditAction.Background">
+                                    <RichTextEditToolbarSelectItem Selected />
+                                    <RichTextEditToolbarSelectItem Value="red" />
+                                    <RichTextEditToolbarSelectItem Value="black" />
+                                    <RichTextEditToolbarSelectItem Value="silver" />
+                                    <RichTextEditToolbarSelectItem Value="gray" />
+                                    <RichTextEditToolbarSelectItem Value="white" />
+                                    <RichTextEditToolbarSelectItem Value="maroon" />
+                                    <RichTextEditToolbarSelectItem Value="purple" />
+                                    <RichTextEditToolbarSelectItem Value="fuchsia" />
+                                    <RichTextEditToolbarSelectItem Value="green" />
+                                    <RichTextEditToolbarSelectItem Value="lime" />
+                                    <RichTextEditToolbarSelectItem Value="olive" />
+                                    <RichTextEditToolbarSelectItem Value="yellow" />
+                                    <RichTextEditToolbarSelectItem Value="navy" />
+                                    <RichTextEditToolbarSelectItem Value="blue" />
+                                    <RichTextEditToolbarSelectItem Value="teal" />
+                                    <RichTextEditToolbarSelectItem Value="aqua" />
+                                </RichTextEditToolbarSelect>
+                                <RichTextEditToolbarSelect Action="RichTextEditAction.Align">
+                                    <RichTextEditToolbarSelectItem Selected />
+                                    <RichTextEditToolbarSelectItem Value="center" />
+                                    <RichTextEditToolbarSelectItem Value="right" />
+                                </RichTextEditToolbarSelect>
+
+
+                                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="ordered" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.List" Value="bullet" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.CodeBlock" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Font" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Image" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Underline" />
+                                <RichTextEditToolbarButton Action="RichTextEditAction.Script" />
+                            </RichTextEditToolbarGroup>
+                        </Toolbar>
+                        <Editor>@((MarkupString)item.Description)</Editor>
+                    </RichTextEdit>
+
+                    <div class="form-group">
+                        <div>
+                            <div class="custom-control custom-checkbox custom-control-inline">
+                                <input @bind="item.OnLine" id="checkbox_0" type="checkbox" class="custom-control-input" value="true">
+                                <label for="checkbox_0" class="custom-control-label">ประชุมออนไลน์</label>
+                            </div>
+                        </div>
+                    </div>
+                    @if (item.OnLine)
+                    {
+                        <div class="form-group">
+                            <label for="text">ลิ้งค์ประชุม</label>
+                            <input id="text" @bind-value="item.Link" type="text" class="form-control @GetValidate(placeOrLinkValidate)">
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label for="text">สถานที่</label>
+                            <input id="text" @bind-value="item.Place" type="text" class="form-control @GetValidate(placeOrLinkValidate)">
+                        </div>
+                    }
+                </div>
+                <h1>เอกสารที่เกี่ยวข้อง</h1>
+                <InputFile multiple OnChange="FileChanges" />
+                <br />
+                <br />
+
+                @if (item.Attachments != null && item.Attachments.Count > 0)
+                {
+                    <Button Class="btn btn-danger" @onclick="ClearAttachment"><i class="trash icon"></i></Button>
+                    <br />
+                    <br />
+                    <table class="table" style="text-align:center">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>ชื่อไฟล์</th>
+                                <th>ขนาด</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in item.Attachments.Select((x, y) => new { Data = x, Index = y }))
+                            {
+                                string tableClass = i.Index % 2 == 0 ? "table-warning" : "table-danger";
+                                <tr class="@tableClass">
+                                    <td>@(1+i.Index)</td>
+                                    <td>@($"{i.Data.FileName}{i.Data.FileExtension}")</td>
+                                    <td>@i.Data.FileSize</td>
+                                    <td>
+                                        <Button Class="btn btn-danger" @onclick="()=>RemoveAttachment(i.Index)"><i class="trash icon"></i></Button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+        </ModalBody>
+        <ModalFooter>
+            <Button class="btn btn-outline-primary" @onclick="SaveChanges">บันทึก</Button>
+            <Button class="btn btn-outline-secondary" @onclick="()=>e.Hide()">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+
+</Modal>
+<dormitoryApps.Client.Pages.Modal.Auto @ref="auto" />
+@code {
+    dormitoryApps.Client.Pages.Modal.Auto auto;
+    const string notificationDetail = @" การประชุม {0} มีก่รเปลี่ยนแปลงเมื่อ {2}
+    <br>
+    <br>
+    <a href='/meeting/{1}'> ดูรายละเอียดที่นี่ <a>
+    ";
+}
