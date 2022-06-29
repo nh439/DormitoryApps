@@ -183,11 +183,11 @@
         }
         else if (now.TotalHours > 1)
         {
-            return $" เริ่มในอีก {now.Hours} ชม {now.TotalMinutes} นาที {now.Seconds} วินาที";
+            return $" เริ่มในอีก {now.Hours} ชม {now.Minutes} นาที {now.Seconds} วินาที";
         }
         else if (now.TotalMinutes > 1)
         {
-            return $" เริ่มในอีก {now.TotalMinutes} นาที {now.Seconds} วินาที";
+            return $" เริ่มในอีก {now.Minutes} นาที {now.Seconds} วินาที";
         }
         return $" เริ่มในอีก {now.Seconds} วินาที";
 
