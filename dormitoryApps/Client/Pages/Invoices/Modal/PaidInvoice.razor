@@ -153,7 +153,7 @@
                 auto.Success("ชำระเงินเรียบร้อย");
                 await e.Hide();
                 await Task.Delay(1);
-                _exportServices.ExportInvoice(item.Id);
+                //_exportServices.ExportInvoice(item.Id);
                 item = new Invoice() { Services = new List<InvoiceService>() };
                 await InvokeAsync(StateHasChanged);               
                 return;
